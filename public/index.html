@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EngControl - Engenheiro</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>body{font-family:Inter,sans-serif}</style>
+</head>
+<body class="bg-[#f8fafc]">
+<div id="app" class="p-10 text-center">Carregando...</div>
+<script>
+let CONFIG, clienteAtivo;
+async function init(){
+  CONFIG = await (await fetch('/api/config')).json();
+  carregarClientes();
+}
+async function api(tabela, metodo='GET', body=null, query=''){
+  const opt = { method: metodo, headers: { apikey: CONFIG.supabaseKey, Authorization: `Bearer ${CONFIG.supabaseKey}`, 'Content-Type':'application/json' } }
+  if(body) opt.body = JSON.stringify(body);
+  const res = await fetch(`${CONFIG.supabaseUrl}/rest/v1/${tabela}${query}`, opt);
+  try{ return await res.json(); } catch{ return []; }
+}
+async function carregarClientes(){
+  const clientes = await api('clientes','GET',null,'?order=created_at.desc');
+  document.getElementById('app').innerHTML = `
+  <header class="bg-white border-b sticky top-0"><div class="max-w-7xl mx-auto px-6 py-4 flex justify-between"><h1 class="font-bold text-xl">🏗️ EngControl - Engenheiro</h1><div class="flex gap-2"><a href="/login-cliente.html" class="px-4 py-2 bg-zinc-100 rounded-full text-sm">Ver como Cliente</a><button onclick="telaNovoCliente()" class="bg-black text-white px-5 py-2 rounded-full text-sm font-medium">+ Novo Cliente</button></div></div></header>
+  <main class="max-w-7xl mx-auto px-6 py-8"><div class="grid grid-cols-1 md:grid-cols-3 gap-5">${clientes.map(c=>`<div onclick="abrirCliente('${c.id}')" class="bg-white rounded-[20px] p-5 border hover:shadow-xl cursor-pointer text-left"><div class="h-28 bg-zinc-100 rounded-xl mb-3 flex items-center justify-center text-3xl">🏠</div><h3 class="font-semibold">${c.nome}</h3><p class="text-xs text-zinc-500">${c.endereco_obra||'Sem endereço'}</p><p class="text-[11px] mt-3 bg-zinc-900 text-white inline-block px-2 py-1 rounded-full">${c.email} / ${c.senha_acesso}</p></div>`).join('')}</div></main>`;
+}
+async function abrirCliente(id){
+  const [cliente] = await api('clientes','GET',null,`?id=eq.${id}`);
+  clienteAtivo = cliente;
+  const arquivos = await api('arquivos','GET',null,`?cliente_id=eq.${id}&order=created_at.desc`);
+  document.getElementById('app').innerHTML = `
+  <header class="bg-white border-b"><div class="max-w-6xl mx-auto px-6 py-4 flex items-center gap-3"><button onclick="carregarClientes()" class="w-8 h-8 rounded-full bg-zinc-100">←</button><div><h1 class="font-bold">${cliente.nome}</h1><p class="text-xs text-zinc-500">${cliente.email}</p></div><div class="ml-auto"><input type="file" id="file" class="hidden" onchange="upload(this.files[0])"><button onclick="document.getElementById('file').click()" class="bg-black text-white px-4 py-2 rounded-full text-sm">+ Anexar</button></div></div></header>
+  <main class="max-w-6xl mx-auto p-6"><div class="space-y-3">${arquivos.map(a=>`<div class="bg-white border rounded-2xl p-4 flex items-center gap-3"><span>📄</span><div class="flex-1"><p class="text-sm font-medium">${a.nome}</p><p class="text-xs text-zinc-500">${a.tipo}</p></div><a href="${a.url}" target="_blank" class="text-sm underline">Abrir</a></div>`).join('')||'<p class="text-zinc-400 text-center py-10 bg-white rounded-2xl border">Nenhum arquivo</p>'}</div></main>`;
+}
+async function upload(file){
+  if(!file) return;
+  const fd = new FormData(); fd.append('file', file); fd.append('upload_preset', CONFIG.cloudinaryPreset);
+  const up = await (await fetch(`https://api.cloudinary.com/v1_1/${CONFIG.cloudinaryName}/auto/upload`,{method:'POST', body: fd})).json();
+  await api('arquivos','POST',{cliente_id: clienteAtivo.id, nome: file.name, url: up.secure_url, public_id: up.public_id, tipo: file.type.includes('image')?'foto_obra':'documento'});
+  abrirCliente(clienteAtivo.id);
+}
+function telaNovoCliente(){
+  document.getElementById('app').innerHTML = `<div class="min-h-screen flex items-center justify-center p-6"><form onsubmit="criar(event)" class="bg-white w-full max-w-md rounded-[24px] p-8 border"><h2 class="text-xl font-bold mb-6">Novo Cliente</h2><input name="nome" required placeholder="Nome" class="w-full border rounded-xl p-3 mb-3"><input name="email" required placeholder="Email do cliente (login)" class="w-full border rounded-xl p-3 mb-3"><input name="senha" required placeholder="Senha do cliente" class="w-full border rounded-xl p-3 mb-3"><input name="endereco" placeholder="Endereço da obra" class="w-full border rounded-xl p-3 mb-6"><button class="w-full bg-black text-white rounded-full py-3">Criar</button><button type="button" onclick="carregarClientes()" class="w-full mt-3 text-sm text-zinc-500">Voltar</button></form></div>`;
+}
+async function criar(e){ e.preventDefault(); const fd=new FormData(e.target); await api('clientes','POST',{nome:fd.get('nome'), email:fd.get('email'), senha_acesso:fd.get('senha'), endereco_obra:fd.get('endereco'), progresso:10}); carregarClientes(); }
+init();
+</script>
+</body>
+</html>
