@@ -1,4 +1,17 @@
-
+(function () {
+  let configPromise;
+  async function getConfig() {
+    if (!configPromise) {
+      configPromise = fetch('/api/config', { cache: 'no-store' }).then(async (response) => {
+        if (!response.ok) throw new Error('Não foi possível carregar as configurações do sistema.');
+        const config = await response.json();
+        if (!config.supabaseUrl || !config.supabaseKey) throw new Error('Configure SUPABASE_URL e SUPABASE_KEY no Render.');
+        return config;
+      }).catch((error) => { configPromise = null; throw error; });
+    }
+    return configPromise;
+  }
+  
 async function request(table, method = 'GET', body = null, query = '') {
   // Arquivos passam pelo servidor para não depender da política
   // RLS do navegador para gravar os metadados.
@@ -100,3 +113,26 @@ async function request(table, method = 'GET', body = null, query = '') {
 
   return data;
 }
+
+  function escape(value) {
+    return String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[char]));
+  }
+  function initials(name) {
+    return String(name || '?').trim().split(/\s+/).slice(0, 2).map(part => part[0] || '').join('').toUpperCase() || '?';
+  }
+  function date(value) {
+    if (!value) return 'Data não informada';
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? 'Data não informada' : parsed.toLocaleDateString('pt-BR');
+  }
+  function safeUrl(value) {
+    try { const url = new URL(value); return ['https:', 'http:'].includes(url.protocol) ? url.href : '#'; }
+    catch { return '#'; }
+  }
+  function toast(message, type = '') {
+    const old = document.querySelector('.toast'); if (old) old.remove();
+    const node = document.createElement('div'); node.className = `toast ${type}`.trim(); node.textContent = message;
+    document.body.appendChild(node); setTimeout(() => node.remove(), 4200);
+  }
+  window.ME = { getConfig, request, escape, initials, date, safeUrl, toast };
+})();
