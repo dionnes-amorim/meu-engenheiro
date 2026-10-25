@@ -2,37 +2,64 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Acesso do Cliente - EngControl</title>
+<title>Acesso da Obra | EngControl</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-<style>body{font-family:Inter,sans-serif}</style>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>body{font-family:'Manrope',sans-serif}</style>
 </head>
-<body class="bg-[#fcfcf9] min-h-screen flex items-center justify-center p-6">
-<div class="w-full max-w-[420px]">
-  <div class="text-center mb-8"><div class="w-12 h-12 bg-black text-white rounded-full flex items-center justify-center mx-auto mb-4 text-xl">🏗️</div><h1 class="text-2xl font-bold">Acesso da sua obra</h1><p class="text-sm text-zinc-500 mt-2">Digite o acesso que o engenheiro te enviou</p></div>
-  <form onsubmit="login(event)" class="bg-white border rounded-[24px] p-8 shadow-sm">
-    <label class="text-xs font-semibold">E-mail</label><input id="email" required type="email" placeholder="seu@email.com" class="w-full border rounded-xl p-3 mt-1 mb-4">
-    <label class="text-xs font-semibold">Senha de acesso</label><input id="senha" required placeholder="••••••" class="w-full border rounded-xl p-3 mt-1 mb-6">
-    <button class="w-full bg-black text-white rounded-full py-3.5 font-medium">Entrar na minha obra</button>
-    <p id="erro" class="text-sm text-red-500 mt-4 hidden text-center"></p>
-  </form>
-</div>
+<body class="bg-[#f6f5f2]">
+<div id="app"></div>
 <script>
-async function login(e){
-  e.preventDefault();
-  const btn = e.target.querySelector('button'); btn.innerText = 'Entrando...';
-  const CONFIG = await (await fetch('/api/config')).json();
-  const email = document.getElementById('email').value.trim();
-  const senha = document.getElementById('senha').value.trim();
-  const res = await fetch(`${CONFIG.supabaseUrl}/rest/v1/clientes?email=eq.${email}&senha_acesso=eq.${senha}`, { headers: { apikey: CONFIG.supabaseKey, Authorization: `Bearer ${CONFIG.supabaseKey}` }});
-  const data = await res.json();
-  if(data && data.length > 0){
-    localStorage.setItem('cliente_id', data[0].id);
-    window.location.href = '/painel-cliente.html';
-  } else {
-    document.getElementById('erro').innerText = 'E-mail ou senha incorretos.'; document.getElementById('erro').classList.remove('hidden'); btn.innerText = 'Entrar na minha obra';
-  }
+let CONFIG=null;
+async function init(){ CONFIG=await (await fetch('/api/config')).json(); renderLogin(); }
+function renderLogin(erro=''){
+document.getElementById('app').innerHTML=`
+<div class="min-h-screen flex">
+  <div class="hidden md:flex w-[55%] bg-black relative overflow-hidden">
+    <img src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?q=80&w=2000" class="absolute inset-0 w-full h-full object-cover opacity-60">
+    <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent"></div>
+    <div class="relative p-12 flex flex-col justify-between w-full text-white">
+      <div class="flex items-center gap-2 font-extrabold">E ENGCONTROL</div>
+      <div><h1 class="text-[56px] leading-[0.9] font-extrabold">Sua obra,<br>na palma<br>da mão.</h1><p class="text-white/60 mt-6 max-w-[360px] text-sm">Acompanhe fotos, plantas, contratos e medições em tempo real, direto com seu engenheiro.</p></div>
+    </div>
+  </div>
+  <div class="w-full md:w-[45%] flex items-center justify-center p-8">
+    <div class="w-full max-w-[360px]">
+      <div class="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center font-bold mx-auto">E</div>
+      <h2 class="text-[22px] font-extrabold text-center mt-6">Acesso da sua obra</h2>
+      <p class="text-sm text-zinc-500 text-center mt-1">Digite o acesso que o engenheiro te enviou</p>
+      <form onsubmit="login(event)" class="mt-8 space-y-4">
+        <div><label class="text-[11px] font-bold tracking-widest text-zinc-500">E-MAIL</label><input id="email" type="email" value="teste@teste" required class="mt-2 w-full bg-white border rounded-xl p-3.5 text-sm outline-none focus:border-black"></div>
+        <div><label class="text-[11px] font-bold tracking-widest text-zinc-500">SENHA DE ACESSO</label><input id="senha" type="text" value="teste" required class="mt-2 w-full bg-white border rounded-xl p-3.5 text-sm outline-none focus:border-black"></div>
+        ${erro?`<p class="text-xs text-red-500 bg-red-50 p-3 rounded-xl text-center">${erro}</p>`:''}
+        <button class="w-full bg-black text-white rounded-full py-3.5 font-bold text-sm">Entrar na minha obra →</button>
+      </form>
+      <p class="text-[11px] text-zinc-400 text-center mt-8">Problemas? Fale com seu engenheiro no WhatsApp</p>
+    </div>
+  </div>
+</div>`;
 }
+async function login(e){
+e.preventDefault();
+const email=document.getElementById('email').value.trim().toLowerCase();
+const senha=document.getElementById('senha').value.trim();
+const url=`${CONFIG.supabaseUrl}/rest/v1/clientes?email=eq.${encodeURIComponent(email)}&senha_acesso=eq.${encodeURIComponent(senha)}&select=*`;
+const res=await fetch(url,{headers:{apikey:CONFIG.supabaseKey, Authorization:`Bearer ${CONFIG.supabaseKey}`}});
+const data=await res.json();
+console.log('LOGIN DEBUG:', data);
+if(!data || data.length===0){
+  renderLogin('E-mail ou senha incorretos. Verifique se você cadastrou exatamente "teste@teste" com senha "teste" (sem espaço).');
+  return;
+}
+const cliente=data[0];
+const arqs=await (await fetch(`${CONFIG.supabaseUrl}/rest/v1/arquivos?cliente_id=eq.${cliente.id}&order=created_at.desc`,{headers:{apikey:CONFIG.supabaseKey, Authorization:`Bearer ${CONFIG.supabaseKey}`}})).json();
+document.getElementById('app').innerHTML=`
+<div class="min-h-screen bg-white">
+  <div class="bg-black text-white px-8 h-14 flex items-center justify-between"><span class="font-bold">🏗️ ${cliente.nome} • ${cliente.endereco_obra||''}</span><span class="text-xs text-white/50">${cliente.email}</span></div>
+  <div class="max-w-5xl mx-auto p-8"><h3 class="font-bold text-lg mb-6">📂 Sua Obra (${arqs.length} arquivos)</h3><div class="grid gap-3">${arqs.map(a=>`<div class="border rounded-2xl p-4 flex items-center gap-4"><div class="w-11 h-11 bg-zinc-100 rounded-xl flex items-center justify-center">📄</div><div class="flex-1"><p class="text-sm font-semibold">${a.nome}</p><p class="text-xs text-zinc-500">${new Date(a.created_at).toLocaleDateString('pt-BR')}</p></div><a href="${a.url}" target="_blank" class="bg-black text-white px-5 py-2 rounded-full text-xs font-bold">ABRIR</a></div>`).join('')||'<div class="border border-dashed rounded-2xl p-12 text-center text-zinc-400 text-sm">Seu engenheiro ainda não enviou documentos. Em breve aparecerá aqui.</div>'}</div></div>
+</div>`;
+}
+init();
 </script>
 </body>
 </html>
