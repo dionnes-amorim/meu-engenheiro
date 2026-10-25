@@ -3,164 +3,161 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EngControl - Sistema do Engenheiro</title>
+<title>EngControl - Gerencial</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>body{font-family:'Inter',sans-serif;background:#f8fafc}</style>
 </head>
 <body class="bg-[#f8fafc]">
-<div id="app"></div>
+<div id="app" class="min-h-screen flex items-center justify-center"><p class="text-sm text-zinc-400">Carregando sistema...</p></div>
 
 <script>
-// === CONFIGURA AQUI ===
-const SUPABASE_URL = "SUA_URL_SUPABASE"
-const SUPABASE_KEY = "SUA_ANON_KEY"
-const CLOUDINARY_CLOUD_NAME = "SEU_CLOUD_NAME"
-const CLOUDINARY_PRESET = "arquivos"
-// ======================
+let CONFIG = null;
+let clienteAtivo = null;
 
-let clienteAtivo = null
-let arquivos = []
+// PUXA TUDO DO RENDER - SEM CHAVE NO CÓDIGO
+async function getConfig(){
+  const res = await fetch('/api/config');
+  CONFIG = await res.json();
+  return CONFIG;
+}
 
-async function apiSupabase(tabela, metodo='GET', body=null){
-  const opt = { method: metodo, headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' } }
-  if(body) opt.body = JSON.stringify(body)
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/${tabela}`, opt)
-  return res.json()
+async function apiSupabase(tabela, metodo='GET', body=null, query=''){
+  if(!CONFIG) await getConfig();
+  const opt = { 
+    method: metodo, 
+    headers: { 
+      'apikey': CONFIG.supabaseKey, 
+      'Authorization': `Bearer ${CONFIG.supabaseKey}`, 
+      'Content-Type': 'application/json' 
+    } 
+  };
+  if(body) opt.body = JSON.stringify(body);
+  const res = await fetch(`${CONFIG.supabaseUrl}/rest/v1/${tabela}${query}`, opt);
+  return res.json();
 }
 
 async function carregarClientes(){
-  const clientes = await apiSupabase('clientes?order=created_at.desc')
-  renderClientes(clientes)
+  try{
+    const clientes = await apiSupabase('clientes', 'GET', null, '?order=created_at.desc');
+    renderClientes(clientes || []);
+  }catch(e){
+    document.getElementById('app').innerHTML = `<div class="p-10 text-center">Erro de conexão. Verifique as variaveis no Render.</div>`;
+  }
 }
 
 function renderClientes(clientes){
   document.getElementById('app').innerHTML = `
-  <div class="min-h-screen">
-    <header class="bg-white border-b sticky top-0 z-10">
+  <div class="min-h-screen w-full">
+    <header class="bg-white/80 backdrop-blur border-b sticky top-0 z-10">
       <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-        <h1 class="text-xl font-bold">🏗️ EngControl</h1>
-        <button onclick="telaNovoCliente()" class="bg-black text-white px-5 py-2.5 rounded-full font-medium">+ Novo Cliente</button>
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 bg-black text-white rounded-full flex items-center justify-center font-bold">E</div>
+          <div><h1 class="text-[16px] font-extrabold leading-none">ENGCONTROL</h1><p class="text-[10px] text-zinc-500 tracking-widest font-semibold">GERENCIAL</p></div>
+        </div>
+        <div class="flex gap-2">
+          <a href="/login-cliente.html" class="px-4 py-2.5 bg-zinc-100 rounded-full text-[13px] font-medium">Área do Cliente</a>
+          <button onclick="telaNovoCliente()" class="bg-black text-white px-5 py-2.5 rounded-full font-medium text-[13px]">+ Nova Obra</button>
+        </div>
       </div>
     </header>
     <main class="max-w-7xl mx-auto px-6 py-8">
-      <h2 class="text-3xl font-bold mb-2">Clientes e Obras</h2>
-      <p class="text-zinc-500 mb-8">${clientes.length} obras ativas</p>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div class="flex justify-between items-end mb-8">
+        <div><h2 class="text-[28px] font-extrabold tracking-tight">Obras Ativas</h2><p class="text-zinc-500 text-sm mt-1">${clientes.length} projetos sob sua gestão</p></div>
+        <div class="bg-white border rounded-full px-4 py-2 text-xs font-medium">Total: ${clientes.length}</div>
+      </div>
+      ${clientes.length === 0 ? `
+        <div class="bg-white border border-dashed rounded-[24px] p-20 text-center">
+          <div class="w-16 h-16 bg-zinc-100 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">🏗️</div>
+          <p class="font-semibold">Nenhuma obra ainda</p><p class="text-sm text-zinc-500 mt-1">Clique em Nova Obra para cadastrar seu primeiro cliente</p>
+        </div>
+      ` : `
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         ${clientes.map(c => `
-          <div onclick="abrirCliente('${c.id}')" class="bg-white rounded-[20px] p-5 border hover:shadow-xl cursor-pointer transition">
-            <div class="h-32 bg-zinc-100 rounded-[16px] mb-4 flex items-center justify-center text-4xl">🏠</div>
-            <h3 class="font-semibold text-lg">${c.nome}</h3>
-            <p class="text-sm text-zinc-500 truncate">${c.endereco_obra || 'Sem endereço'}</p>
-            <div class="mt-4 flex items-center gap-2">
-              <div class="flex-1 h-1.5 bg-zinc-100 rounded-full"><div class="h-1.5 bg-black rounded-full" style="width:${c.progresso}%"></div></div>
-              <span class="text-xs font-medium">${c.progresso}%</span>
-            </div>
-            <p class="text-xs mt-3 px-2.5 py-1 bg-green-50 text-green-700 rounded-full w-fit">${c.status}</p>
+          <div onclick="abrirCliente('${c.id}')" class="group bg-white rounded-[22px] p-5 border hover:border-black hover:shadow-xl cursor-pointer transition-all">
+            <div class="h-36 bg-[#f5f5f7] rounded-[16px] mb-4 flex items-center justify-center text-3xl group-hover:bg-black group-hover:text-white transition">🏠</div>
+            <div class="flex justify-between items-start"><div><h3 class="font-bold text-[15px]">${c.nome}</h3><p class="text-[13px] text-zinc-500 truncate max-w-[200px]">${c.endereco_obra || 'Sem endereço'}</p></div><span class="text-[10px] font-bold tracking-widest bg-black text-white px-2.5 py-1 rounded-full">${c.progresso||0}%</span></div>
+            <div class="mt-4 h-1.5 bg-zinc-100 rounded-full overflow-hidden"><div class="h-full bg-black rounded-full" style="width:${c.progresso||0}%"></div></div>
+            <div class="mt-3 flex justify-between items-center"><p class="text-[11px] px-2.5 py-1 bg-zinc-100 rounded-full font-medium">${c.status||'Em andamento'}</p><p class="text-[11px] text-zinc-400">${c.email}</p></div>
           </div>
         `).join('')}
-      </div>
+      </div>`}
     </main>
-  </div>`
+  </div>`;
 }
 
 async function abrirCliente(id){
-  const [cliente] = await apiSupabase(`clientes?id=eq.${id}`)
-  clienteAtivo = cliente
-  const listaArquivos = await apiSupabase(`arquivos?cliente_id=eq.${id}&order=created_at.desc`)
-  arquivos = listaArquivos
-  
+  const [cliente] = await apiSupabase('clientes','GET',null,`?id=eq.${id}`);
+  clienteAtivo = cliente;
+  const listaArquivos = await apiSupabase('arquivos','GET',null,`?cliente_id=eq.${id}&order=created_at.desc`);
   document.getElementById('app').innerHTML = `
-  <div class="min-h-screen bg-white">
-    <header class="border-b">
+  <div class="min-h-screen bg-white w-full">
+    <header class="border-b sticky top-0 bg-white z-10">
       <div class="max-w-6xl mx-auto px-6 py-4 flex items-center gap-4">
         <button onclick="carregarClientes()" class="w-9 h-9 rounded-full bg-zinc-100 flex items-center justify-center">←</button>
-        <div>
-          <h1 class="font-bold text-lg">${cliente.nome}</h1>
-          <p class="text-xs text-zinc-500">${cliente.email} | Acesso: ${cliente.senha_acesso}</p>
-        </div>
+        <div><h1 class="font-bold text-[16px]">${cliente.nome}</h1><p class="text-xs text-zinc-500">${cliente.endereco_obra||''} • ${cliente.email}</p></div>
         <div class="ml-auto flex gap-2">
           <input type="file" id="fileInput" class="hidden" onchange="uploadArquivo(this.files[0])">
-          <button onclick="document.getElementById('fileInput').click()" class="bg-black text-white px-5 py-2.5 rounded-full text-sm font-medium">+ Anexar PDF/Foto</button>
+          <button onclick="document.getElementById('fileInput').click()" class="bg-black text-white px-5 py-2.5 rounded-full text-sm font-semibold">+ Anexar PDF/Foto</button>
         </div>
       </div>
     </header>
     <main class="max-w-6xl mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
       <div class="lg:col-span-2">
-        <h3 class="font-semibold mb-4">Arquivos do Projeto (${arquivos.length})</h3>
+        <h3 class="font-bold mb-4">Arquivos da Obra (${listaArquivos.length})</h3>
         <div class="space-y-3">
-          ${arquivos.length==0 ? '<p class="text-zinc-400 py-10 text-center bg-zinc-50 rounded-2xl">Nenhum arquivo ainda. Anexe o primeiro contrato ou foto.</p>' : arquivos.map(a => `
+          ${listaArquivos.length==0 ? '<div class="text-zinc-400 py-16 text-center bg-zinc-50 rounded-[20px] border border-dashed text-sm">Nenhum arquivo. Anexe contrato, planta ou fotos.</div>' : listaArquivos.map(a => `
             <div class="flex items-center gap-4 p-4 border rounded-2xl hover:bg-zinc-50">
-              <div class="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center text-sm">${a.tipo==='foto_obra'?'📸':a.tipo==='contrato'?'📄':'📁'}</div>
-              <div class="flex-1">
-                <p class="font-medium text-sm">${a.nome}</p>
-                <p class="text-xs text-zinc-500">${a.tipo} • ${new Date(a.created_at).toLocaleDateString()}</p>
-              </div>
-              <a href="${a.url}" target="_blank" class="text-sm font-medium underline">Abrir</a>
+              <div class="w-11 h-11 rounded-full bg-zinc-100 flex items-center justify-center">${a.url.includes('.pdf')?'📄':'📸'}</div>
+              <div class="flex-1"><p class="font-medium text-sm">${a.nome}</p><p class="text-xs text-zinc-500">${new Date(a.created_at).toLocaleDateString('pt-BR')}</p></div>
+              <a href="${a.url}" target="_blank" class="text-sm font-semibold px-4 py-2 bg-zinc-900 text-white rounded-full">Abrir</a>
             </div>
           `).join('')}
         </div>
       </div>
-      <div class="bg-[#f8fafc] rounded-[20px] p-6 h-fit">
-        <h4 class="font-semibold mb-4">Dados de Acesso do Cliente</h4>
-        <p class="text-sm">Esse é o login que o cliente vai usar pra ver a obra dele:</p>
-        <div class="mt-4 bg-white border rounded-xl p-4 text-sm">
-          <p><b>Usuário:</b> ${cliente.email}</p>
-          <p><b>Senha:</b> ${cliente.senha_acesso}</p>
-        </div>
-        <p class="text-xs text-zinc-500 mt-4">O cliente entra com esses dados e vê só os arquivos dele. 100% separado.</p>
+      <div class="bg-[#f8fafc] rounded-[20px] p-6 h-fit border">
+        <h4 class="font-bold text-sm">Acesso do Cliente</h4>
+        <div class="mt-4 bg-white border rounded-xl p-4 text-sm font-mono"><p>${cliente.email}</p><p class="font-bold mt-1">${cliente.senha_acesso}</p></div>
+        <p class="text-[11px] text-zinc-500 mt-4">O cliente usa esse login em /login-cliente.html para ver só a obra dele.</p>
       </div>
     </main>
-  </div>`
+  </div>`;
 }
 
 async function uploadArquivo(file){
-  if(!file) return
-  alert('Enviando pro Cloudinary...')
-  const fd = new FormData()
-  fd.append('file', file)
-  fd.append('upload_preset', CLOUDINARY_PRESET)
-  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`, {method:'POST', body: fd})
-  const data = await res.json()
-  
-  await apiSupabase('arquivos', 'POST', {
-    cliente_id: clienteAtivo.id,
-    nome: file.name,
-    url: data.secure_url,
-    public_id: data.public_id,
-    tipo: file.type.includes('image')?'foto_obra':'documento'
-  })
-  abrirCliente(clienteAtivo.id)
+  if(!file) return;
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', CONFIG.cloudinaryPreset);
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${CONFIG.cloudinaryName}/auto/upload`, {method:'POST', body: fd});
+  const data = await res.json();
+  await apiSupabase('arquivos', 'POST', { cliente_id: clienteAtivo.id, nome: file.name, url: data.secure_url, public_id: data.public_id, tipo: file.type.includes('image')?'foto_obra':'documento' });
+  abrirCliente(clienteAtivo.id);
 }
 
 function telaNovoCliente(){
   document.getElementById('app').innerHTML = `
-  <div class="min-h-screen flex items-center justify-center bg-[#f8fafc] p-6">
-    <form onsubmit="criarCliente(event)" class="bg-white w-full max-w-lg rounded-[24px] p-8 border shadow-sm">
-      <h2 class="text-2xl font-bold mb-6">Novo Cliente / Obra</h2>
-      <input name="nome" required placeholder="Nome do Cliente" class="w-full border rounded-xl p-3 mb-3">
-      <input name="email" required type="email" placeholder="Email (será o login dele)" class="w-full border rounded-xl p-3 mb-3">
-      <input name="senha" required placeholder="Senha de acesso do cliente" class="w-full border rounded-xl p-3 mb-3">
-      <input name="endereco" placeholder="Endereço da Obra" class="w-full border rounded-xl p-3 mb-6">
-      <button class="w-full bg-black text-white rounded-full py-3 font-medium">Criar Cliente</button>
+  <div class="min-h-screen flex items-center justify-center bg-[#f8fafc] p-6 w-full">
+    <form onsubmit="criarCliente(event)" class="bg-white w-full max-w-lg rounded-[24px] p-8 border">
+      <h2 class="text-xl font-extrabold mb-1">Nova Obra</h2><p class="text-sm text-zinc-500 mb-6">Cadastre o cliente</p>
+      <input name="nome" required placeholder="Nome do Cliente" class="w-full bg-zinc-50 border border-zinc-100 rounded-xl p-3.5 text-sm mb-3 outline-none">
+      <input name="email" required type="email" placeholder="Email (login do cliente)" class="w-full bg-zinc-50 border rounded-xl p-3.5 text-sm mb-3">
+      <input name="senha" required placeholder="Senha do cliente" class="w-full bg-zinc-50 border rounded-xl p-3.5 text-sm mb-3">
+      <input name="endereco" placeholder="Endereço da Obra" class="w-full bg-zinc-50 border rounded-xl p-3.5 text-sm mb-6">
+      <button class="w-full bg-black text-white rounded-full py-3.5 font-semibold text-sm">Criar Cliente</button>
       <button type="button" onclick="carregarClientes()" class="w-full mt-3 text-sm text-zinc-500">Cancelar</button>
     </form>
-  </div>`
+  </div>`;
 }
 
 async function criarCliente(e){
-  e.preventDefault()
-  const fd = new FormData(e.target)
-  await apiSupabase('clientes', 'POST', {
-    nome: fd.get('nome'),
-    email: fd.get('email'),
-    senha_acesso: fd.get('senha'),
-    endereco_obra: fd.get('endereco')
-  })
-  carregarClientes()
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  await apiSupabase('clientes', 'POST', { nome: fd.get('nome'), email: fd.get('email'), senha_acesso: fd.get('senha'), endereco_obra: fd.get('endereco'), progresso: 5, status: 'Em andamento' });
+  carregarClientes();
 }
 
-carregarClientes()
+getConfig().then(carregarClientes);
 </script>
 </body>
 </html>
