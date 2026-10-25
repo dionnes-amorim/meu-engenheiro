@@ -1,20 +1,87 @@
 <!DOCTYPE html>
-<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Minha Obra</title><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-[#f8fafc]">
-<div id="app">Carregando sua obra...</div>
+<html lang="pt-BR"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minha Obra | EngControl</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet">
+<style>body{font-family:'Manrope',sans-serif} .serif{font-family:'Instrument Serif',serif}</style>
+</head>
+<body class="bg-[#f6f5f2]">
+<div id="app" class="min-h-screen flex items-center justify-center"><div class="w-8 h-8 border-2 border-black/10 border-t-black rounded-full animate-spin"></div></div>
 <script>
 async function init(){
   const id = localStorage.getItem('cliente_id'); if(!id) return location.href='/login-cliente.html';
   const CONFIG = await (await fetch('/api/config')).json();
   const fetchApi = (t,q) => fetch(`${CONFIG.supabaseUrl}/rest/v1/${t}${q}`, {headers:{apikey:CONFIG.supabaseKey, Authorization:`Bearer ${CONFIG.supabaseKey}`}}).then(r=>r.json());
   const [cliente] = await fetchApi('clientes', `?id=eq.${id}`);
+  if(!cliente){ localStorage.clear(); return location.href='/login-cliente.html'; }
   const arquivos = await fetchApi('arquivos', `?cliente_id=eq.${id}&order=created_at.desc`);
+  
+  const fotos = arquivos.filter(a=> !a.url.includes('.pdf'));
+  const docs = arquivos.filter(a=> a.url.includes('.pdf'));
+
   document.getElementById('app').innerHTML = `
-  <header class="bg-white border-b"><div class="max-w-5xl mx-auto px-6 py-4 flex justify-between items-center"><h1 class="font-bold">Olá, ${cliente.nome} 👋</h1><button onclick="localStorage.clear();location.href='/login-cliente.html'" class="text-sm text-zinc-500">Sair</button></div></header>
-  <main class="max-w-5xl mx-auto px-6 py-8">
-    <div class="bg-black text-white rounded-[24px] p-8 mb-8"><h2 class="text-2xl font-bold">${cliente.endereco_obra||'Sua Obra'}</h2><p class="text-white/60 text-sm mt-2">Acompanhe aqui todos os documentos, fotos e contratos</p><div class="mt-6"><div class="h-2 bg-white/20 rounded-full"><div class="h-2 bg-white rounded-full" style="width:${cliente.progresso}%"></div></div><p class="text-xs mt-2">${cliente.progresso}% concluído - ${cliente.status}</p></div></div>
-    <h3 class="font-semibold mb-4">Seus arquivos (${arquivos.length})</h3>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">${arquivos.map(a=>`<a href="${a.url}" target="_blank" class="bg-white border rounded-2xl p-5 flex gap-4 hover:shadow-md"><div class="w-12 h-12 bg-zinc-100 rounded-xl flex items-center justify-center">${a.url.includes('.pdf')?'📄':'📸'}</div><div><p class="font-medium text-sm">${a.nome}</p><p class="text-xs text-zinc-500">${new Date(a.created_at).toLocaleDateString('pt-BR')}</p></div></a>`).join('')||'<p class="bg-white border rounded-2xl p-10 text-center text-zinc-400">Nenhum arquivo liberado ainda</p>'}</div>
-  </main>`;
+  <div class="min-h-screen">
+    <!-- HEADER CLIENTE PREMIUM -->
+    <div class="bg-[#0a0a0a] text-white">
+      <div class="max-w-6xl mx-auto px-6 h-[64px] flex justify-between items-center">
+        <div class="flex items-center gap-3"><div class="w-8 h-8 bg-white text-black rounded-full flex items-center justify-center font-extrabold">E</div><span class="font-bold text-sm">ENGCONTROL</span><span class="text-[10px] text-white/30 tracking-widest ml-4">ÁREA DO CLIENTE</span></div>
+        <button onclick="localStorage.clear();location.href='/login-cliente.html'" class="bg-white/10 hover:bg-white/20 px-5 py-2 rounded-full text-xs font-bold">SAIR →</button>
+      </div>
+    </div>
+
+    <!-- HERO DA OBRA -->
+    <div class="max-w-6xl mx-auto px-4 md:px-6 pt-4">
+      <div class="relative h-[380px] rounded-[28px] overflow-hidden bg-black">
+        <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070" class="absolute inset-0 w-full h-full object-cover opacity-80">
+        <div class="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent"></div>
+        <div class="absolute bottom-0 left-0 right-0 p-8 md:p-10 flex flex-col md:flex-row justify-between md:items-end gap-6">
+          <div><p class="text-white/60 text-[11px] tracking-[0.2em] font-bold">BEM-VINDO, ${cliente.nome.toUpperCase()} 👋</p><h1 class="serif text-[42px] md:text-[56px] leading-[0.9] text-white mt-3">${cliente.endereco_obra||'Sua Casa dos Sonhos'}</h1><p class="text-white/60 text-sm mt-4 max-w-[400px]">Tudo que seu engenheiro liberar aparece aqui em tempo real. Fotos, projetos, contratos e medições.</p></div>
+          <div class="bg-white rounded-[20px] p-5 min-w-[260px] text-black">
+            <p class="text-[11px] font-bold tracking-widest text-zinc-400">PROGRESSO TOTAL</p>
+            <div class="flex items-end gap-3 mt-2"><span class="text-[36px] font-extrabold leading-none">${cliente.progresso||10}%</span><span class="text-xs font-bold bg-black text-white px-2 py-1 rounded-full mb-1">${cliente.status||'Em andamento'}</span></div>
+            <div class="mt-4 h-2 bg-zinc-100 rounded-full overflow-hidden"><div class="h-full bg-black rounded-full transition-all duration-1000" style="width:${cliente.progresso||10}%"></div></div>
+            <p class="text-[11px] text-zinc-500 mt-3">Última atualização: hoje às ${new Date().toLocaleTimeString('pt-BR',{hour:'2-digit', minute:'2-digit'})}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTEÚDO -->
+    <div class="max-w-6xl mx-auto px-4 md:px-6 py-8 grid grid-cols-12 gap-6">
+      <!-- TIMELINE -->
+      <div class="col-span-12 md:col-span-4">
+        <div class="bg-white rounded-[24px] border border-black/5 p-6">
+          <h3 class="font-extrabold text-sm tracking-tight">📍 LINHA DO TEMPO</h3>
+          <div class="mt-6 space-y-6 relative">
+            <div class="absolute left-[11px] top-2 bottom-2 w-[2px] bg-zinc-100"></div>
+            <div class="relative flex gap-4"><div class="w-6 h-6 bg-black rounded-full flex items-center justify-center text-white text-[10px]">✓</div><div><p class="font-bold text-sm">Fundação</p><p class="text-xs text-zinc-500">Concluída</p></div></div>
+            <div class="relative flex gap-4"><div class="w-6 h-6 bg-black rounded-full flex items-center justify-center text-white text-[10px]">✓</div><div><p class="font-bold text-sm">Alvenaria</p><p class="text-xs text-zinc-500">Em andamento - ${cliente.progresso}%</p></div></div>
+            <div class="relative flex gap-4"><div class="w-6 h-6 bg-zinc-100 rounded-full flex items-center justify-center text-zinc-400 text-[10px]">○</div><div><p class="font-bold text-sm text-zinc-400">Acabamento</p><p class="text-xs text-zinc-400">Aguardando</p></div></div>
+            <div class="relative flex gap-4"><div class="w-6 h-6 bg-zinc-100 rounded-full flex items-center justify-center text-zinc-400 text-[10px]">○</div><div><p class="font-bold text-sm text-zinc-400">Entrega</p><p class="text-xs text-zinc-400">Em breve</p></div></div>
+          </div>
+          <div class="mt-8 bg-[#f6f5f2] rounded-2xl p-4 flex gap-3"><img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100" class="w-10 h-10 rounded-full object-cover"><div><p class="font-bold text-xs">Eng. Responsável</p><p class="text-[11px] text-zinc-500">Responderá em até 2h • WhatsApp</p></div></div>
+        </div>
+      </div>
+
+      <!-- ARQUIVOS -->
+      <div class="col-span-12 md:col-span-8 space-y-6">
+        <!-- FOTOS DA OBRA -->
+        <div class="bg-white rounded-[24px] border border-black/5 p-6">
+          <div class="flex justify-between items-center"><h3 class="font-extrabold text-sm">📸 FOTOS DA OBRA (${fotos.length})</h3><span class="text-[11px] bg-black text-white px-3 py-1 rounded-full">AO VIVO</span></div>
+          ${fotos.length?`<div class="grid grid-cols-2 md:grid-cols-3 gap-3 mt-6">${fotos.map(a=>`<a href="${a.url}" target="_blank" class="group relative h-[160px] rounded-[16px] overflow-hidden bg-zinc-100"><img src="${a.url}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500"><div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div><p class="absolute bottom-2 left-2 right-2 text-white text-[11px] font-semibold truncate">${a.nome}</p></a>`).join('')}</div>`:`<div class="mt-6 border border-dashed rounded-[20px] p-12 text-center"><p class="text-2xl">📷</p><p class="text-sm text-zinc-500 mt-2">Seu engenheiro ainda não enviou fotos. Quando enviar, aparecem aqui.</p></div>`}
+        </div>
+
+        <!-- DOCUMENTOS -->
+        <div class="bg-white rounded-[24px] border border-black/5 p-6">
+          <h3 class="font-extrabold text-sm">📄 DOCUMENTOS & CONTRATOS (${docs.length})</h3>
+          <div class="mt-6 grid gap-3">${arquivos.map(a=>`<a href="${a.url}" target="_blank" class="flex items-center gap-4 p-4 rounded-2xl border hover:border-black hover:shadow-sm transition group"><div class="w-12 h-12 rounded-xl ${a.url.includes('.pdf')?'bg-red-50 text-red-600':'bg-zinc-100'} flex items-center justify-center text-lg">${a.url.includes('.pdf')?'📄':'📸'}</div><div class="flex-1"><p class="font-bold text-[13px] group-hover:underline">${a.nome}</p><p class="text-[11px] text-zinc-500">${new Date(a.created_at).toLocaleDateString('pt-BR')} • ${a.tipo||'arquivo'}</p></div><div class="bg-black text-white w-8 h-8 rounded-full flex items-center justify-center text-xs">↗</div></a>`).join('')||'<div class="border border-dashed rounded-2xl p-12 text-center text-sm text-zinc-400">Nenhum documento liberado ainda</div>'}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-center pb-12 text-[11px] text-zinc-400">EngControl Premium • Sua obra 100% transparente • ${new Date().getFullYear()}</div>
+  </div>`;
 }
 init();
 </script>
