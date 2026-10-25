@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acesso do Cliente - EngControl</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>body{font-family:Inter,sans-serif}</style>
+</head>
+<body class="bg-[#fcfcf9] min-h-screen flex items-center justify-center p-6">
+<div class="w-full max-w-[420px]">
+  <div class="text-center mb-8"><div class="w-12 h-12 bg-black text-white rounded-full flex items-center justify-center mx-auto mb-4 text-xl">🏗️</div><h1 class="text-2xl font-bold">Acesso da sua obra</h1><p class="text-sm text-zinc-500 mt-2">Digite o acesso que o engenheiro te enviou</p></div>
+  <form onsubmit="login(event)" class="bg-white border rounded-[24px] p-8 shadow-sm">
+    <label class="text-xs font-semibold">E-mail</label><input id="email" required type="email" placeholder="seu@email.com" class="w-full border rounded-xl p-3 mt-1 mb-4">
+    <label class="text-xs font-semibold">Senha de acesso</label><input id="senha" required placeholder="••••••" class="w-full border rounded-xl p-3 mt-1 mb-6">
+    <button class="w-full bg-black text-white rounded-full py-3.5 font-medium">Entrar na minha obra</button>
+    <p id="erro" class="text-sm text-red-500 mt-4 hidden text-center"></p>
+  </form>
+</div>
+<script>
+async function login(e){
+  e.preventDefault();
+  const btn = e.target.querySelector('button'); btn.innerText = 'Entrando...';
+  const CONFIG = await (await fetch('/api/config')).json();
+  const email = document.getElementById('email').value.trim();
+  const senha = document.getElementById('senha').value.trim();
+  const res = await fetch(`${CONFIG.supabaseUrl}/rest/v1/clientes?email=eq.${email}&senha_acesso=eq.${senha}`, { headers: { apikey: CONFIG.supabaseKey, Authorization: `Bearer ${CONFIG.supabaseKey}` }});
+  const data = await res.json();
+  if(data && data.length > 0){
+    localStorage.setItem('cliente_id', data[0].id);
+    window.location.href = '/painel-cliente.html';
+  } else {
+    document.getElementById('erro').innerText = 'E-mail ou senha incorretos.'; document.getElementById('erro').classList.remove('hidden'); btn.innerText = 'Entrar na minha obra';
+  }
+}
+</script>
+</body>
+</html>
