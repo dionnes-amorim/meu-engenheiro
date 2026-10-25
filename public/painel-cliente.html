@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Minha Obra</title><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-[#f8fafc]">
+<div id="app">Carregando sua obra...</div>
+<script>
+async function init(){
+  const id = localStorage.getItem('cliente_id'); if(!id) return location.href='/login-cliente.html';
+  const CONFIG = await (await fetch('/api/config')).json();
+  const fetchApi = (t,q) => fetch(`${CONFIG.supabaseUrl}/rest/v1/${t}${q}`, {headers:{apikey:CONFIG.supabaseKey, Authorization:`Bearer ${CONFIG.supabaseKey}`}}).then(r=>r.json());
+  const [cliente] = await fetchApi('clientes', `?id=eq.${id}`);
+  const arquivos = await fetchApi('arquivos', `?cliente_id=eq.${id}&order=created_at.desc`);
+  document.getElementById('app').innerHTML = `
+  <header class="bg-white border-b"><div class="max-w-5xl mx-auto px-6 py-4 flex justify-between items-center"><h1 class="font-bold">Olá, ${cliente.nome} 👋</h1><button onclick="localStorage.clear();location.href='/login-cliente.html'" class="text-sm text-zinc-500">Sair</button></div></header>
+  <main class="max-w-5xl mx-auto px-6 py-8">
+    <div class="bg-black text-white rounded-[24px] p-8 mb-8"><h2 class="text-2xl font-bold">${cliente.endereco_obra||'Sua Obra'}</h2><p class="text-white/60 text-sm mt-2">Acompanhe aqui todos os documentos, fotos e contratos</p><div class="mt-6"><div class="h-2 bg-white/20 rounded-full"><div class="h-2 bg-white rounded-full" style="width:${cliente.progresso}%"></div></div><p class="text-xs mt-2">${cliente.progresso}% concluído - ${cliente.status}</p></div></div>
+    <h3 class="font-semibold mb-4">Seus arquivos (${arquivos.length})</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">${arquivos.map(a=>`<a href="${a.url}" target="_blank" class="bg-white border rounded-2xl p-5 flex gap-4 hover:shadow-md"><div class="w-12 h-12 bg-zinc-100 rounded-xl flex items-center justify-center">${a.url.includes('.pdf')?'📄':'📸'}</div><div><p class="font-medium text-sm">${a.nome}</p><p class="text-xs text-zinc-500">${new Date(a.created_at).toLocaleDateString('pt-BR')}</p></div></a>`).join('')||'<p class="bg-white border rounded-2xl p-10 text-center text-zinc-400">Nenhum arquivo liberado ainda</p>'}</div>
+  </main>`;
+}
+init();
+</script>
+</body></html>
