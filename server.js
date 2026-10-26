@@ -1,6 +1,7 @@
 
 const express = require('express');
 const path = require('path');
+const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 10000;
@@ -25,13 +26,12 @@ app.get('/minha-obra.html', (_req, res) => {
   res.redirect(302, '/painel-cliente.html');
 });
 
-// Acesso ao Supabase somente pelo servidor.
 async function supabaseRequest(table, method, query = '', body = null) {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!url || !key) {
-    throw new Error('Configuração segura do Supabase ausente no servidor.');
+    throw new Error('Configuração do Supabase ausente no servidor.');
   }
 
   const headers = {
@@ -55,20 +55,37 @@ async function supabaseRequest(table, method, query = '', body = null) {
   );
 
   const text = await response.text();
+  let data = null;
 
-  if (!response.ok) {
-    throw new Error(`Supabase: ${text || response.status}`);
+  if (text) {
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = text;
+    }
   }
 
-  return text ? JSON.parse(text) : null;
+  if (!response.ok) {
+    throw new Error(
+      typeof data === 'object' && data
+        ? data.message || data.details || data.hint || 'Erro no Supabase.'
+        : String(data || `Erro ${response.status} no Supabase.`)
+    );
+  }
+
+  return data;
 }
 
-// Lista arquivos de uma obra.
+function validId(value) {
+  return /^[0-9a-f-]{36}$/i.test(String(value || ''));
+}
+
+// Lista os arquivos de um cliente.
 app.get('/api/arquivos', async (req, res) => {
   try {
     const clienteId = String(req.query.cliente_id || '');
 
-    if (!/^[0-9a-f-]{36}$/i.test(clienteId)) {
+    if (!validId(clienteId)) {
       return res.status(400).json({ error: 'ID do cliente inválido.' });
     }
 
@@ -86,13 +103,13 @@ app.get('/api/arquivos', async (req, res) => {
   }
 });
 
-// Registra o link do arquivo já enviado ao Cloudinary.
+// Registra os metadados de um arquivo enviado ao Cloudinary.
 app.post('/api/arquivos', async (req, res) => {
   try {
     const { cliente_id, nome, url, public_id } = req.body || {};
 
     if (
-      !/^[0-9a-f-]{36}$/i.test(String(cliente_id || '')) ||
+      !validId(cliente_id) ||
       typeof nome !== 'string' ||
       !nome.trim() ||
       typeof url !== 'string' ||
@@ -111,7 +128,115 @@ app.post('/api/arquivos', async (req, res) => {
     res.status(201).json(Array.isArray(rows) ? rows[0] : rows);
   } catch (error) {
     console.error('Erro ao salvar arquivo:', error.message);
-    res.status(500).json({ error: 'O arquivo foi enviado, mas não foi possível registrar seus dados.' });
+    res.status(500).json({
+      error: 'O arquivo foi enviado, mas não foi possível registrar seus dados.'
+    });
+  }
+});
+
+// Renomeia um arquivo sem alterar seu endereço.
+app.patch('/api/arquivos', async (req, res) => {
+  try {
+    const id = String(req.query.id || '');
+    const nome = req.body?.nome;
+
+    if (!validId(id) || typeof nome !== 'string' || !nome.trim()) {
+      return res.status(400).json({ error: 'ID ou nome do arquivo inválido.' });
+    }
+
+    const rows = await supabaseRequest(
+      'arquivos',
+      'PATCH',
+      `?id=eq.${encodeURIComponent(id)}&select=id,cliente_id,nome,url,public_id,created_at`,
+      { nome: nome.trim() }
+    );
+
+    if (!rows?.length) {
+      return res.status(404).json({ error: 'Arquivo não encontrado.' });
+    }
+
+    res.json(rows[0]);
+  } catch (error) {
+    console.error('Erro ao renomear arquivo:', error.message);
+    res.status(500).json({ error: 'Não foi possível renomear o arquivo.' });
+  }
+});
+
+// Exclui o registro e, quando configurado, também o arquivo no Cloudinary.
+app.delete('/api/arquivos', async (req, res) => {
+  try {
+    const id = String(req.query.id || '');
+
+    if (!validId(id)) {
+      return res.status(400).json({ error: 'ID do arquivo inválido.' });
+    }
+
+    const rows = await supabaseRequest(
+      'arquivos',
+      'GET',
+      `?id=eq.${encodeURIComponent(id)}&select=id,public_id,url`
+    );
+
+    const file = rows?.[0];
+
+    if (!file) {
+      return res.status(404).json({ error: 'Arquivo não encontrado.' });
+    }
+
+    const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+    const apiKey = process.env.CLOUDINARY_API_KEY;
+    const apiSecret = process.env.CLOUDINARY_API_SECRET;
+
+    // Se as credenciais estiverem configuradas, remove também a mídia.
+    if (file.public_id && cloudName && apiKey && apiSecret) {
+      const timestamp = Math.floor(Date.now() / 1000);
+      const signatureBase = `public_id=${file.public_id}&timestamp=${timestamp}`;
+      const signature = crypto
+        .createHash('sha1')
+        .update(signatureBase + apiSecret)
+        .digest('hex');
+
+      let resourceType = 'image';
+
+      if (file.url.includes('/raw/upload/')) resourceType = 'raw';
+      else if (file.url.includes('/video/upload/')) resourceType = 'video';
+
+      const form = new URLSearchParams({
+        public_id: file.public_id,
+        timestamp: String(timestamp),
+        api_key: apiKey,
+        signature
+      });
+
+      const cloudResponse = await fetch(
+        `https://api.cloudinary.com/v1_1/${encodeURIComponent(cloudName)}/${resourceType}/destroy`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: form
+        }
+      );
+
+      const cloudResult = await cloudResponse.json();
+
+      if (!cloudResponse.ok || !['ok', 'not found'].includes(cloudResult.result)) {
+        throw new Error('O Cloudinary não confirmou a exclusão do arquivo.');
+      }
+    }
+
+    await supabaseRequest(
+      'arquivos',
+      'DELETE',
+      `?id=eq.${encodeURIComponent(id)}`
+    );
+
+    res.json({
+      success: true,
+      message: 'Arquivo removido da obra.'
+    });
+  } catch (error) {
+    console.error('Erro ao excluir arquivo:', error.message);
+    res.status(500).json({ error: error.message || 'Não foi possível excluir o arquivo.' });
   }
 });
 
