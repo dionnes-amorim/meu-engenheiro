@@ -650,6 +650,7 @@
     }
   }
 
+ 
   async function deleteClient() {
     const client = activeClient;
     if (!client) return;
@@ -743,45 +744,78 @@
         </div>`;
     }
 
-    return files.map(file => {
-      const url = ME.safeUrl(file.url);
+    const getCategory = file => {
+      if (file.categoria === 'Foto da obra' || file.categoria === 'Documento') {
+        return file.categoria;
+      }
 
-      const pdf =
-        /\.pdf(?:$|\?)/i.test(file.url || '') ||
-        /pdf/i.test(file.tipo || '') ||
-        /\.pdf$/i.test(file.nome || '');
+      const imageUrl = String(file.url || '');
+      const imageName = String(file.nome || '');
 
-      return `
-        <div class="file-item">
-          <div class="file-icon">${pdf ? '▤' : '▧'}</div>
+      return /^image\//i.test(file.tipo || '') ||
+        /\/image\/upload\//i.test(imageUrl) ||
+        /\.(png|jpe?g|gif|webp|bmp|heic)(?:$|\?)/i.test(imageUrl) ||
+        /\.(png|jpe?g|gif|webp|bmp|heic)$/i.test(imageName)
+        ? 'Foto da obra'
+        : 'Documento';
+    };
 
-          <div class="file-meta">
-            <div class="file-name">${e(file.nome || 'Arquivo da obra')}</div>
-            <div class="file-date">
-              Adicionado em ${e(ME.date(file.created_at))}
-            </div>
+    const renderGroup = (title, items, emptyMessage, photoMode = false) => `
+      <section class="file-group" style="margin-top:18px">
+        <h3 style="font-size:15px;margin:0 0 10px">
+          ${e(title)} <span class="muted">(${items.length})</span>
+        </h3>
+        ${items.length ? items.map(file => {
+          const url = ME.safeUrl(file.url);
+          const category = getCategory(file);
+          const isPdf =
+            /\.pdf(?:$|\?)/i.test(file.url || '') ||
+            /pdf/i.test(file.tipo || '') ||
+            /\.pdf$/i.test(file.nome || '');
+
+          return `
+            <div class="file-item">
+              <div class="file-icon">${photoMode ? '▧' : isPdf ? '▤' : '▧'}</div>
+              <div class="file-meta">
+                <div class="file-name">${e(file.nome || 'Arquivo da obra')}</div>
+                <div class="file-date">
+                  ${e(category)} · ${e(ME.date(file.created_at))}
+                </div>
+                ${file.etapa ? `<div class="file-date">Etapa: ${e(file.etapa)}</div>` : ''}
+                ${file.descricao ? `<div class="file-date">${e(file.descricao)}</div>` : ''}
+              </div>
+              ${url !== '#'
+                ? `<a class="file-open" href="${e(url)}"
+                      target="_blank" rel="noopener noreferrer">${photoMode ? 'Ver foto ↗' : 'Abrir ↗'}</a>`
+                : '<span class="file-open muted">Link indisponível</span>'}
+              <button class="btn btn-outline"
+                      type="button"
+                      data-rename-file="${e(file.id)}">
+                Renomear
+              </button>
+              <button class="btn btn-outline"
+                      type="button"
+                      data-delete-file="${e(file.id)}">
+                Excluir
+              </button>
+            </div>`;
+        }).join('') : `
+          <div class="muted" style="font-size:13px;padding:8px 0">
+            ${e(emptyMessage)}
           </div>
+        `}
+      </section>`;
 
-          ${url !== '#'
-            ? `<a class="file-open" href="${e(url)}"
-                  target="_blank" rel="noopener noreferrer">Abrir ↗</a>`
-            : '<span class="file-open muted">Link indisponível</span>'}
+    const photos = files.filter(file => getCategory(file) === 'Foto da obra');
+    const documents = files.filter(file => getCategory(file) !== 'Foto da obra');
 
-          <button class="btn btn-outline"
-                  type="button"
-                  data-rename-file="${e(file.id)}">
-            Renomear
-          </button>
-
-          <button class="btn btn-outline"
-                  type="button"
-                  data-delete-file="${e(file.id)}">
-            Excluir
-          </button>
-        </div>`;
-    }).join('');
+    return `
+      ${renderGroup('Fotos da obra', photos, 'Nenhuma foto foi adicionada.', true)}
+      ${renderGroup('Documentos', documents, 'Nenhum documento foi adicionado.')}
+    `;
   }
 
+ 
   async function uploadFile(event) {
     const file = event.target.files && event.target.files[0];
     event.target.value = '';
@@ -823,11 +857,75 @@
         );
       }
 
+      const defaultCategory = file.type.startsWith('image/')
+        ? 'Foto da obra'
+        : 'Documento';
+
+      const categoryAnswer = prompt(
+        'Categoria do arquivo: digite "Documento" ou "Foto da obra".',
+        defaultCategory
+      );
+
+      if (categoryAnswer === null) {
+        await ME.request('arquivos', 'POST', {
+          cliente_id: activeClient.id,
+          nome: file.name,
+          url: uploaded.secure_url,
+          public_id: uploaded.public_id,
+          categoria: defaultCategory,
+          etapa: '',
+          descricao: ''
+        });
+
+        ME.toast('Arquivo anexado com a categoria sugerida.');
+        await openClient(activeClient.id);
+        return;
+      }
+
+      const categoria = /^foto\s+da\s+obra$/i.test(categoryAnswer.trim())
+        ? 'Foto da obra'
+        : /^documento$/i.test(categoryAnswer.trim())
+          ? 'Documento'
+          : null;
+
+      if (!categoria) {
+        await ME.request('arquivos', 'POST', {
+          cliente_id: activeClient.id,
+          nome: file.name,
+          url: uploaded.secure_url,
+          public_id: uploaded.public_id,
+          categoria: defaultCategory,
+          etapa: '',
+          descricao: ''
+        });
+
+        ME.toast(
+          'Categoria inválida. Arquivo salvo com a categoria sugerida.',
+          'error'
+        );
+
+        await openClient(activeClient.id);
+        return;
+      }
+
+      const etapa = prompt(
+        'Etapa da obra relacionada (opcional):',
+        activeClient.etapa_atual || 'Planejamento'
+      );
+
+      const descricao = prompt(
+        'Descrição ou observação do arquivo (opcional):',
+        ''
+      );
+
       await ME.request('arquivos', 'POST', {
         cliente_id: activeClient.id,
         nome: file.name,
         url: uploaded.secure_url,
-        public_id: uploaded.public_id
+        public_id: uploaded.public_id,
+        categoria,
+        etapa: etapa === null ? '' : etapa.trim(),
+        descricao: descricao === null ? '' : descricao.trim()
       });
 
       ME.toast('Arquivo anexado com sucesso.');
