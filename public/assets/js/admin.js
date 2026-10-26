@@ -5,6 +5,7 @@
   let allClients = [];
   let activeClient = null;
   let filterText = '';
+  let filterStatus = 'Todos';
 
   const e = ME.escape;
 
@@ -39,7 +40,7 @@
         <header class="topbar">
           <div class="topbar-inner">
             <a class="brand-lockup" href="/" aria-label="Meu Engenheiro">
-              <div class="brand-mark">M</div>
+              <img class="brand-logo" src="/assets/img/logo-engenheiro.png" alt="PH Engenharia">
               <div>
                 <div class="brand brand-title">Meu Engenheiro</div>
                 <div class="brand-subtitle">Gestão inteligente de obras</div>
@@ -120,14 +121,19 @@
               <h2>Clientes e obras</h2>
               <p>Selecione uma obra para editar as informações.</p>
             </div>
-            <div class="search-wrap">
-              <span class="search-icon">⌕</span>
-              <input
-                id="search"
-                type="search"
-                placeholder="Buscar cliente, e-mail ou endereço..."
-                value="${e(filterText)}"
-                aria-label="Buscar clientes">
+            <div class="dashboard-filters">
+              <div class="search-wrap">
+                <span class="search-icon">⌕</span>
+                <input
+                  id="search"
+                  type="search"
+                  placeholder="Buscar cliente, e-mail ou endereço..."
+                  value="${e(filterText)}"
+                  aria-label="Buscar clientes">
+              </div>
+              <select id="status-filter" class="filter-select" aria-label="Filtrar por status">
+                ${['Todos', ...statuses].map(item => `<option value="${e(item)}" ${filterStatus === item ? 'selected' : ''}>${e(item === 'Todos' ? 'Todos os status' : item)}</option>`).join('')}
+              </select>
             </div>
           </div>
           <div id="client-list" class="client-list">
@@ -160,6 +166,12 @@
 
         wireOpenButtons();
       });
+
+    document.getElementById('status-filter').addEventListener('change', event => {
+      filterStatus = event.target.value;
+      document.getElementById('client-list').innerHTML = renderCards(filterClients());
+      wireOpenButtons();
+    });
 
     wireOpenButtons();
   }
@@ -231,12 +243,12 @@
   function filterClients() {
     const q = filterText.toLocaleLowerCase('pt-BR');
 
-    return allClients.filter(c =>
-      [c.nome, c.email, c.endereco_obra, c.status, c.etapa_atual]
-        .some(value =>
-          String(value || '').toLocaleLowerCase('pt-BR').includes(q)
-        )
-    );
+    return allClients.filter(c => {
+      const matchesText = [c.nome, c.email, c.endereco_obra, c.status, c.etapa_atual]
+        .some(value => String(value || '').toLocaleLowerCase('pt-BR').includes(q));
+      const matchesStatus = filterStatus === 'Todos' || (c.status || 'Em andamento') === filterStatus;
+      return matchesText && matchesStatus;
+    });
   }
 
   function showNewClient() {
@@ -317,7 +329,7 @@
           email: String(fd.get('email')).trim().toLowerCase(),
           senha_acesso: String(fd.get('senha')),
           endereco_obra: String(fd.get('endereco') || '').trim(),
-          progresso: 5,
+          progresso: 0,
           status: 'Em andamento',
           etapa_atual: 'Planejamento'
         });
@@ -349,20 +361,23 @@
 
       activeClient = client;
 
-      const files = await ME.request(
-        'arquivos',
-        'GET',
-        null,
-        `?cliente_id=eq.${encodeURIComponent(id)}&order=created_at.desc`
-      );
+      const [filesResult, updatesResult] = await Promise.allSettled([
+        ME.request('arquivos', 'GET', null, `?cliente_id=eq.${encodeURIComponent(id)}&order=created_at.desc`),
+        ME.request('atualizacoes_obra', 'GET', null, `?cliente_id=eq.${encodeURIComponent(id)}&order=created_at.desc`)
+      ]);
 
-      renderDetail(client, Array.isArray(files) ? files : []);
+      const files = filesResult.status === 'fulfilled' && Array.isArray(filesResult.value)
+        ? filesResult.value : [];
+      const updates = updatesResult.status === 'fulfilled' && Array.isArray(updatesResult.value)
+        ? updatesResult.value : [];
+
+      renderDetail(client, files, updates);
     } catch (err) {
       ME.toast(err.message || 'Não foi possível abrir a obra.', 'error');
     }
   }
 
-  function renderDetail(client, files) {
+  function renderDetail(client, files, updates = []) {
     const pct = progress(client.progresso);
     const status = client.status || 'Em andamento';
     const etapa = client.etapa_atual || 'Planejamento';
@@ -395,7 +410,8 @@
               ＋ Anexar arquivo
             </button>
             <input type="file" id="upload-file" hidden
-                   accept="image/*,.pdf,.doc,.docx,.xls,.xlsx">
+                   accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv">
+
             <button id="delete-client" class="btn btn-outline">
               Excluir cliente
             </button>
@@ -546,6 +562,30 @@
           </aside>
         </div>
 
+        <section class="content-card diary-card">
+          <div class="section-pad">
+            <div class="section-heading-row">
+              <div>
+                <h2 class="section-title">Diário e atualizações da obra</h2>
+                <p class="section-desc">Registre novidades, decisões e informações que serão compartilhadas com o cliente.</p>
+              </div>
+            </div>
+            <form id="update-form" class="update-form">
+              <div class="field">
+                <label for="update-title">Título da atualização</label>
+                <input id="update-title" name="titulo" maxlength="200" required placeholder="Ex.: Fundação concluída">
+              </div>
+              <div class="field">
+                <label for="update-description">Descrição</label>
+                <textarea id="update-description" name="descricao" rows="3" maxlength="2000" required placeholder="Descreva o andamento, observações ou próximos passos."></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary" id="publish-update">Publicar atualização</button>
+              <div id="update-error" class="notice error hidden" role="alert"></div>
+            </form>
+            <div id="update-list" class="update-list">${renderUpdates(updates)}</div>
+          </div>
+        </section>
+
         <footer class="footer-logos">
           <div class="footer-caption">MEU ENGENHEIRO · ÁREA DE GESTÃO</div>
           <div class="two-logos">
@@ -579,6 +619,32 @@
 
     document.getElementById('project-form').addEventListener('submit', saveProject);
 
+    const stageSelect = document.getElementById('edit-etapa');
+    stageSelect.addEventListener('change', () => {
+      const stageProgress = {
+        'Planejamento': 0,
+        'Fundação e estrutura': 20,
+        'Alvenaria e instalações': 45,
+        'Acabamento': 70,
+        'Entrega': 90
+      };
+      const progressInput = document.getElementById('edit-progresso');
+      if (Object.prototype.hasOwnProperty.call(stageProgress, stageSelect.value)) {
+        progressInput.value = stageProgress[stageSelect.value];
+      }
+      if (/conclu/i.test(document.getElementById('edit-status').value) && stageSelect.value !== 'Entrega') {
+        document.getElementById('edit-status').value = 'Em andamento';
+      }
+    });
+
+    document.getElementById('edit-status').addEventListener('change', event => {
+      if (/conclu/i.test(event.target.value)) {
+        document.getElementById('edit-etapa').value = 'Entrega';
+        document.getElementById('edit-progresso').value = 100;
+      }
+    });
+
+    document.getElementById('update-form').addEventListener('submit', saveUpdate);
     document.getElementById('delete-client').addEventListener('click', deleteClient);
 
     document.querySelectorAll('[data-rename-file]').forEach(button => {
@@ -651,6 +717,53 @@
   }
 
  
+  function renderUpdates(updates) {
+    if (!updates.length) {
+      return `<div class="empty-state compact-empty"><div class="empty-icon">↗</div><strong>Nenhuma atualização publicada</strong><span>As novidades da obra aparecerão aqui.</span></div>`;
+    }
+    return updates.map(item => `
+      <article class="update-item">
+        <div class="update-timeline-dot">↗</div>
+        <div class="update-item-body">
+          <div class="update-item-top"><strong>${e(item.titulo || 'Atualização da obra')}</strong><time>${e(ME.dateTime(item.created_at))}</time></div>
+          <p>${e(item.descricao || '')}</p>
+        </div>
+      </article>`).join('');
+  }
+
+  async function saveUpdate(event) {
+    event.preventDefault();
+    if (!activeClient) return;
+    const form = event.currentTarget;
+    const button = document.getElementById('publish-update');
+    const error = document.getElementById('update-error');
+    const titulo = form.elements.titulo.value.trim();
+    const descricao = form.elements.descricao.value.trim();
+    if (!titulo || !descricao) return;
+    button.disabled = true;
+    button.textContent = 'Publicando...';
+    error.classList.add('hidden');
+    try {
+      await ME.request('atualizacoes_obra', 'POST', {
+        cliente_id: activeClient.id,
+        titulo,
+        descricao
+      });
+      ME.toast('Atualização publicada para o cliente.');
+      await openClient(activeClient.id);
+    } catch (err) {
+      error.textContent = err.message || 'Não foi possível publicar a atualização.';
+      error.classList.remove('hidden');
+      ME.toast(error.textContent, 'error');
+    } finally {
+      const current = document.getElementById('publish-update');
+      if (current) {
+        current.disabled = false;
+        current.textContent = 'Publicar atualização';
+      }
+    }
+  }
+
   async function deleteClient() {
     const client = activeClient;
     if (!client) return;
@@ -775,7 +888,7 @@
 
           return `
             <div class="file-item">
-              <div class="file-icon">${photoMode ? '▧' : isPdf ? '▤' : '▧'}</div>
+              ${photoMode && url !== '#' ? `<img class="file-thumb" src="${e(url)}" alt="${e(file.nome || 'Foto da obra')}" loading="lazy">` : `<div class="file-icon">${isPdf ? '▤' : '▧'}</div>`}
               <div class="file-meta">
                 <div class="file-name">${e(file.nome || 'Arquivo da obra')}</div>
                 <div class="file-date">
@@ -816,10 +929,82 @@
   }
 
  
+  function collectUploadMetadata(file) {
+    return new Promise(resolve => {
+      const overlay = document.createElement('div');
+      overlay.className = 'modal-backdrop';
+      const defaultCategory = file.type.startsWith('image/') ? 'Foto da obra' : 'Documento';
+      overlay.innerHTML = `
+        <form class="modal upload-modal" id="upload-metadata-form">
+          <div class="modal-header">
+            <div>
+              <div class="eyebrow">Novo arquivo</div>
+              <h2>Organizar antes de enviar</h2>
+              <p>Defina o nome e onde este arquivo aparecerá para o cliente.</p>
+            </div>
+            <button type="button" class="icon-btn" id="cancel-upload" aria-label="Cancelar">✕</button>
+          </div>
+          <div class="selected-file-note"><span class="file-icon">${defaultCategory === 'Foto da obra' ? '▧' : '▤'}</span><div><strong>${e(file.name)}</strong><span>${(file.size / (1024 * 1024)).toFixed(2)} MB</span></div></div>
+          <div class="field">
+            <label for="upload-name">Nome que será exibido *</label>
+            <input id="upload-name" name="nome" required maxlength="200" value="${e(file.name)}" placeholder="Ex.: Planta baixa - revisão 02.pdf">
+          </div>
+          <div class="field">
+            <label for="upload-category">Categoria *</label>
+            <select id="upload-category" name="categoria" required>
+              <option value="Documento" ${defaultCategory === 'Documento' ? 'selected' : ''}>Documento</option>
+              <option value="Foto da obra" ${defaultCategory === 'Foto da obra' ? 'selected' : ''}>Foto da obra</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="upload-stage">Etapa relacionada</label>
+            <select id="upload-stage" name="etapa">
+              <option value="">Sem etapa específica</option>
+              ${stages.map(stage => `<option value="${e(stage)}" ${stage === (activeClient?.etapa_atual || 'Planejamento') ? 'selected' : ''}>${e(stage)}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field">
+            <label for="upload-description">Descrição (opcional)</label>
+            <textarea id="upload-description" name="descricao" rows="2" maxlength="1000" placeholder="Uma observação para identificar o arquivo"></textarea>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-outline" id="cancel-upload-secondary">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Enviar arquivo →</button>
+          </div>
+        </form>`;
+      document.body.appendChild(overlay);
+      const close = value => {
+        overlay.remove();
+        resolve(value);
+      };
+      overlay.querySelector('#cancel-upload').addEventListener('click', () => close(null));
+      overlay.querySelector('#cancel-upload-secondary').addEventListener('click', () => close(null));
+      overlay.addEventListener('click', event => {
+        if (event.target === overlay) close(null);
+      });
+      overlay.querySelector('#upload-metadata-form').addEventListener('submit', event => {
+        event.preventDefault();
+        const form = event.currentTarget;
+        const nome = form.elements.nome.value.trim();
+        if (!nome) {
+          form.elements.nome.focus();
+          return;
+        }
+        close({
+          nome,
+          categoria: form.elements.categoria.value,
+          etapa: form.elements.etapa.value,
+          descricao: form.elements.descricao.value.trim()
+        });
+      });
+      overlay.querySelector('#upload-name').focus();
+      overlay.querySelector('#upload-name').select();
+    });
+  }
+
   async function uploadFile(event) {
     const file = event.target.files && event.target.files[0];
     event.target.value = '';
-
     if (!file || !activeClient) return;
 
     if (file.size > 15 * 1024 * 1024) {
@@ -827,108 +1012,42 @@
       return;
     }
 
+    const metadata = await collectUploadMetadata(file);
+    if (!metadata) return;
+
     try {
       const config = await ME.getConfig();
-
       if (!config.cloudinaryName || !config.cloudinaryPreset) {
         ME.toast('Configure CLOUDINARY_CLOUD_NAME e CLOUDINARY_PRESET no Render.', 'error');
         return;
       }
 
       ME.toast('Enviando arquivo...');
-
       const data = new FormData();
       data.append('file', file);
       data.append('upload_preset', config.cloudinaryPreset);
 
       const response = await fetch(
         `https://api.cloudinary.com/v1_1/${encodeURIComponent(config.cloudinaryName)}/auto/upload`,
-        {
-          method: 'POST',
-          body: data
-        }
+        { method: 'POST', body: data }
       );
-
       const uploaded = await response.json();
 
       if (!response.ok || !uploaded.secure_url) {
-        throw new Error(
-          uploaded.error?.message || 'O serviço de arquivos recusou o envio.'
-        );
+        throw new Error(uploaded.error?.message || 'O serviço de arquivos recusou o envio.');
       }
-
-      const defaultCategory = file.type.startsWith('image/')
-        ? 'Foto da obra'
-        : 'Documento';
-
-      const categoryAnswer = prompt(
-        'Categoria do arquivo: digite "Documento" ou "Foto da obra".',
-        defaultCategory
-      );
-
-      if (categoryAnswer === null) {
-        await ME.request('arquivos', 'POST', {
-          cliente_id: activeClient.id,
-          nome: file.name,
-          url: uploaded.secure_url,
-          public_id: uploaded.public_id,
-          categoria: defaultCategory,
-          etapa: '',
-          descricao: ''
-        });
-
-        ME.toast('Arquivo anexado com a categoria sugerida.');
-        await openClient(activeClient.id);
-        return;
-      }
-
-      const categoria = /^foto\s+da\s+obra$/i.test(categoryAnswer.trim())
-        ? 'Foto da obra'
-        : /^documento$/i.test(categoryAnswer.trim())
-          ? 'Documento'
-          : null;
-
-      if (!categoria) {
-        await ME.request('arquivos', 'POST', {
-          cliente_id: activeClient.id,
-          nome: file.name,
-          url: uploaded.secure_url,
-          public_id: uploaded.public_id,
-          categoria: defaultCategory,
-          etapa: '',
-          descricao: ''
-        });
-
-        ME.toast(
-          'Categoria inválida. Arquivo salvo com a categoria sugerida.',
-          'error'
-        );
-
-        await openClient(activeClient.id);
-        return;
-      }
-
-      const etapa = prompt(
-        'Etapa da obra relacionada (opcional):',
-        activeClient.etapa_atual || 'Planejamento'
-      );
-
-      const descricao = prompt(
-        'Descrição ou observação do arquivo (opcional):',
-        ''
-      );
 
       await ME.request('arquivos', 'POST', {
         cliente_id: activeClient.id,
-        nome: file.name,
+        nome: metadata.nome,
         url: uploaded.secure_url,
         public_id: uploaded.public_id,
-        categoria,
-        etapa: etapa === null ? '' : etapa.trim(),
-        descricao: descricao === null ? '' : descricao.trim()
+        categoria: metadata.categoria,
+        etapa: metadata.etapa,
+        descricao: metadata.descricao
       });
 
-      ME.toast('Arquivo anexado com sucesso.');
+      ME.toast(metadata.categoria === 'Foto da obra' ? 'Foto enviada e organizada na galeria.' : 'Documento enviado com sucesso.');
       await openClient(activeClient.id);
     } catch (err) {
       ME.toast(err.message || 'Falha ao enviar arquivo.', 'error');
