@@ -52,14 +52,11 @@
                  target="_blank"
                  rel="noopener">↗ Prévia da área do cliente</a>
               <div class="avatar" title="Área de gestão">ME</div>
-            </div>
-            </a>
             <div class="topbar-actions">
               <a class="btn btn-light hide-mobile"
                  href="/minha-obra/minha-obra.html"
                  target="_blank"
                  rel="noopener">↗ Ambiente Meus Projetos</a>
-              <div class="avatar" title="Minha obra">ME</div>
             </div>
           </div>
         </header>
