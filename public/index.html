@@ -4,893 +4,125 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#101814">
-  <meta name="description" content="Meu Engenheiro — plataforma inteligente de gestão de obras e projetos.">
-
   <title>Meu Engenheiro | Central de Gestão</title>
-
   <style>
-    :root {
-      --bg: #101713;
-      --panel: #171f1b;
-      --panel-light: #1d2822;
-      --green: #b7f36b;
-      --green-dark: #82bf3e;
-      --text: #f1f5f1;
-      --muted: #95a49a;
-      --border: rgba(255,255,255,.09);
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
-    body {
-      min-height: 100vh;
-      color: var(--text);
-      background:
-        radial-gradient(ellipse at 78% 12%, rgba(112,160,91,.12), transparent 36%),
-        radial-gradient(ellipse at 10% 90%, rgba(183,243,107,.05), transparent 35%),
-        var(--bg);
-      font-family: Inter, "Segoe UI", Arial, sans-serif;
-      overflow-x: hidden;
-    }
-
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      opacity: .13;
-      background-image:
-        linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
-      background-size: 44px 44px;
-      mask-image: linear-gradient(to bottom, black, transparent 85%);
-    }
-
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    button, a {
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .shell {
-      position: relative;
-      z-index: 1;
-      max-width: 1500px;
-      min-height: 100vh;
-      margin: auto;
-      padding: 28px 5.2% 22px;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* CABEÇALHO */
-
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 24px;
-      padding-bottom: 24px;
-      border-bottom: 1px solid var(--border);
-      animation: appear .7s ease both;
-    }
-
-    .identity {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      min-width: 0;
-    }
-
-    .app-symbol {
-      width: 48px;
-      height: 48px;
-      flex-shrink: 0;
-      display: grid;
-      place-items: center;
-      border: 1px solid rgba(183,243,107,.35);
-      border-radius: 14px;
-      background: rgba(183,243,107,.08);
-      color: var(--green);
-    }
-
-    .app-symbol svg {
-      width: 27px;
-      height: 27px;
-    }
-
-    .app-name {
-      font-size: 19px;
-      font-weight: 800;
-      letter-spacing: -.6px;
-    }
-
-    .app-caption {
-      margin-top: 5px;
-      color: var(--muted);
-      font-size: 11px;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-    }
-
-    .system-status {
-      display: flex;
-      align-items: center;
-      gap: 9px;
-      color: #b4c2b8;
-      font-size: 12px;
-      white-space: nowrap;
-    }
-
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--green);
-      box-shadow: 0 0 12px rgba(183,243,107,.55);
-      animation: pulse 2.2s infinite;
-    }
-
-    /* ÁREA PRINCIPAL */
-
-    main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      padding: 52px 0 42px;
-    }
-
-    .intro {
-      max-width: 790px;
-      margin-bottom: 38px;
-      animation: appear .8s .1s ease both;
-    }
-
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 23px;
-      color: var(--green);
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 2.4px;
-      text-transform: uppercase;
-    }
-
-    .eyebrow::before {
-      content: "";
-      width: 25px;
-      height: 1px;
-      background: var(--green);
-    }
-
-    h1 {
-      max-width: 800px;
-      font-size: clamp(38px, 5.2vw, 70px);
-      line-height: 1.04;
-      letter-spacing: -3px;
-      font-weight: 750;
-    }
-
-    h1 span {
-      color: var(--green);
-    }
-
-    .intro-text {
-      max-width: 570px;
-      margin-top: 22px;
-      color: #a7b4aa;
-      font-size: 15px;
-      line-height: 1.85;
-    }
-
-    /* ACESSOS */
-
-    .section-heading {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 15px;
-      margin-bottom: 15px;
-      animation: appear .8s .2s ease both;
-    }
-
-    .section-heading h2 {
-      font-size: 13px;
-      font-weight: 650;
-      letter-spacing: .3px;
-    }
-
-    .section-heading span {
-      color: var(--muted);
-      font-size: 11px;
-    }
-
-    .access-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 18px;
-    }
-
-    .access-card {
-      --accent: var(--green);
-      position: relative;
-      min-height: 255px;
-      display: flex;
-      flex-direction: column;
-      padding: 28px;
-      overflow: hidden;
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      background: linear-gradient(145deg, rgba(31,43,35,.97), rgba(20,28,23,.98));
-      transition: transform .3s ease, border-color .3s ease, box-shadow .3s ease;
-      animation: appear .8s .25s ease both;
-    }
-
-    .access-card.client {
-      --accent: #8fd7d0;
-      animation-delay: .35s;
-    }
-
-    .access-card::before {
-      content: "";
-      position: absolute;
-      width: 230px;
-      height: 230px;
-      right: -75px;
-      top: -90px;
-      border: 1px solid color-mix(in srgb, var(--accent) 15%, transparent);
-      border-radius: 50%;
-      box-shadow:
-        0 0 0 24px color-mix(in srgb, var(--accent) 3%, transparent),
-        0 0 0 48px color-mix(in srgb, var(--accent) 2%, transparent);
-      pointer-events: none;
-      transition: transform .5s ease;
-    }
-
-    .access-card:hover {
-      transform: translateY(-5px);
-      border-color: color-mix(in srgb, var(--accent) 42%, transparent);
-      box-shadow: 0 20px 55px rgba(0,0,0,.2);
-    }
-
-    .access-card:hover::before {
-      transform: scale(1.1);
-    }
-
-    .card-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 12px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .card-icon {
-      width: 51px;
-      height: 51px;
-      display: grid;
-      place-items: center;
-      border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
-      border-radius: 14px;
-      background: color-mix(in srgb, var(--accent) 8%, transparent);
-      color: var(--accent);
-    }
-
-    .card-icon svg {
-      width: 25px;
-      height: 25px;
-    }
-
-    .card-number {
-      color: #738077;
-      font-size: 11px;
-      letter-spacing: 1.5px;
-    }
-
-    .card-content {
-      position: relative;
-      z-index: 1;
-      margin-top: 25px;
-    }
-
-    .card-content h3 {
-      font-size: 22px;
-      font-weight: 700;
-      letter-spacing: -.5px;
-    }
-
-    .card-content p {
-      max-width: 390px;
-      margin-top: 10px;
-      color: #a1afa5;
-      font-size: 13px;
-      line-height: 1.75;
-    }
-
-    .card-bottom {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-top: auto;
-      padding-top: 25px;
-    }
-
-    .card-label {
-      color: #7f9084;
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 1.3px;
-      text-transform: uppercase;
-    }
-
-    .access-button {
-      min-height: 43px;
-      display: inline-flex;
-      justify-content: center;
-      align-items: center;
-      gap: 12px;
-      padding: 0 17px;
-      border-radius: 9px;
-      background: var(--accent);
-      color: #142017;
-      font-size: 12px;
-      font-weight: 800;
-      transition: gap .25s ease, filter .25s ease;
-    }
-
-    .access-button:hover {
-      gap: 17px;
-      filter: brightness(1.08);
-    }
-
-    .access-button svg {
-      width: 16px;
-      height: 16px;
-    }
-
-    /* FAIXA INFORMATIVA */
-
-    .info-strip {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      margin-top: 24px;
-      border: 1px solid var(--border);
-      border-radius: 13px;
-      background: rgba(255,255,255,.018);
-      animation: appear .8s .4s ease both;
-    }
-
-    .info-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 17px 20px;
-    }
-
-    .info-item + .info-item {
-      border-left: 1px solid var(--border);
-    }
-
-    .info-item svg {
-      width: 19px;
-      height: 19px;
-      flex-shrink: 0;
-      color: var(--green);
-    }
-
-    .info-item strong {
-      display: block;
-      font-size: 11px;
-      font-weight: 700;
-    }
-
-    .info-item small {
-      display: block;
-      margin-top: 5px;
-      color: var(--muted);
-      font-size: 10px;
-    }
-
-    /* LOGOS */
-
-    .partners {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 25px;
-      padding: 22px 0;
-      margin-top: 25px;
-      border-top: 1px solid var(--border);
-      animation: appear .8s .45s ease both;
-    }
-
-    .partners-heading {
-      max-width: 180px;
-      color: #7e8d82;
-      font-size: 10px;
-      line-height: 1.7;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-    }
-
-    .logo-list {
-      display: flex;
-      justify-content: flex-end;
-      align-items: center;
-      gap: 16px;
-      flex: 1;
-    }
-
-    .logo-slot {
-      min-width: 185px;
-      min-height: 66px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 15px;
-      border: 1px dashed rgba(255,255,255,.17);
-      border-radius: 11px;
-      background: rgba(255,255,255,.018);
-    }
-
-    .logo-slot img {
-      display: none;
-      max-width: 130px;
-      max-height: 43px;
-      width: auto;
-      height: auto;
-      object-fit: contain;
-    }
-
-    .logo-placeholder {
-      width: 36px;
-      height: 36px;
-      flex-shrink: 0;
-      display: grid;
-      place-items: center;
-      border-radius: 8px;
-      background: rgba(255,255,255,.055);
-      color: #a5b2a8;
-    }
-
-    .logo-placeholder svg {
-      width: 20px;
-      height: 20px;
-    }
-
-    .logo-description strong {
-      display: block;
-      color: #d7dfd9;
-      font-size: 11px;
-      font-weight: 650;
-    }
-
-    .logo-description small {
-      display: block;
-      margin-top: 5px;
-      color: #7f8d83;
-      font-size: 9px;
-    }
-
-    footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 15px;
-      padding-top: 16px;
-      border-top: 1px solid var(--border);
-      color: #718076;
-      font-size: 10px;
-    }
-
-    .footer-right {
-      text-align: right;
-    }
-
-    /* ANIMAÇÕES */
-
-    @keyframes appear {
-      from {
-        opacity: 0;
-        transform: translateY(14px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: .45; }
-    }
-
-    @media (min-width: 1200px) {
-      .access-card {
-        min-height: 275px;
-        padding: 32px;
-      }
-    }
-
-    @media (max-width: 760px) {
-      .shell {
-        padding: 20px 20px 16px;
-      }
-
-      .system-status {
-        font-size: 0;
-        gap: 0;
-      }
-
-      .status-dot {
-        width: 9px;
-        height: 9px;
-      }
-
-      main {
-        padding: 45px 0 30px;
-      }
-
-      h1 {
-        letter-spacing: -1.8px;
-      }
-
-      .intro-text {
-        font-size: 14px;
-      }
-
-      .access-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .access-card {
-        min-height: 245px;
-      }
-
-      .info-strip {
-        grid-template-columns: 1fr;
-      }
-
-      .info-item {
-        padding: 15px 17px;
-      }
-
-      .info-item + .info-item {
-        border-left: 0;
-        border-top: 1px solid var(--border);
-      }
-
-      .partners {
-        align-items: flex-start;
-        flex-direction: column;
-      }
-
-      .partners-heading {
-        max-width: none;
-      }
-
-      .logo-list {
-        width: 100%;
-        justify-content: stretch;
-        flex-direction: column;
-      }
-
-      .logo-slot {
-        width: 100%;
-      }
-
-      footer {
-        align-items: flex-start;
-        flex-direction: column;
-        gap: 8px;
-      }
-
-      .footer-right {
-        text-align: left;
-      }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        animation-duration: .01ms !important;
-        animation-iteration-count: 1 !important;
-        scroll-behavior: auto !important;
-        transition-duration: .01ms !important;
-      }
-    }
+    :root { --bg:#101713; --panel:#171f1b; --green:#b7f36b; --text:#f1f5f1; --muted:#95a49a; --border:rgba(255,255,255,.09); }
+    *{box-sizing:border-box;margin:0;padding:0} html{scroll-behavior:smooth}
+    body{min-height:100vh;color:var(--text);background:radial-gradient(ellipse at 78% 12%, rgba(112,160,91,.12), transparent 36%),var(--bg);font-family:Inter, Arial, sans-serif;overflow-x:hidden}
+    body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.13;background-image:linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);background-size:44px 44px;mask-image:linear-gradient(to bottom, black, transparent 85%)}
+    a{color:inherit;text-decoration:none} .shell{position:relative;z-index:1;max-width:1500px;min-height:100vh;margin:auto;padding:28px 5.2% 22px;display:flex;flex-direction:column}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:24px;padding-bottom:24px;border-bottom:1px solid var(--border)}
+    .identity{display:flex;align-items:center;gap:14px} .app-symbol{width:48px;height:48px;display:grid;place-items:center;border:1px solid rgba(183,243,107,.35);border-radius:14px;background:rgba(183,243,107,.08);color:var(--green)}
+    .app-name{font-size:19px;font-weight:800} .app-caption{margin-top:5px;color:var(--muted);font-size:11px;letter-spacing:1.5px;text-transform:uppercase}
+    .system-status{display:flex;align-items:center;gap:9px;color:#b4c2b8;font-size:12px} .status-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 12px rgba(183,243,107,.55)}
+    main{flex:1;display:flex;flex-direction:column;justify-content:center;padding:52px 0 42px}
+    .intro{max-width:790px;margin-bottom:38px} .eyebrow{display:inline-flex;align-items:center;gap:10px;margin-bottom:23px;color:var(--green);font-size:11px;font-weight:700;letter-spacing:2.4px;text-transform:uppercase} .eyebrow::before{content:"";width:25px;height:1px;background:var(--green)}
+    h1{max-width:800px;font-size:clamp(38px, 5.2vw, 70px);line-height:1.04;letter-spacing:-3px;font-weight:750} h1 span{color:var(--green)} .intro-text{max-width:570px;margin-top:22px;color:#a7b4aa;font-size:15px;line-height:1.85}
+    .section-heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px} .section-heading h2{font-size:13px;font-weight:650} .section-heading span{color:var(--muted);font-size:11px}
+    .access-grid{display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:18px}
+    .access-card{--accent:var(--green);position:relative;min-height:255px;display:flex;flex-direction:column;padding:28px;overflow:hidden;border:1px solid var(--border);border-radius:18px;background:linear-gradient(145deg, rgba(31,43,35,.97), rgba(20,28,23,.98));transition:.3s;cursor:pointer}
+    .access-card.client{--accent:#8fd7d0} .access-card:hover{transform:translateY(-5px);border-color:color-mix(in srgb, var(--accent) 42%, transparent)}
+    .card-top{display:flex;justify-content:space-between} .card-icon{width:51px;height:51px;display:grid;place-items:center;border:1px solid color-mix(in srgb, var(--accent) 28%, transparent);border-radius:14px;background:color-mix(in srgb, var(--accent) 8%, transparent);color:var(--accent)}
+    .card-content{margin-top:25px} .card-content h3{font-size:22px;font-weight:700} .card-content p{max-width:390px;margin-top:10px;color:#a1afa5;font-size:13px;line-height:1.75}
+    .card-bottom{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:25px} .card-label{color:#7f9084;font-size:10px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase}
+    .access-button{min-height:43px;display:inline-flex;justify-content:center;align-items:center;gap:12px;padding:0 17px;border-radius:9px;background:var(--accent);color:#142017;font-size:12px;font-weight:800}
+    .info-strip{display:grid;grid-template-columns:repeat(3,1fr);margin-top:24px;border:1px solid var(--border);border-radius:13px;background:rgba(255,255,255,.018)}
+    .info-item{display:flex;align-items:center;gap:12px;padding:17px 20px} .info-item + .info-item{border-left:1px solid var(--border)}
+    .partners{display:flex;align-items:center;justify-content:space-between;gap:25px;padding:22px 0;margin-top:25px;border-top:1px solid var(--border)}
+    .partners-heading{max-width:180px;color:#7e8d82;font-size:10px;line-height:1.7;letter-spacing:1px;text-transform:uppercase}
+    .logo-list{display:flex;justify-content:flex-end;align-items:center;gap:16px;flex:1}
+    .logo-slot{min-width:185px;min-height:66px;display:flex;align-items:center;gap:12px;padding:10px 15px;border:1px dashed rgba(255,255,255,.17);border-radius:11px;background:rgba(255,255,255,.018)}
+    .logo-slot img{max-width:130px;max-height:43px;object-fit:contain} .logo-placeholder{width:36px;height:36px;display:grid;place-items:center;border-radius:8px;background:rgba(255,255,255,.055);color:#a5b2a8}
+    footer{display:flex;justify-content:space-between;gap:15px;padding-top:16px;border-top:1px solid var(--border);color:#718076;font-size:10px}
+    #app-container{position:fixed;inset:0;z-index:9999;background:#101713;display:none;overflow-y:auto}
+    #app-container.active{display:block}
+    @media(max-width:760px){.access-grid{grid-template-columns:1fr}.info-strip{grid-template-columns:1fr}.partners{flex-direction:column;align-items:flex-start}.logo-list{width:100%;flex-direction:column}.logo-slot{width:100%}}
   </style>
 </head>
-
 <body>
-  <div class="shell">
-
+  <div class="shell" id="mainShell">
     <header class="topbar">
-      <a class="identity" href="/assets/js/admin.js" aria-label="Meu Engenheiro - início">
-        <div class="app-symbol">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
-               aria-hidden="true">
-            <path d="M3 21h18M5 21V8l7-5 7 5v13"/>
-            <path d="M9 21v-7h6v7M9 9h.01M15 9h.01"/>
-            <path d="M2 8h4M18 8h4"/>
-          </svg>
-        </div>
-        <div>
-          <div class="app-name">Meu Engenheiro</div>
-          <div class="app-caption">Gestão de Projetos e Clientes</div>
-        </div>
-      </a>
-
-      <div class="system-status">
-        <span class="status-dot"></span>
-        <span>Central de acesso</span>
+      <div class="identity">
+        <div class="app-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 21h18M5 21V8l7-5 7 5v13"/><path d="M9 21v-7h6v7"/></svg></div>
+        <div><div class="app-name">Meu Engenheiro</div><div class="app-caption">Gestão de Projetos e Clientes</div></div>
       </div>
+      <div class="system-status"><span class="status-dot"></span><span>Central de acesso</span></div>
     </header>
 
     <main>
       <section class="intro">
         <div class="eyebrow">Plataforma de gestão de obras</div>
-
-        <h1>
-          Engenharia sob controle.<br>
-          <span>Projetos em evolução.</span>
-        </h1>
-
-        <p class="intro-text">
-          Um ambiente integrado para acompanhar obras, organizar informações
-          e conectar a gestão de engenharia à experiência do cliente.
-          Selecione o ambiente para continuar.
-        </p>
+        <h1>Engenharia sob controle.<br><span>Projetos em evolução.</span></h1>
+        <p class="intro-text">Selecione o ambiente para continuar. O painel do engenheiro agora executa direto do seu arquivo JS.</p>
       </section>
 
-      <section aria-labelledby="access-title">
-        <div class="section-heading">
-          <h2 id="access-title">Selecione seu ambiente</h2>
-          <span>ACESSO À PLATAFORMA / 01</span>
-        </div>
-
+      <section>
+        <div class="section-heading"><h2>Selecione seu ambiente</h2><span>ACESSO À PLATAFORMA / 01</span></div>
         <div class="access-grid">
+          
+          <!-- CARD QUE EXECUTA O SEU JS -->
+          <div class="access-card admin" id="btnAdmin" onclick="executarAdminJS()">
+            <div class="card-top"><div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></svg></div></div>
+            <div class="card-content"><h3>Painel do Engenheiro</h3><p>Este botão vai executar seu arquivo <br><code style="background:rgba(183,243,107,.15);padding:2px 6px;border-radius:4px;">/public/assets/js/admin.js</code></p></div>
+            <div class="card-bottom"><span class="card-label">Acesso gerencial</span><span class="access-button">Entrar no painel <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></div>
+          </div>
 
-          <!-- ACESSO DO ENGENHEIRO / ADMIN --> 
-          <a class="access-card admin" href="/assets/js/admin.js" aria-label="Acessar painel do engenheiro">
-            <div class="card-top">
-              <div class="card-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                     stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
-                     aria-hidden="true">
-                  <rect x="3" y="3" width="18" height="18" rx="3"/>
-                  <path d="M3 9h18M9 21V9M7 6h.01M11 6h.01M15 13h3M15 17h3"/>
-                </svg>
-              </div>
-              <span class="card-number"></span>
-            </div>
-
-            <div class="card-content">
-              <h3>Painel do Engenheiro</h3>
-              <p>
-                Gestão administrativa de clientes, acompanhamento das obras,
-                documentos, imagens e controle das informações dos projetos.
-              </p>
-            </div>
-
-            <div class="card-bottom">
-              <span class="card-label">Acesso gerencial</span>
-              <span class="access-button">
-                Entrar no painel
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                     aria-hidden="true">
-                  <path d="M5 12h14M13 6l6 6-6 6"/>
-                </svg>
-              </span>
-            </div>
-          </a>
-
-          <!-- ACESSO A MEUS PROJETOS -->
-          <a class="access-card client"
-             href="/minha-obra/minha-obra.html"
-             aria-label="Acessar ambiente Meus Projetos">
-            <div class="card-top">
-              <div class="card-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                     stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
-                     aria-hidden="true">
-                  <path d="M3 21h18M5 21V7l7-4 7 4v14"/>
-                  <path d="M9 21v-6h6v6M9 9h.01M15 9h.01"/>
-                  <path d="M2 11h3M19 11h3"/>
-                </svg>
-              </div>
-              <span class="card-number"></span>
-            </div>
-
-            <div class="card-content">
-              <h3>Meus Projetos</h3>
-              <p>
-                Ambiente dedicado ao acompanhamento da obra, consulta de
-                etapas, andamento dos serviços e visualização dos arquivos
-                disponibilizados ao cliente.
-              </p>
-            </div>
-
-            <div class="card-bottom">
-              <span class="card-label">Área de projetos</span>
-              <span class="access-button">
-                Acessar projetos
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                     aria-hidden="true">
-                  <path d="M5 12h14M13 6l6 6-6 6"/>
-                </svg>
-              </span>
-            </div>
+          <a class="access-card client" href="public/minha-obra/obra-gestao.html">
+            <div class="card-top"><div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 21h18M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/></svg></div></div>
+            <div class="card-content"><h3>Meus Projetos</h3><p>Nossa nova tela ultra completa de gestão de obra com controle por CPF e ID.</p></div>
+            <div class="card-bottom"><span class="card-label">Área de projetos</span><span class="access-button">Acessar projetos <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></div>
           </a>
 
         </div>
       </section>
 
-      <section class="info-strip" aria-label="Recursos da plataforma">
-        <div class="info-item">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
-               aria-hidden="true">
-            <rect x="4" y="10" width="16" height="11" rx="2"/>
-            <path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/>
-          </svg>
-          <div>
-            <strong>Acesso organizado</strong>
-            <small>Ambientes separados por finalidade</small>
-          </div>
-        </div>
-
-        <div class="info-item">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
-               aria-hidden="true">
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/>
-            <path d="M8 7h8M8 11h8"/>
-          </svg>
-          <div>
-            <strong>Informações centralizadas</strong>
-            <small>Documentos e acompanhamento da obra</small>
-          </div>
-        </div>
-
-        <div class="info-item">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
-               aria-hidden="true">
-            <path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/>
-            <path d="m9 12 2 2 4-4"/>
-          </svg>
-          <div>
-            <strong>Gestão integrada</strong>
-            <small>Mais visibilidade para cada projeto</small>
-          </div>
-        </div>
-      </section>
-
-      <!--
-        LOGO DA EMPRESA DE ENGENHARIA:
-        quando tiver o endereço, preencha o src da primeira imagem abaixo.
-
-        LOGO DA EMPRESA DE SOFTWARE:
-        quando tiver o endereço, preencha o src da segunda imagem abaixo.
-
-        Exemplo:
-        src="/assets/img/logo-engenheiro.png"
-        src="/assets/img/logo-desenvolvimento.png"
-      -->
-      <section class="partners" aria-label="Identidade das empresas">
-        <div class="partners-heading">
-          Plataforma desenvolvida para conectar engenharia e tecnologia
-        </div>
-
+      <section class="partners">
+        <div class="partners-heading">Plataforma desenvolvida para conectar engenharia e tecnologia</div>
         <div class="logo-list">
-
-          <div class="logo-slot">
-            <img
-              id="engineering-logo"
-              src="/assets/img/logo-engenheiro.png"
-              alt="Logo da empresa de engenharia"
-            >
-            <div class="logo-placeholder" id="engineering-placeholder">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                   stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
-                   aria-hidden="true">
-                <path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-7h6v7"/>
-              </svg>
-            </div>
-            <div class="logo-description">
-              <strong>Empresa de Engenharia</strong>
-              <small>EXECUÇÃO E GESTÃO DE OBRAS</small>
-            </div>
-          </div>
-
-          <div class="logo-slot">
-            <img
-              id="software-logo"
-              src="/assets/img/logo-desenvolvimento.png"
-              alt="Logo da empresa desenvolvedora do software"
-            >
-            <div class="logo-placeholder" id="software-placeholder">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                   stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
-                   aria-hidden="true">
-                <rect x="3" y="4" width="18" height="16" rx="3"/>
-                <path d="m9 9-3 3 3 3M15 9l3 3-3 3M13 8l-2 8"/>
-              </svg>
-            </div>
-            <div class="logo-description">
-              <strong>Desenvolvimento de Software</strong>
-              <small>TECNOLOGIA E INOVAÇÃO</small>
-            </div>
-          </div>
-
+          <div class="logo-slot"><img src="public/assets/img/logo-engenheiro.png" alt="Engenharia" onerror="this.style.display='none'"><div><strong>Empresa de Engenharia</strong><br><small>EXECUÇÃO E GESTÃO</small></div></div>
+          <div class="logo-slot"><img src="public/assets/img/logo-desenvolvimento.png" alt="Dev" onerror="this.style.display='none'"><div><strong>Desenvolvimento de Software</strong><br><small>TECNOLOGIA</small></div></div>
         </div>
       </section>
     </main>
+    <footer><div>© <span id="year"></span> MEU ENGENHEIRO</div><div>ENGENHARIA · GESTÃO · TECNOLOGIA</div></footer>
+  </div>
 
-    <footer>
-      <div>© <span id="year"></span> MEU ENGENHEIRO · PLATAFORMA DE GESTÃO DE OBRAS</div>
-      <div class="footer-right">ENGENHARIA · GESTÃO · TECNOLOGIA</div>
-    </footer>
-
+  <!-- CONTAINER ONDE SEU ADMIN.JS VAI SER EXECUTADO -->
+  <div id="app-container">
+    <div id="app"></div>
   </div>
 
   <script>
-    // Atualiza o ano automaticamente.
     document.getElementById("year").textContent = new Date().getFullYear();
 
-    // Mostra a imagem da logo somente quando um endereço válido for informado.
-    function configureLogo(imageId, placeholderId, imagePath) {
-      const image = document.getElementById(imageId);
-      const placeholder = document.getElementById(placeholderId);
+    function executarAdminJS() {
+      console.log("Carregando /public/assets/js/admin.js...");
+      
+      // Esconde a tela inicial e mostra o container do app
+      document.getElementById('app-container').classList.add('active');
+      
+      // Remove script antigo se já existir
+      const old = document.getElementById('adminScript');
+      if(old) old.remove();
 
-      if (!imagePath || !imagePath.trim()) return;
-
-      image.onload = function () {
-        image.style.display = "block";
-        placeholder.style.display = "none";
+      // Cria e injeta seu arquivo JS para EXECUTAR
+      const script = document.createElement('script');
+      script.id = 'adminScript';
+      script.type = 'module'; // IMPORTANTE: seu admin.js provavelmente é um módulo
+      script.src = 'public/assets/js/admin.js?v=' + Date.now(); // v= evita cache
+      script.onload = () => console.log("admin.js carregado e executado com sucesso!");
+      script.onerror = () => {
+        alert("Erro ao carregar public/assets/js/admin.js. Verifique se o caminho está correto no seu servidor.");
+        document.getElementById('app-container').classList.remove('active');
       };
-
-      image.onerror = function () {
-        image.style.display = "none";
-        placeholder.style.display = "grid";
-      };
-
-      image.src = imagePath;
+      document.body.appendChild(script);
     }
 
-    configureLogo(
-      "engineering-logo",
-      "engineering-placeholder",
-      "assets/img/logo-engenheiro.png"
-    );
-
-    configureLogo(
-      "software-logo",
-      "software-placeholder",
-      "assets/img/logo-desenvolvimento.png"
-    );
+    // Função para voltar (seu admin.js pode chamar isso)
+    function voltarParaHome() {
+      document.getElementById('app-container').classList.remove('active');
+    }
+    window.voltarParaHome = voltarParaHome;
   </script>
 </body>
 </html>
