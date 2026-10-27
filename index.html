@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PH Engenharia | Gestão de Obras</title>
+    <link rel="stylesheet" href="obra-gestao.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+<div class="app-container">
+
+    <header class="top-header">
+        <div class="logos">
+            <img src="public/assets/img/logo-engenheiro.png" alt="Logo Engenheiro" onerror="this.style.display='none'">
+            <div class="divisor"></div>
+            <img src="public/assets/img/logo-desenvolvimento.png" alt="Dev" onerror="this.style.display='none'">
+            <div class="obra-id-display">ID OBRA: <strong id="displayObraId">NENHUMA</strong> | CPF CLIENTE: <strong id="displayCPF">-</strong></div>
+        </div>
+        <div class="header-actions">
+            <button class="btn-secondary" onclick="abrirModalObra()"><i class="fa-solid fa-plus"></i> NOVA OBRA</button>
+            <button class="btn-primary"><i class="fa-solid fa-cloud-arrow-up"></i> SALVAR NO SUPABASE</button>
+        </div>
+    </header>
+
+    <!-- MODAL -->
+    <div id="modalObra" class="modal active">
+        <div class="modal-content">
+            <h2><i class="fa-solid fa-building-circle-check"></i> CADASTRAR NOVA OBRA</h2>
+            <p class="sub">Inicie seu novo projeto agora</p>
+            <div class="grid-3">
+                <div><label>Nome Completo do Cliente *</label><input type="text" id="nomeCliente" placeholder="Ex: João da Silva"></div>
+                <div><label>CPF *</label><input type="text" id="cpfCliente" placeholder="000.000.000-00" maxlength="14" oninput="mascaraCPF(this); gerarIdObra()"></div>
+                <div><label>Telefone / WhatsApp</label><input type="text" id="telCliente" placeholder="(XX) X XXXX-XXXX" maxlength="11"></div>
+            </div>
+            <div class="grid-2" style="margin-top:15px">
+                <div><label>Endereço Completo da Obra</label><input type="text" id="enderecoObra" placeholder="Rua, Nº, Bairro, Cidade"></div>
+                <div><label>ID DA OBRA (GERADO AUTOMATICAMENTE)</label><input type="text" id="idObraGerado" readonly placeholder="Digite o CPF para gerar" class="destaque-id"></div>
+            </div>
+            <div class="grid-4" style="margin-top:15px">
+                <div><label>Tipo *</label><select id="tipoObraCadastro"><option value="particular">PARTICULAR</option><option value="caixa">FINANCIAMENTO CAIXA</option><option value="mcmv">MCMV / CASA VERDE</option><option value="reforma">REFORMA / AMPLIAÇÃO</option></select></div>
+                <div><label>Metragem Terreno (m²)</label><input type="number" id="metragemTerreno" placeholder="Ex: 250"></div>
+                <div><label>Metragem Construção (m²)</label><input type="number" id="metragemConstrucao" placeholder="Ex: 120"></div>
+                <div><label>Data Início</label><input type="date" id="dataInicio"></div>
+            </div>
+            <div class="grid-3" style="margin-top:15px">
+                <div><label>Valor Contrato Fechado (R$)</label><input type="number" id="valorContrato" placeholder="Ex: 485000"></div>
+                <div><label>Margem de Lucro Desejada %</label><input type="number" id="margemLucro" value="20"></div>
+                <div><label>Prazo Estimado (meses)</label><input type="number" id="prazoObra" placeholder="Ex: 8"></div>
+            </div>
+            <div id="boxCaixaCadastro" style="display:none; margin-top:15px" class="controle-tijolo-box">
+                <h4><i class="fa-solid fa-building-columns"></i> DADOS CAIXA ECONÔMICA</h4>
+                <div class="grid-3">
+                    <div><label>Nº Contrato CAIXA</label><input type="text" placeholder="Ex: 8.4444.0000000-0"></div>
+                    <div><label>Valor Financiamento Aprovado</label><input type="number" placeholder="Ex: 350000"></div>
+                    <div><label>Engenheiro Responsável CAIXA</label><input type="text"></div>
+                </div>
+            </div>
+            <button class="btn-primary btn-full" onclick="criarObra()"><i class="fa-solid fa-check"></i> CRIAR OBRA E COMEÇAR GESTÃO</button>
+        </div>
+    </div>
+
+    <!-- DASHBOARD VAZIO -->
+    <section class="dashboard-cards">
+        <div class="card kpi"><span>Valor Contrato</span><strong id="kpiContrato">R$ 0,00</strong><small id="kpiIdObra">Sem obra</small></div>
+        <div class="card kpi gasto"><span>Total Gasto Real</span><strong id="kpiGasto">R$ 0,00</strong><div class="progress-bar"><div class="progress" id="progressGasto" style="width:0%"></div></div></div>
+        <div class="card kpi valor-obra"><span>Saldo a Gastar</span><strong id="kpiSaldo">R$ 0,00</strong><small>Orçamento restante</small></div>
+        <div class="card kpi lucro"><span>Lucro Projetado</span><strong id="kpiLucro" class="green">R$ 0,00</strong><small id="kpiMargem">Margem 0%</small></div>
+    </section>
+
+    <main class="main-content">
+
+        <!-- ETAPA 0 -->
+        <div class="etapa-bloco ativo" data-etapa="0">
+            <div class="etapa-header" onclick="toggleEtapa(this)"><h2>ETAPA 0 - VIABILIDADE E DOCUMENTAÇÃO</h2><span class="status pendente">Vazio</span></div>
+            <div class="etapa-body">
+                <div class="grid-4">
+                    <div><label>Valor Terreno</label><input type="number" class="calc-financeiro" placeholder="R$ 0,00"></div>
+                    <div><label>Valor Entrada</label><input type="number" class="calc-financeiro" placeholder="R$ 0,00"></div>
+                    <div><label>Valor Financiamento</label><input type="number" class="calc-financeiro" placeholder="R$ 0,00"></div>
+                    <div><label>Custos Cartório / Prefeitura</label><input type="number" class="calc-financeiro" placeholder="R$ 0,00"></div>
+                </div>
+                <div class="checklist-caixa" style="margin-top:15px">
+                    <h4>Checklist Documental</h4>
+                    <div class="grid-3">
+                        <label><input type="checkbox"> Matrícula</label><label><input type="checkbox"> IPTU</label><label><input type="checkbox"> Projeto Aprovado</label>
+                        <label><input type="checkbox"> ART</label><label><input type="checkbox"> Alvará</label><label><input type="checkbox"> Memorial CAIXA</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ETAPA 1 TERRAPLANAGEM -->
+        <div class="etapa-bloco" data-etapa="1">
+            <div class="etapa-header" onclick="toggleEtapa(this)"><h2>ETAPA 1 - TERRAPLANAGEM E TOPOGRAFIA</h2><span class="status pendente">Vazio</span></div>
+            <div class="etapa-body">
+                <table class="tabela-controle">
+                    <thead><tr><th>Empresa Contratada</th><th>CNPJ/CPF</th><th>Serviço</th><th>Valor Fechado</th><th>Valor Pago</th><th>Forma Pagto</th><th>Nota</th></tr></thead>
+                    <tbody id="tbodyTerra"><tr><td colspan="7" class="empty">Nenhuma empresa adicionada. Clique em adicionar.</td></tr></tbody>
+                </table>
+                <button class="btn-add" onclick="addLinhaGenerica('tbodyTerra', 7)"><i class="fa-solid fa-plus"></i> Adicionar Empresa</button>
+            </div>
+        </div>
+
+        <!-- ETAPA 2 FUNDAÇÃO -->
+        <div class="etapa-bloco" data-etapa="2">
+            <div class="etapa-header" onclick="toggleEtapa(this)"><h2>ETAPA 2 - FUNDAÇÃO (Sapata / Estaca / Radier)</h2><span class="status pendente">Vazio</span></div>
+            <div class="etapa-body">
+                <div class="grid-4"><div><label>Tipo Fundação</label><select><option>Selecione</option><option>Sapata Corrida</option><option>Estaca Hélice Contínua</option><option>Radier</option></select></div><div><label>Qtd Estacas / Sapatas</label><input type="number" placeholder="Ex: 18"></div><div><label>Profundidade Média</label><input type="text" placeholder="Ex: 6m"></div><div><label>Custo Total Fundação</label><input type="number" class="calc-financeiro" placeholder="R$"></div></div>
+                <table class="tabela-controle"><thead><tr><th>Material</th><th>Qtd</th><th>Fornecedor</th><th>Preço Unit</th><th>Total</th><th>Data</th></tr></thead><tbody id="tbodyFundacao"></tbody></table>
+                <button class="btn-add" onclick="addLinhaGenerica('tbodyFundacao', 6)">+ Material</button>
+            </div>
+        </div>
+
+        <!-- ETAPA 3 ALVENARIA - TURBO -->
+        <div class="etapa-bloco ativo" data-etapa="3">
+            <div class="etapa-header" onclick="toggleEtapa(this)"><h2>ETAPA 3 - ALVENARIA - CONTROLE DE TIJOLO NÍVEL PRO</h2><span class="status em-andamento">Pronto p/ Preencher</span></div>
+            <div class="etapa-body">
+                <div class="controle-tijolo-box">
+                    <h3><i class="fa-solid fa-calculator"></i> CALCULADORA PRO DE ALVENARIA</h3>
+                    <div class="grid-4">
+                        <div><label>Área Total Parede (m²)</label><input type="number" id="areaParede" placeholder="Ex: 320" oninput="calcTijolo()"></div>
+                        <div><label>Tipo Bloco</label><select id="tipoTijolo" onchange="calcTijolo()"><option value="19">Baiano 9x19x19 (19/m²)</option><option value="32">Tijolinho 32/m²</option><option value="12.5">Bloco Concreto 12,5/m²</option><option value="27.5">Bloco Cerâmico Deitado 27,5/m²</option></select></div>
+                        <div><label>Valor Milheiro (R$)</label><input type="number" id="valorMilheiro" placeholder="Ex: 850" oninput="calcTijolo()"></div>
+                        <div><label>Perda %</label><input type="number" id="perdaTijolo" value="10" oninput="calcTijolo()"></div>
+                    </div>
+                    <div class="resultado-tijolo"><div>Qtd: <strong id="qtdTijolo">0 un</strong></div><div>Custo: <strong id="custoTijolo" class="green">R$ 0,00</strong></div><div>Argamassa Estimada: <strong id="argamassaEst">0 sacos</strong></div></div>
+                </div>
+                <table class="tabela-controle"><thead><tr><th>Material</th><th>Qtd Comprada</th><th>Milheiro Pago</th><th>Preço Total</th><th>Loja</th><th>Frete</th><th>Comprovante</th></tr></thead><tbody id="tbodyAlvenaria"></tbody></table>
+                <button class="btn-add" onclick="addLinhaGenerica('tbodyAlvenaria', 7)">+ Compra de Tijolo</button>
+            </div>
+        </div>
+
+        <!-- ETAPA 4 ESTRUTURA -->
+        <div class="etapa-bloco" data-etapa="4"><div class="etapa-header" onclick="toggleEtapa(this)"><h2>ETAPA 4 - ESTRUTURA / LAJE / PILARES</h2><span class="status pendente">Vazio</span></div><div class="etapa-body"><table class="tabela-controle"><thead><tr><th>Item</th><th>Qtd</th><th>Valor</th><th>Empresa</th><th>Pago</th></tr></thead><tbody id="tbodyEstrutura"></tbody></table><button class="btn-add" onclick="addLinhaGenerica('tbodyEstrutura',5)">+ Item Estrutural</button></div></div>
+        <!-- ETAPA 5 COBERTURA -->
+        <div class="etapa-bloco" data-etapa="5"><div class="etapa-header" onclick="toggleEtapa(this)"><h2>ETAPA 5 - COBERTURA / TELHADO / MADEIRAMENTO</h2><span class="status pendente">Vazio</span></div><div class="etapa-body"><table class="tabela-controle"><thead><tr><th>Material</th><th>Metragem</th><th>Valor m²</th><th>Total</th><th>Fornecedor</th></tr></thead><tbody id="tbodyCobertura"></tbody></table><button class="btn-add" onclick="addLinhaGenerica('tbodyCobertura',5)">+ Material Telhado</button></div></div>
+        <!-- ETAPA 6 INSTALAÇÕES -->
+        <div class="etapa-bloco" data-etapa="6"><div class="etapa-header" onclick="toggleEtapa(this)"><h2>ETAPA 6 - INSTALAÇÕES ELÉTRICA E HIDRÁULICA</h2><span class="status pendente">Vazio</span></div><div class="etapa-body"><div class="grid-2"><div><label>Qtd Pontos Elétricos</label><input type="number" placeholder="Ex: 45"><label>Valor por Ponto Elétrica</label><input type="number" placeholder="R$"></div><div><label>Qtd Pontos Hidráulica</label><input type="number" placeholder="Ex: 18"><label>Valor por Ponto Hidráulica</label><input type="number" placeholder="R$"></div></div></div></div>
+        <!-- ETAPA 7 REBOCO -->
+        <div class="etapa-bloco" data-etapa="7"><div class="etapa-header" onclick="toggleEtapa(this)"><h2>ETAPA 7 - REBOCO / EMBOÇO / CONTRAPISO</h2><span class="status pendente">Vazio</span></div><div class="etapa-body"><p>Controle de sacos de cimento, areia m³, cal, mão de obra por m²</p></div></div>
+        <!-- ETAPA 8 ACABAMENTO -->
+        <div class="etapa-bloco" data-etapa="8"><div class="etapa-header" onclick="toggleEtapa(this)"><h2>ETAPA 8 - ACABAMENTO / PISO / PORCELANATO / GESSO</h2><span class="status pendente">Vazio</span></div><div class="etapa-body"><table class="tabela-controle"><thead><tr><th>Ambiente</th><th>Material</th><th>m²</th><th>Valor m²</th><th>Total</th></tr></thead><tbody id="tbodyAcabamento"></tbody></table><button class="btn-add" onclick="addLinhaGenerica('tbodyAcabamento',5)">+ Acabamento</button></div></div>
+        <!-- ETAPA 9 ESQUADRIAS -->
+        <div class="etapa-bloco" data-etapa="9"><div class="etapa-header" onclick="toggleEtapa(this)"><h2>ETAPA 9 - ESQUADRIAS / PORTAS / JANELAS / VIDROS</h2><span class="status pendente">Vazio</span></div><div class="etapa-body"><table class="tabela-controle"><thead><tr><th>Item</th><th>Medida</th><th>Valor</th><th>Empresa</th><th>Status</th></tr></thead><tbody id="tbodyEsquadrias"></tbody></table><button class="btn-add" onclick="addLinhaGenerica('tbodyEsquadrias',5)">+ Esquadria</button></div></div>
+        <!-- ETAPA 10 PINTURA -->
+        <div class="etapa-bloco" data-etapa="10"><div class="etapa-header" onclick="toggleEtapa(this)"><h2>ETAPA 10 - PINTURA E FACHADA FINAL</h2><span class="status pendente">Vazio</span></div><div class="etapa-body"><div class="grid-4"><div><label>Latas Massa Corrida</label><input type="number" placeholder="0"></div><div><label>Latas Tinta Interna</label><input type="number" placeholder="0"></div><div><label>Latas Textura Fachada</label><input type="number" placeholder="0"></div><div><label>Mão de Obra Pintor Total</label><input type="number" class="calc-financeiro" placeholder="R$ 0,00"></div></div></div></div>
+        <!-- ETAPA 11 FINAL -->
+        <div class="etapa-bloco" data-etapa="11"><div class="etapa-header" onclick="toggleEtapa(this)"><h2>ETAPA 11 - LIMPEZA / HABITE-SE / ENTREGA / LUCRO FINAL</h2><span class="status pendente">Vazio</span></div><div class="etapa-body"><div class="grid-2"><div><label>Custo Limpeza Pós Obra</label><input type="number" class="calc-financeiro"><label>Taxa Habite-se Prefeitura</label><input type="number" class="calc-financeiro"></div><div><label>Lucro Líquido Final</label><input type="number" id="lucroFinal" class="destaque-lucro" readonly><label>Data Entrega Chaves</label><input type="date"></div></div></div></div>
+
+        <section class="resumo-final">
+            <h2><i class="fa-solid fa-file-invoice-dollar"></i> RESUMO FINANCEIRO FINAL - ID OBRA: <span id="resumoIdObra">-</span></h2>
+            <div class="grid-2"><div><table class="tabela-resumo"><tr><td>Contrato Fechado</td><td id="resumoContrato">R$ 0,00</td></tr><tr><td>Total Gasto (Materiais + MO)</td><td id="resumoGasto">R$ 0,00</td></tr><tr><td>Taxas</td><td id="resumoTaxas">R$ 0,00</td></tr><tr class="total"><td>LUCRO LÍQUIDO REAL</td><td id="resumoLucro">R$ 0,00</td></tr></table></div><div><button class="btn-gerar-relatorio"><i class="fa-solid fa-file-pdf"></i> Gerar PDF Completo p/ CAIXA / Cliente</button><button class="btn-gerar-relatorio secondary"><i class="fa-brands fa-whatsapp"></i> Enviar Relatório</button></div></div>
+        </section>
+    </main>
+</div>
+
+<style>
+/* MODAL */
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(12px); z-index: 9999; display: none; align-items: center; justify-content: center; padding: 20px; }
+.modal.active { display: flex; }
+.modal-content { background: #151517; border: 1px solid #2A2A2E; border-radius: 20px; padding: 32px; max-width: 900px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 30px 60px rgba(0,0,0,0.6); }
+.modal-content h2 { font-size: 18px; margin-bottom: 4px; }
+.modal-content .sub { color: #8E8E93; font-size: 13px; margin-bottom: 20px; }
+.destaque-id { background: #FFD400 !important; color: #000 !important; font-weight: 900 !important; font-family: monospace; letter-spacing: 1px; font-size: 16px !important; }
+.btn-full { width: 100%; margin-top: 20px; padding: 16px; font-size: 15px; }
+.btn-secondary { background: #232326; color: #fff; border: 1px solid #333; padding: 10px 16px; border-radius: 10px; font-weight: 700; cursor: pointer; }
+.obra-id-display { font-size: 11px; color: #8E8E93; margin-left: 10px; border-left: 1px solid #232326; padding-left: 10px; }
+.obra-id-display strong { color: #FFD400; }
+.empty { text-align: center; color: #8E8E93; padding: 20px !important; font-style: italic; }
+</style>
+
+<script>
+function mascaraCPF(i){ let v=i.value.replace(/\D/g,''); v=v.replace(/(\d{3})(\d)/,'$1.$2'); v=v.replace(/(\d{3})(\d)/,'$1.$2'); v=v.replace(/(\d{3})(\d{1,2})$/,'$1-$2'); i.value=v; }
+function gerarIdObra(){
+    const cpf = document.getElementById('cpfCliente').value.replace(/\D/g,'');
+    if(cpf.length >= 6){
+        const ano = new Date().getFullYear();
+        const id = `OBRA-${ano}-${cpf.slice(-4)}-${Math.floor(Math.random()*900+100)}`;
+        document.getElementById('idObraGerado').value = id;
+    }
+}
+function abrirModalObra(){ document.getElementById('modalObra').classList.add('active'); }
+function criarObra(){
+    const nome = document.getElementById('nomeCliente').value;
+    const cpf = document.getElementById('cpfCliente').value;
+    const id = document.getElementById('idObraGerado').value;
+    const contrato = document.getElementById('valorContrato').value;
+    if(!nome || !cpf || cpf.length < 14){ alert('Preencha Nome e CPF completo!'); return; }
+    document.getElementById('displayObraId').innerText = id;
+    document.getElementById('displayCPF').innerText = cpf;
+    document.getElementById('resumoIdObra').innerText = id;
+    document.getElementById('kpiIdObra').innerText = id;
+    document.getElementById('kpiContrato').innerText = parseFloat(contrato||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+    document.getElementById('resumoContrato').innerText = parseFloat(contrato||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+    document.getElementById('modalObra').classList.remove('active');
+    // Aqui depois plugamos supabase: supabase.from('obras').insert([{id_obra: id, cpf_cliente: cpf, ...}])
+    alert('Obra Criada! ID: '+id+' vinculada ao CPF '+cpf+'. Agora preencha as etapas abaixo. Tudo será salvo com esse ID.');
+}
+document.getElementById('tipoObraCadastro').addEventListener('change', (e)=>{
+    document.getElementById('boxCaixaCadastro').style.display = e.target.value==='caixa' ? 'block' : 'none';
+});
+function toggleEtapa(el){ el.parentElement.classList.toggle('fechado'); }
+function calcTijolo(){
+    const area = parseFloat(document.getElementById('areaParede').value)||0;
+    const tipo = parseFloat(document.getElementById('tipoTijolo').value)||19;
+    const valorMil = parseFloat(document.getElementById('valorMilheiro').value)||0;
+    const perda = parseFloat(document.getElementById('perdaTijolo').value)||0;
+    const qtd = area * tipo * (1 + perda/100);
+    const custo = (qtd/1000)*valorMil;
+    document.getElementById('qtdTijolo').innerText = Math.ceil(qtd).toLocaleString('pt-BR')+' un';
+    document.getElementById('custoTijolo').innerText = custo.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+    document.getElementById('argamassaEst').innerText = Math.ceil(area*0.13)+' sacos';
+}
+function addLinhaGenerica(tbodyId, cols){
+    const tbody = document.getElementById(tbodyId);
+    if(tbody.querySelector('.empty')) tbody.innerHTML='';
+    const tr = document.createElement('tr');
+    let html='';
+    for(let i=0;i<cols;i++){ html+=`<td><input type="text" placeholder="-"></td>`; }
+    tr.innerHTML=html;
+    tbody.appendChild(tr);
+}
+</script>
+</body>
+</html>
