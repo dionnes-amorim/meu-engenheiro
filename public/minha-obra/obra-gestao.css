@@ -1,204 +1,1125 @@
-/* SISTEMA ENGENHEIRO MASTER - CSS ULTRA PREMIUM V1.0 */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@600&display=swap');
+
+/* =========================================================
+   PH ENGENHARIA — SISTEMA DE GESTÃO
+   DESIGN SYSTEM CORPORATIVO
+   VERSÃO 2.0 — IDENTIDADE VISUAL INTEGRADA
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap');
+
+/* =========================================================
+   01. VARIÁVEIS GLOBAIS
+   ========================================================= */
 
 :root {
-    --bg: #0A0A0B;
-    --bg-card: #151517;
-    --bg-card-hover: #1C1C1F;
-    --border: #232326;
-    --yellow: #FFD400;
-    --yellow-hover: #FFC000;
-    --green: #00FF88;
-    --red: #FF3B30;
-    --blue: #0A84FF;
-    --text: #F5F5F7;
-    --text-muted: #8E8E93;
-    --radius: 16px;
-    --shadow: 0 20px 40px rgba(0,0,0,0.4);
+    --bg: #171a1d;
+    --bg-deep: #121416;
+    --bg-card: #202428;
+    --bg-card-hover: #272c30;
+    --bg-input: #181c1f;
+
+    --surface: #292e32;
+    --border: #353a3d;
+    --border-soft: #2b3033;
+
+    --gold: #b8945e;
+    --gold-light: #d5b783;
+    --gold-dark: #8e7045;
+
+    --green: #91a989;
+    --green-bg: rgba(145,169,137,.13);
+
+    --red: #c77e76;
+    --red-bg: rgba(199,126,118,.13);
+
+    --blue: #91a9bd;
+    --blue-bg: rgba(145,169,189,.13);
+
+    --yellow: #d5b783;
+    --yellow-bg: rgba(213,183,131,.12);
+
+    --text: #eeeae2;
+    --text-muted: #a29f96;
+    --text-soft: #777970;
+
+    --radius: 12px;
+    --radius-sm: 8px;
+
+    --shadow:
+        0 12px 35px rgba(0,0,0,.20);
+
+    --shadow-hover:
+        0 16px 35px rgba(0,0,0,.30);
+
+    --font-main: 'DM Sans', sans-serif;
+    --font-display: 'Manrope', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+
+    --transition: .22s ease;
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
+/* =========================================================
+   02. RESET
+   ========================================================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
 
 body {
     background: var(--bg);
     color: var(--text);
-    font-family: 'Inter', sans-serif;
-    background-image: 
-        radial-gradient(circle at 20% 0%, rgba(255,212,0,0.15) 0%, transparent 50%),
-        radial-gradient(circle at 80% 100%, rgba(10,132,255,0.12) 0%, transparent 50%);
+    font-family: var(--font-main);
     min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+
+    background-image:
+        radial-gradient(
+            ellipse at 15% 0%,
+            rgba(184,148,94,.09),
+            transparent 42%
+        ),
+        radial-gradient(
+            ellipse at 100% 100%,
+            rgba(255,255,255,.025),
+            transparent 40%
+        );
 }
 
-.app-container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+button,
+input,
+select,
+textarea {
+    font-family: inherit;
+}
 
-/* HEADER */
+button {
+    cursor: pointer;
+}
+
+a {
+    color: inherit;
+}
+
+/* =========================================================
+   03. CONTAINER
+   ========================================================= */
+
+.app-container {
+    width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 20px 28px 40px;
+}
+
+/* =========================================================
+   04. CABEÇALHO PRINCIPAL
+   ========================================================= */
+
 .top-header {
-    background: rgba(21,21,23,0.8);
-    backdrop-filter: blur(20px);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 16px 24px;
+    background: rgba(29,33,36,.97);
+
+    border: 1px solid rgba(184,148,94,.25);
+    border-radius: 13px;
+
+    padding: 15px 24px;
+
     display: flex;
     justify-content: space-between;
     align-items: center;
+
+    gap: 22px;
+
     position: sticky;
-    top: 20px;
+    top: 12px;
     z-index: 100;
+
     box-shadow: var(--shadow);
+    backdrop-filter: blur(16px);
 }
 
-.logos { display: flex; align-items: center; gap: 20px; }
-.logos img { height: 42px; object-fit: contain; filter: brightness(1.1); }
-.logos .divisor { width: 1px; height: 32px; background: var(--border); }
+/* IDENTIDADE */
 
-.obra-selector { display: flex; align-items: center; gap: 12px; }
-.obra-selector label { font-size: 12px; font-weight: 800; letter-spacing: 1px; color: var(--text-muted); }
-.obra-selector select, .header-actions .btn-primary {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 10px 16px;
-    border-radius: 10px;
-    font-weight: 600;
+.logos {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    min-width: 0;
+}
+
+.logos img {
+    height: 43px;
+    max-width: 180px;
+    object-fit: contain;
+}
+
+.logos .divisor {
+    width: 1px;
+    height: 34px;
+    background: var(--border);
+}
+
+/* SELETOR DE OBRA */
+
+.obra-selector {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.obra-selector label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: .13em;
+    color: var(--gold-light);
+    white-space: nowrap;
+    text-transform: uppercase;
+}
+
+.obra-selector select {
+    min-width: 190px;
+}
+
+/* AÇÕES */
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* =========================================================
+   05. BOTÕES
+   ========================================================= */
+
+button,
+.btn-primary,
+.btn-add,
+.btn-gerar-relatorio {
+    transition:
+        background var(--transition),
+        border-color var(--transition),
+        color var(--transition),
+        transform var(--transition),
+        box-shadow var(--transition);
 }
 
 .btn-primary {
-    background: var(--yellow) !important;
-    color: #000 !important;
-    font-weight: 800 !important;
-    cursor: pointer;
-    transition: .2s;
-    border: none !important;
-}
-.btn-primary:hover { background: var(--yellow-hover) !important; transform: translateY(-1px); }
+    background: var(--gold) !important;
+    color: #171513 !important;
 
-/* DASHBOARD */
+    border: 1px solid var(--gold) !important;
+    border-radius: 8px;
+
+    padding: 11px 18px;
+
+    font-size: 11px;
+    font-weight: 800 !important;
+    letter-spacing: .035em;
+
+    cursor: pointer;
+}
+
+.btn-primary:hover {
+    background: var(--gold-light) !important;
+    border-color: var(--gold-light) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(184,148,94,.15);
+}
+
+button:focus-visible,
+a:focus-visible,
+select:focus-visible,
+input:focus-visible {
+    outline: 2px solid var(--gold-light);
+    outline-offset: 3px;
+}
+
+/* =========================================================
+   06. DASHBOARD / INDICADORES
+   ========================================================= */
+
 .dashboard-cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 16px;
-    margin: 28px 0;
+    gap: 15px;
+    margin: 27px 0;
 }
 
 .card.kpi {
-    background: var(--bg-card);
+    background: linear-gradient(
+        145deg,
+        #252a2e,
+        #202428
+    );
+
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 20px;
+
+    padding: 21px;
+
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    transition: .3s;
+    gap: 8px;
+
     position: relative;
     overflow: hidden;
+
+    transition: var(--transition);
 }
-.card.kpi:hover { background: var(--bg-card-hover); transform: translateY(-2px); border-color: #2a2a2e; }
-.card.kpi span { font-size: 11px; font-weight: 700; letter-spacing: 1px; color: var(--text-muted); text-transform: uppercase; }
-.card.kpi strong { font-size: 22px; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
-.card.kpi small { font-size: 12px; color: var(--text-muted); }
-.card.kpi.valor-obra { border-left: 4px solid var(--yellow); }
-.card.kpi.gasto { border-left: 4px solid var(--red); }
-.card.kpi.lucro { border-left: 4px solid var(--green); }
-.card.kpi .green { color: var(--green); }
 
-.progress-bar { height: 6px; background: #232326; border-radius: 10px; margin-top: 8px; overflow: hidden; }
-.progress { height: 100%; background: var(--yellow); border-radius: 10px; }
+.card.kpi:hover {
+    background: var(--bg-card-hover);
+    transform: translateY(-3px);
+    border-color: rgba(184,148,94,.45);
+    box-shadow: var(--shadow);
+}
 
-/* ETAPAS */
+.card.kpi span {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+.card.kpi strong {
+    font-family: var(--font-mono);
+    font-size: clamp(19px, 2vw, 25px);
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: -.04em;
+    overflow-wrap: anywhere;
+}
+
+.card.kpi small {
+    font-size: 11px;
+    color: var(--text-soft);
+    line-height: 1.5;
+}
+
+/* Indicadores laterais */
+
+.card.kpi.valor-obra {
+    border-left: 3px solid var(--gold);
+}
+
+.card.kpi.gasto {
+    border-left: 3px solid var(--red);
+}
+
+.card.kpi.lucro {
+    border-left: 3px solid var(--green);
+}
+
+.card.kpi .green {
+    color: var(--green);
+}
+
+/* =========================================================
+   07. BARRA DE PROGRESSO
+   ========================================================= */
+
+.progress-bar {
+    height: 6px;
+    background: #353a3d;
+    border-radius: 20px;
+    margin-top: 10px;
+    overflow: hidden;
+}
+
+.progress {
+    height: 100%;
+    width: 0;
+    background: linear-gradient(
+        90deg,
+        var(--gold-dark),
+        var(--gold-light)
+    );
+
+    border-radius: 20px;
+    transition: width .5s ease;
+}
+
+/* =========================================================
+   08. ETAPAS DA OBRA
+   ========================================================= */
+
 .etapa-bloco {
     background: var(--bg-card);
+
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    margin-bottom: 16px;
+
+    margin-bottom: 15px;
     overflow: hidden;
-    transition: .3s;
+
+    transition: var(--transition);
 }
-.etapa-bloco.ativo { border-color: var(--yellow); box-shadow: 0 0 0 1px rgba(255,212,0,0.2); }
+
+.etapa-bloco:hover {
+    border-color: #454a4d;
+}
+
+.etapa-bloco.ativo {
+    border-color: var(--gold-dark);
+
+    box-shadow:
+        0 0 0 1px rgba(184,148,94,.12),
+        0 8px 25px rgba(0,0,0,.12);
+}
+
+/* Cabeçalho */
 
 .etapa-header {
-    padding: 18px 24px;
+    padding: 19px 23px;
+
     display: flex;
     justify-content: space-between;
     align-items: center;
+
+    gap: 15px;
+
     cursor: pointer;
-    background: linear-gradient(90deg, rgba(255,255,255,0.02), transparent);
+
+    background: linear-gradient(
+        90deg,
+        rgba(184,148,94,.045),
+        transparent 65%
+    );
+
+    transition: background var(--transition);
 }
-.etapa-header h2 { font-size: 14px; font-weight: 800; letter-spacing: 0.5px; }
-.etapa-header h2 i { color: var(--yellow); margin-right: 10px; }
 
-.status { padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
-.status.concluido { background: rgba(0,255,136,0.15); color: var(--green); border: 1px solid rgba(0,255,136,0.3); }
-.status.em-andamento { background: rgba(255,212,0,0.15); color: var(--yellow); border: 1px solid rgba(255,212,0,0.3); }
-.status.pendente { background: rgba(142,142,147,0.15); color: var(--text-muted); }
-
-.etapa-body { padding: 24px; border-top: 1px solid var(--border); }
-.etapa-bloco.fechado .etapa-body { display: none; }
-
-.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-.grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; }
-
-.form-group label, .grid-2 label, .grid-3 label, .grid-4 label {
-    font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin: 12px 0 6px 0; display: block;
+.etapa-header:hover {
+    background: rgba(184,148,94,.075);
 }
-input[type="number"], input[type="text"], select {
-    width: 100%;
-    background: #0F0F10;
+
+.etapa-header h2 {
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: .025em;
+}
+
+.etapa-header h2 i {
+    color: var(--gold-light);
+    margin-right: 10px;
+}
+
+/* =========================================================
+   09. STATUS
+   ========================================================= */
+
+.status {
+    padding: 6px 11px;
+    border-radius: 5px;
+
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 500;
+
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.status.concluido {
+    background: var(--green-bg);
+    color: var(--green);
+    border: 1px solid rgba(145,169,137,.28);
+}
+
+.status.em-andamento {
+    background: var(--yellow-bg);
+    color: var(--gold-light);
+    border: 1px solid rgba(213,183,131,.28);
+}
+
+.status.pendente {
+    background: rgba(255,255,255,.045);
+    color: var(--text-muted);
     border: 1px solid var(--border);
-    color: var(--text);
-    padding: 12px 14px;
-    border-radius: 10px;
-    font-weight: 600;
-    outline: none;
-    transition: .2s;
 }
-input:focus, select:focus { border-color: var(--yellow); box-shadow: 0 0 0 3px rgba(255,212,0,0.15); }
+
+/* =========================================================
+   10. CORPO DAS ETAPAS
+   ========================================================= */
+
+.etapa-body {
+    padding: 24px;
+    border-top: 1px solid var(--border-soft);
+    animation: etapaEntrada .25s ease;
+}
+
+.etapa-bloco.fechado .etapa-body {
+    display: none;
+}
+
+@keyframes etapaEntrada {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* =========================================================
+   11. GRIDS
+   ========================================================= */
+
+.grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap: 22px;
+}
+
+.grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0,1fr));
+    gap: 16px;
+}
+
+.grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0,1fr));
+    gap: 15px;
+}
+
+/* =========================================================
+   12. FORMULÁRIOS
+   ========================================================= */
+
+.form-group {
+    min-width: 0;
+}
+
+.form-group label,
+.grid-2 label,
+.grid-3 label,
+.grid-4 label {
+    display: block;
+
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 500;
+
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: .075em;
+
+    margin: 12px 0 7px;
+}
+
+input[type="number"],
+input[type="text"],
+input[type="date"],
+input[type="email"],
+input[type="tel"],
+input[type="password"],
+input[type="search"],
+textarea,
+select {
+    width: 100%;
+    min-width: 0;
+
+    background: var(--bg-input);
+
+    border: 1px solid var(--border);
+    border-radius: 8px;
+
+    color: var(--text);
+
+    padding: 12px 14px;
+
+    font-size: 12px;
+    font-weight: 500;
+
+    outline: none;
+
+    transition:
+        border-color var(--transition),
+        box-shadow var(--transition),
+        background var(--transition);
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: #696d6c;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--gold);
+    background: #1b1f21;
+
+    box-shadow:
+        0 0 0 3px rgba(184,148,94,.10);
+}
+
+select {
+    cursor: pointer;
+}
+
+select option {
+    background: var(--bg-card);
+    color: var(--text);
+}
+
+textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+/* =========================================================
+   13. TABELAS
+   ========================================================= */
 
 .tabela-controle {
-    width: 100%; border-collapse: collapse; margin-top: 16px; background: #0F0F10; border-radius: 12px; overflow: hidden;
+    width: 100%;
+
+    border-collapse: collapse;
+
+    margin-top: 17px;
+
+    background: #191d20;
+
+    border: 1px solid var(--border);
+    border-radius: 10px;
+
+    overflow: hidden;
 }
-.tabela-controle th { background: #1A1A1D; padding: 12px; font-size: 11px; font-weight: 800; color: var(--text-muted); text-align: left; text-transform: uppercase; letter-spacing: 0.5px; }
-.tabela-controle td { padding: 10px 12px; border-top: 1px solid var(--border); font-size: 13px; }
-.tabela-controle input { padding: 8px 10px; font-size: 13px; }
-.input-sm { width: 120px; }
+
+.tabela-controle th {
+    background: #292e32;
+
+    padding: 14px 13px;
+
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 500;
+
+    color: var(--gold-light);
+
+    text-align: left;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+}
+
+.tabela-controle td {
+    padding: 12px 13px;
+
+    border-top: 1px solid var(--border-soft);
+
+    font-size: 12px;
+    color: #d8d5cd;
+}
+
+.tabela-controle tbody tr {
+    transition: background var(--transition);
+}
+
+.tabela-controle tbody tr:hover {
+    background: rgba(184,148,94,.045);
+}
+
+.tabela-controle input,
+.tabela-controle select {
+    padding: 9px 10px;
+    font-size: 11px;
+}
+
+.input-sm {
+    width: 120px;
+}
+
+/* =========================================================
+   14. CONTROLE DE TIJOLOS
+   ========================================================= */
 
 .controle-tijolo-box {
-    background: linear-gradient(135deg, #1C1C1F 0%, #151517 100%);
-    border: 1px solid rgba(255,212,0,0.25);
-    border-radius: 14px;
-    padding: 20px;
+    background: linear-gradient(
+        135deg,
+        #292e32,
+        #202428
+    );
+
+    border: 1px solid rgba(184,148,94,.32);
+    border-radius: 12px;
+
+    padding: 21px;
     margin-bottom: 20px;
 }
-.resultado-tijolo {
-    display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-top: 16px; background: #0A0A0B; padding: 16px; border-radius: 10px; border: 1px dashed #2A2A2E;
+
+.controle-tijolo-box h3,
+.controle-tijolo-box h4 {
+    color: var(--gold-light);
+    font-family: var(--font-display);
 }
-.resultado-tijolo div { font-size: 13px; color: var(--text-muted); }
-.resultado-tijolo strong { color: var(--text); font-size: 16px; font-family: 'JetBrains Mono'; }
+
+.resultado-tijolo {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0,1fr));
+    gap: 13px;
+
+    margin-top: 17px;
+    padding: 18px;
+
+    background: #171a1d;
+
+    border: 1px dashed #51483a;
+    border-radius: 9px;
+}
+
+.resultado-tijolo div {
+    font-size: 11px;
+    line-height: 1.6;
+    color: var(--text-muted);
+}
+
+.resultado-tijolo strong {
+    display: block;
+
+    color: var(--gold-light);
+
+    font-family: var(--font-mono);
+    font-size: 16px;
+
+    margin-top: 5px;
+}
+
+/* =========================================================
+   15. BOTÃO ADICIONAR
+   ========================================================= */
 
 .btn-add {
-    margin-top: 14px; background: transparent; border: 1px dashed var(--border); color: var(--text-muted); padding: 10px 16px; border-radius: 10px; cursor: pointer; font-weight: 700; transition: .2s;
+    margin-top: 14px;
+
+    background: transparent;
+
+    border: 1px dashed #555044;
+    border-radius: 8px;
+
+    color: var(--gold-light);
+
+    padding: 10px 16px;
+
+    font-size: 11px;
+    font-weight: 700;
 }
-.btn-add:hover { border-color: var(--yellow); color: var(--yellow); }
 
-.destaque-lucro { border-color: var(--green) !important; color: var(--green) !important; font-size: 18px !important; }
+.btn-add:hover {
+    background: rgba(184,148,94,.09);
+    border-color: var(--gold);
+    color: #fff;
+}
 
-.resumo-final { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; margin-top: 32px; }
-.resumo-final h2 { font-size: 16px; margin-bottom: 20px; }
-.tabela-resumo { width: 100%; }
-.tabela-resumo td { padding: 12px 0; border-bottom: 1px solid var(--border); }
-.tabela-resumo .total td { font-weight: 800; font-size: 18px; color: var(--green); border: none; padding-top: 20px; }
+/* =========================================================
+   16. DESTAQUES FINANCEIROS
+   ========================================================= */
+
+.destaque-lucro {
+    border-color: var(--green) !important;
+    color: var(--green) !important;
+    font-size: 18px !important;
+}
+
+/* =========================================================
+   17. RESUMO FINAL
+   ========================================================= */
+
+.resumo-final {
+    background: linear-gradient(
+        145deg,
+        #252a2e,
+        #1d2124
+    );
+
+    border: 1px solid rgba(184,148,94,.25);
+    border-radius: 13px;
+
+    padding: 27px;
+    margin-top: 30px;
+
+    box-shadow: var(--shadow);
+}
+
+.resumo-final h2 {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 800;
+
+    margin-bottom: 20px;
+    color: var(--gold-light);
+}
+
+.tabela-resumo {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tabela-resumo td {
+    padding: 13px 0;
+    border-bottom: 1px solid var(--border);
+
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.tabela-resumo td:last-child {
+    text-align: right;
+    color: var(--text);
+    font-family: var(--font-mono);
+}
+
+.tabela-resumo .total td {
+    font-weight: 800;
+    font-size: 17px;
+
+    color: var(--green);
+
+    border: none;
+    padding-top: 20px;
+}
+
+/* =========================================================
+   18. RELATÓRIOS
+   ========================================================= */
 
 .btn-gerar-relatorio {
-    width: 100%; margin-top: 12px; padding: 14px; border-radius: 12px; border: none; background: var(--text); color: #000; font-weight: 800; cursor: pointer; transition: .2s;
-}
-.btn-gerar-relatorio.secondary { background: #25D366; color: #fff; }
-.btn-gerar-relatorio:hover { transform: translateY(-1px); opacity: 0.9; }
+    width: 100%;
 
-.checklist-caixa { background: #0F0F10; border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
-.checklist-caixa h4 { font-size: 12px; margin-bottom: 14px; letter-spacing: 1px; }
-.checklist-caixa label { display: flex; align-items: center; gap: 10px; padding: 8px 0; font-size: 13px; cursor: pointer; }
+    margin-top: 12px;
+    padding: 14px;
+
+    border-radius: 9px;
+    border: 1px solid var(--gold);
+
+    background: var(--gold);
+    color: #171513;
+
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .04em;
+}
+
+.btn-gerar-relatorio:hover {
+    background: var(--gold-light);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(184,148,94,.13);
+}
+
+.btn-gerar-relatorio.secondary {
+    background: #263d31;
+    color: #b3cbb1;
+    border-color: #45664f;
+}
+
+.btn-gerar-relatorio.secondary:hover {
+    background: #31523e;
+    color: #fff;
+}
+
+/* =========================================================
+   19. CHECKLIST
+   ========================================================= */
+
+.checklist-caixa {
+    background: #191d20;
+
+    border: 1px solid var(--border);
+    border-radius: 10px;
+
+    padding: 20px;
+}
+
+.checklist-caixa h4 {
+    font-family: var(--font-mono);
+    font-size: 10px;
+
+    margin-bottom: 14px;
+    letter-spacing: .10em;
+
+    color: var(--gold-light);
+}
+
+.checklist-caixa label {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+
+    padding: 10px 0;
+
+    border-bottom: 1px solid var(--border-soft);
+
+    font-size: 12px;
+    color: #d5d2ca;
+
+    cursor: pointer;
+}
+
+.checklist-caixa label:last-child {
+    border-bottom: none;
+}
+
+.checklist-caixa input[type="checkbox"] {
+    accent-color: var(--gold);
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+/* =========================================================
+   20. ELEMENTOS COMPLEMENTARES
+   ========================================================= */
+
+hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 22px 0;
+}
+
+small {
+    color: var(--text-muted);
+}
+
+::selection {
+    background: var(--gold);
+    color: #171513;
+}
+
+::-webkit-scrollbar {
+    width: 9px;
+    height: 9px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-deep);
+}
+
+::-webkit-scrollbar-thumb {
+    background: #45423c;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--gold-dark);
+}
+
+/* =========================================================
+   21. RESPONSIVIDADE — NOTEBOOK E TABLET
+   ========================================================= */
+
+@media (max-width: 1100px) {
+
+    .app-container {
+        padding: 18px;
+    }
+
+    .top-header {
+        flex-wrap: wrap;
+    }
+
+    .dashboard-cards {
+        grid-template-columns: repeat(2, minmax(0,1fr));
+    }
+
+    .grid-4 {
+        grid-template-columns: repeat(2, minmax(0,1fr));
+    }
+}
 
 @media (max-width: 900px) {
-    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
-    .top-header { flex-direction: column; gap: 16px; }
+
+    .top-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 17px;
+    }
+
+    .logos {
+        justify-content: center;
+    }
+
+    .obra-selector {
+        justify-content: space-between;
+    }
+
+    .header-actions {
+        justify-content: flex-end;
+    }
+
+    .grid-2,
+    .grid-3,
+    .grid-4 {
+        grid-template-columns: 1fr;
+    }
+
+    .etapa-body {
+        padding: 19px;
+    }
+
+    .tabela-controle {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+}
+
+/* =========================================================
+   22. RESPONSIVIDADE — CELULAR
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    .app-container {
+        padding: 12px 12px 28px;
+    }
+
+    .top-header {
+        position: relative;
+        top: 0;
+
+        padding: 16px;
+        border-radius: 10px;
+    }
+
+    .logos img {
+        max-width: 130px;
+        height: 37px;
+    }
+
+    .obra-selector {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .obra-selector select {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .header-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .header-actions button {
+        width: 100%;
+    }
+
+    .dashboard-cards {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin: 18px 0;
+    }
+
+    .card.kpi {
+        padding: 14px;
+        gap: 7px;
+    }
+
+    .card.kpi span {
+        font-size: 9px;
+    }
+
+    .card.kpi strong {
+        font-size: 17px;
+    }
+
+    .card.kpi small {
+        font-size: 10px;
+    }
+
+    .etapa-header {
+        padding: 16px;
+        align-items: flex-start;
+    }
+
+    .etapa-header h2 {
+        font-size: 11px;
+        line-height: 1.5;
+    }
+
+    .status {
+        font-size: 8px;
+        padding: 5px 7px;
+    }
+
+    .etapa-body {
+        padding: 15px;
+    }
+
+    .resultado-tijolo {
+        grid-template-columns: 1fr;
+    }
+
+    .controle-tijolo-box {
+        padding: 15px;
+    }
+
+    .resumo-final {
+        padding: 18px;
+    }
+
+    .tabela-resumo td {
+        font-size: 11px;
+    }
+
+    .tabela-resumo .total td {
+        font-size: 14px;
+    }
+}
+
+/* =========================================================
+   23. CELULARES PEQUENOS
+   ========================================================= */
+
+@media (max-width: 370px) {
+
+    .dashboard-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .logos img {
+        max-width: 105px;
+    }
+
+    .etapa-header {
+        flex-direction: column;
+    }
+
+    .card.kpi strong {
+        font-size: 19px;
+    }
+}
+
+/* =========================================================
+   24. ACESSIBILIDADE
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+    }
 }
