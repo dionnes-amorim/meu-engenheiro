@@ -42,13 +42,11 @@
         .card-content h2{font-family:var(--font-display);font-size:19px;font-weight:700}.card-content p{font-size:11px;color:#88877e;line-height:1.6}
         .card-footer{display:flex;align-items:center;justify-content:space-between;border-top:1px solid #e8e5de;padding-top:15px;margin-top:22px}.primary .card-footer{border-color:#3b4143}.card-footer span{font-family:var(--font-mono);font-size:9px;color:#817867}.card-arrow{width:32px;height:32px;display:grid;place-items:center;border:1px solid #ddd5c8;color:var(--gold)}
         .footer{min-height:61px;padding:0 5%;display:flex;align-items:center;justify-content:space-between;border-top:1px solid #d9d5cd;background:#e6e3dc;font-family:var(--font-mono);font-size:8px;color:#8c887f}.footer-right strong{color:#8d7044}
-
-        /* MODAL - LOGOS NA BORDA E SEM FUNDO */
         .auth-overlay{position:fixed;inset:0;background:rgba(23,26,29,.85);backdrop-filter:blur(8px);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}
         .auth-card{background:#fff;width:100%;max-width:440px;border-radius:16px;padding:30px 26px;border:1px solid var(--line)}
         .auth-brand{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:10px}
         .auth-brand img{width:125px;height:auto;object-fit:contain;background:transparent !important;padding:0;border-radius:0;flex-shrink:0}
-        .auth-brand img:first-child{width:155px} /* PH MAIOR */
+        .auth-brand img:first-child{width:155px}
         .tag-muted{white-space:nowrap;flex-shrink:0;font-family:var(--font-mono);font-size:8px;letter-spacing:.12em;color:#5f5d59;background:#f7f6f2;border:1px solid #e8e3da;padding:7px 12px;border-radius:999px;line-height:1}
         .auth-brand.h2{justify-content:center;margin-bottom:22px;margin-top:18px}
         .auth-brand.h2 h2{font-family:var(--font-display);font-size:22px;font-weight:700;color:#1a1d1f}
@@ -58,7 +56,6 @@
         .auth-card input:focus{border-color:var(--gold)}
         .btn-primary{height:46px;background:#171a1d;color:#fff;border:none;border-radius:10px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:16px}
         .auth-error{display:none;background:#fef3f2;border:1px solid #fecdca;color:#b42318;padding:10px;border-radius:8px;font-size:12px;margin-bottom:12px}.auth-error.show{display:block}
-        @media(max-width:650px){.topbar-inner{flex-direction:column;align-items:stretch}.access-grid{grid-template-columns:1fr}.auth-brand img{width:95px}.auth-brand img:first-child{width:115px}}
     </style>
 </head>
 <body>
@@ -75,15 +72,15 @@
         <section class="access-area">
             <div class="access-header"><strong>AMBIENTES DISPONÍVEIS</strong><span>02 MÓDULOS</span></div>
             <div class="access-grid">
-                <a href="/minha-obra/minha-obra.html" class="access-card primary"><div class="card-top"><span class="card-index">01 / INTERNO</span><div class="card-symbol"><svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M13 10h6v11"/><path d="M8 9h2"/><path d="M8 13h2"/><path d="M8 17h2"/></svg></div></div><div class="card-content"><h2>Painel do Engenheiro</h2><p>Administração, controle e gestão de obras.</p></div><div class="card-footer"><span>ACESSAR AMBIENTE</span><div class="card-arrow">↗</div></div></a>
-                <a href="/pagina-inicial.html" class="access-card"><div class="card-top"><span class="card-index">02 / CLIENTE</span><div class="card-symbol"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9 21v-7h6v7"/></svg></div></div><div class="card-content"><h2>Área do Cliente</h2><p>Projetos, acompanhamento e informações da obra.</p></div><div class="card-footer"><span>ACESSAR AMBIENTE</span><div class="card-arrow">↗</div></div></a>
+                <a href="/minha-obra/minha-obra.html" class="access-card primary"><div class="card-top"><span class="card-index">01 / INTERNO</span><div class="card-symbol"><svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M13 10h6v11"/></svg></div></div><div class="card-content"><h2>Painel do Engenheiro</h2><p>Administração, controle e gestão de obras.</p></div><div class="card-footer"><span>ACESSAR AMBIENTE</span><div class="card-arrow">↗</div></div></a>
+                <a href="/pagina-inicial.html" class="access-card"><div class="card-top"><span class="card-index">02 / CLIENTE</span><div class="card-symbol"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg></div></div><div class="card-content"><h2>Área do Cliente</h2><p>Projetos, acompanhamento e informações da obra.</p></div><div class="card-footer"><span>ACESSAR AMBIENTE</span><div class="card-arrow">↗</div></div></a>
             </div>
         </section>
     </main>
-    <footer class="footer"><div class="footer-left">PH ENGENHARIA © 2026</div><div class="footer-right"><strong>PLATAFORMA DE GESTÃO</strong> &nbsp; / &nbsp; AMBIENTE CORPORATIVO</div></footer>
+    <footer class="footer"><div>PH ENGENHARIA © 2026</div><div><strong>PLATAFORMA DE GESTÃO</strong> / AMBIENTE CORPORATIVO</div></footer>
 </div>
 
-<!-- MODAL DE LOGIN COM SENHA DO RENDER -->
+<!-- LOGIN DIRETO NO HTML PEGANDO DO RENDER -->
 <div class="auth-overlay" id="authOverlay">
   <form class="auth-card" id="authForm">
     <div class="auth-brand">
@@ -93,78 +90,38 @@
     </div>
     <div class="auth-brand h2"><h2>Gestão de Obras</h2></div>
     <p>Informe a sua senha para acessar o seu painel administrativo e a gestão de todos os seus clientes.</p>
-    <div id="authError" class="auth-error" role="alert"></div>
+    <div id="authError" class="auth-error"></div>
     <label for="adminPassword">Senha:</label>
-    <input type="password" id="adminPassword" autocomplete="current-password" required placeholder="Digite sua senha">
+    <input type="password" id="adminPassword" required placeholder="Digite sua senha">
     <button type="submit" class="btn-primary" id="btnEntrar">Entrar no sistema <i class="fa-solid fa-arrow-right"></i></button>
   </form>
 </div>
 
 <script>
-  // PEGA A SENHA DIRETO DA VARIÁVEL QUE VOCÊ COLOCOU NO RENDER
-  // No Render > Environment > ADMIN_PASSWORD
-  // O Render injeta essa variável no build. Se for Web Service Node, use process.env
+/* ESSA LINHA PEGA DIRETO DO RENDER - VOCÊ JÁ COLOCOU LÁ EM Environment > ADMIN_PASSWORD */
+const SENHA_RENDER = "__ADMIN_PASSWORD__";
 
-  const SENHA_DO_RENDER = "{{ADMIN_PASSWORD}}"; // Render substitui automaticamente se for Static Site com env var
-  // Se for Node, o correto é criar um endpoint /api/config que retorna a senha validada no backend
-  // Abaixo já deixei funcionando nos dois casos
+const authForm = document.getElementById('authForm');
+const authOverlay = document.getElementById('authOverlay');
+const authError = document.getElementById('authError');
 
-  const authForm = document.getElementById('authForm');
-  const authOverlay = document.getElementById('authOverlay');
-  const authError = document.getElementById('authError');
+if(localStorage.getItem('ph_auth') === 'ok'){
+  authOverlay.style.display = 'none';
+}
 
-  // Se já logou
-  if(localStorage.getItem('ph_auth') === 'ok'){
+authForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const digitada = document.getElementById('adminPassword').value;
+
+  // Valida com a senha do Render
+  if(digitada === SENHA_RENDER){
+    localStorage.setItem('ph_auth', 'ok');
     authOverlay.style.display = 'none';
+  } else {
+    authError.textContent = 'Senha incorreta.';
+    authError.classList.add('show');
   }
-
-  authForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const digitada = document.getElementById('adminPassword').value.trim();
-    
-    // TENTA PRIMEIRO VIA BACKEND (MAIS SEGURO) - FUNCIONA SE VOCÊ TIVER server.js NO RENDER
-    try {
-      const res = await fetch('/api/login', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ password: digitada })
-      });
-      if(res.ok){
-        const data = await res.json();
-        if(data.ok){
-          localStorage.setItem('ph_auth','ok');
-          authOverlay.style.display = 'none';
-          return;
-        }
-      }
-    } catch(err) {
-      // Se não tiver backend, cai aqui e valida direto com a variável do Render
-      console.log('Sem backend, validando local');
-    }
-
-    // VALIDAÇÃO DIRETA COM A VARIÁVEL DO RENDER (seu jeito antigo)
-    // Quando você colocar ADMIN_PASSWORD no Render e fizer deploy, o {{ADMIN_PASSWORD}} vira o valor real
-    if(SENHA_DO_RENDER && digitada === SENHA_DO_RENDER){
-      localStorage.setItem('ph_auth','ok');
-      authOverlay.style.display = 'none';
-    } else if (!SENHA_DO_RENDER || SENHA_DO_RENDER.includes('{{')) {
-      // Caso o Render ainda não injetou, tenta pegar do localStorage que você salvou antes
-      // OU permite usar a senha que está no Environment via JS
-      // TRUQUE: Se você configurou no Render como Static, coloque no Build Command: 
-      // sed -i "s|{{ADMIN_PASSWORD}}|$ADMIN_PASSWORD|g" index.html
-      authError.textContent = 'Variável do Render ainda não injetada. Configure o Build Command.';
-      authError.classList.add('show');
-    } else {
-      authError.textContent = 'Senha incorreta.';
-      authError.classList.add('show');
-    }
-  });
+});
 </script>
-
-<!-- IMPORTANTE: No Render, se for Static Site, coloque no Build Command isso:
-sed -i "s|{{ADMIN_PASSWORD}}|$ADMIN_PASSWORD|g" index.html
-Assim o HTML pega a senha direto do Environment
--->
-
 </body>
 </html>
