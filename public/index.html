@@ -2,126 +2,1390 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#171a1d">
+    <meta name="description" content="PH Engenharia — central de gestão de obras, clientes e projetos.">
     <title>PH Engenharia | Central de Gestão</title>
+
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
     <style>
-        :root{--dark:#171a1d;--dark-soft:#202428;--background:#eeece7;--surface:#ffffff;--text:#242628;--muted:#85877f;--line:#e4e1da;--gold:#b8945e;--gold-light:#d5b783;--font-main:'DM Sans',sans-serif;--font-display:'Manrope',sans-serif;--font-mono:'DM Mono',monospace}
-        *{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
-        body{min-height:100vh;background:var(--background);color:var(--text);font-family:var(--font-main);-webkit-font-smoothing:antialiased}
-        body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(36,38,40,.018) 1px, transparent 1px),linear-gradient(90deg, rgba(36,38,40,.018) 1px, transparent 1px);background-size:36px 36px}
-        .app{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column}
-        .topbar{width:100%;min-height:112px;background:var(--dark);border-bottom:1px solid rgba(184,148,94,.42);position:relative;z-index:2}
-        .topbar-inner{max-width:1500px;width:100%;min-height:112px;margin:0 auto;padding:15px 5%;display:flex;align-items:center;justify-content:space-between;gap:30px}
-        .owner-brand{display:flex;align-items:center;gap:22px}
-        .owner-logo-box{width:300px;height:95px;background:transparent;border:none;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-        .owner-logo{width:100%;height:100%;object-fit:contain}
-        .owner-info{display:flex;flex-direction:column;gap:6px}
-        .owner-info strong{font-family:var(--font-display);font-size:19px;font-weight:800;letter-spacing:.055em;color:#fff}
-        .owner-info span{font-family:var(--font-mono);font-size:9px;color:#a29e95;letter-spacing:.16em}
-        .developer-brand{display:flex;align-items:center;gap:16px}
-        .developer-info{display:flex;flex-direction:column;gap:5px;text-align:right}
-        .developer-info span{color:#898981;font-family:var(--font-mono);font-size:8px;letter-spacing:.16em}
-        .developer-info strong{color:#e5e1d8;font-size:11px}
-        .developer-logo-box{width:190px;height:80px;background:transparent;border:none;display:flex;align-items:center;justify-content:center}
-        .developer-logo{width:100%;height:100%;object-fit:contain}
-        .main{width:100%;max-width:1350px;margin:0 auto;padding:76px 6% 65px;flex:1}
-        .page-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:17px}
-        .page-label{display:flex;align-items:center;gap:10px;color:#92764d;font-family:var(--font-mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase}
-        .page-label::before{content:"";width:23px;height:1px;background:var(--gold)}
-        .page-code{color:#a5a094;font-family:var(--font-mono);font-size:9px}
-        .heading{max-width:740px}.heading h1{font-family:var(--font-display);font-size:clamp(35px,4.5vw,51px);font-weight:600;letter-spacing:-.065em;line-height:1.12;color:#25282a}.heading h1 span{color:var(--gold)}.heading p{color:#85847d;font-size:13px;margin-top:13px;line-height:1.7}
-        .access-area{margin-top:55px}.access-header{display:flex;align-items:center;justify-content:space-between;padding-bottom:15px;border-bottom:1px solid #d8d4ca;margin-bottom:20px}.access-header strong{font-family:var(--font-mono);font-size:10px;letter-spacing:.16em;color:#77766e}.access-header span{font-family:var(--font-mono);font-size:9px;color:#a19b90}
-        .access-grid{display:grid;grid-template-columns:1fr 1fr;gap:19px}
-        .access-card{position:relative;min-height:255px;padding:26px 28px;display:flex;flex-direction:column;justify-content:space-between;text-decoration:none;color:inherit;border:1px solid #dcd8d0;background:var(--surface);transition:all .22s}
-        .access-card:hover{transform:translateY(-4px);border-color:var(--gold);box-shadow:0 14px 30px rgba(26,27,25,.08)}
-        .access-card.primary{background:var(--dark-soft);border-color:var(--dark-soft);color:#fff}
-        .card-top{display:flex;align-items:center;justify-content:space-between}.card-index{font-family:var(--font-mono);font-size:10px;color:var(--gold)}.card-symbol{width:45px;height:45px;display:grid;place-items:center;border:1px solid #e6e2d9;background:#f7f6f2;color:#92744b}.primary .card-symbol{background:#2e3336;border-color:#41474a;color:var(--gold-light)}.card-symbol svg{width:21px;height:21px;stroke:currentColor;stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
-        .card-content h2{font-family:var(--font-display);font-size:19px;font-weight:700}.card-content p{font-size:11px;color:#88877e;line-height:1.6}
-        .card-footer{display:flex;align-items:center;justify-content:space-between;border-top:1px solid #e8e5de;padding-top:15px;margin-top:22px}.primary .card-footer{border-color:#3b4143}.card-footer span{font-family:var(--font-mono);font-size:9px;color:#817867}.card-arrow{width:32px;height:32px;display:grid;place-items:center;border:1px solid #ddd5c8;color:var(--gold)}
-        .footer{min-height:61px;padding:0 5%;display:flex;align-items:center;justify-content:space-between;border-top:1px solid #d9d5cd;background:#e6e3dc;font-family:var(--font-mono);font-size:8px;color:#8c887f}.footer-right strong{color:#8d7044}
-        .auth-overlay{position:fixed;inset:0;background:rgba(23,26,29,.85);backdrop-filter:blur(8px);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}
-        .auth-card{background:#fff;width:100%;max-width:440px;border-radius:16px;padding:30px 26px;border:1px solid var(--line)}
-        .auth-brand{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:10px}
-        .auth-brand img{width:125px;height:auto;object-fit:contain;background:transparent !important;padding:0;border-radius:0;flex-shrink:0}
-        .auth-brand img:first-child{width:155px}
-        .tag-muted{white-space:nowrap;flex-shrink:0;font-family:var(--font-mono);font-size:8px;letter-spacing:.12em;color:#5f5d59;background:#f7f6f2;border:1px solid #e8e3da;padding:7px 12px;border-radius:999px;line-height:1}
-        .auth-brand.h2{justify-content:center;margin-bottom:22px;margin-top:18px}
-        .auth-brand.h2 h2{font-family:var(--font-display);font-size:22px;font-weight:700;color:#1a1d1f}
-        .auth-card p{font-size:13px;color:#8a8883;line-height:1.6;margin-bottom:20px}
-        .auth-card label{font-size:12px;font-weight:700;display:block;margin-bottom:8px;color:#1a1d1f}
-        .auth-card input{width:100%;height:46px;border:1px solid #e4e1da;border-radius:10px;padding:0 14px;outline:none}
-        .auth-card input:focus{border-color:var(--gold)}
-        .btn-primary{height:46px;background:#171a1d;color:#fff;border:none;border-radius:10px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:16px}
-        .auth-error{display:none;background:#fef3f2;border:1px solid #fecdca;color:#b42318;padding:10px;border-radius:8px;font-size:12px;margin-bottom:12px}.auth-error.show{display:block}
+        :root {
+            --dark: #171a1d;
+            --dark-soft: #202428;
+            --background: #eeece7;
+            --surface: #ffffff;
+            --text: #242628;
+            --muted: #85877f;
+            --line: #e4e1da;
+            --gold: #b8945e;
+            --gold-light: #d5b783;
+            --font-main: 'DM Sans', sans-serif;
+            --font-display: 'Manrope', sans-serif;
+            --font-mono: 'DM Mono', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        body {
+            min-height: 100vh;
+            min-height: 100dvh;
+            width: 100%;
+            overflow-x: hidden;
+            background: var(--background);
+            color: var(--text);
+            font-family: var(--font-main);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background-image:
+                linear-gradient(rgba(36,38,40,.018) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(36,38,40,.018) 1px, transparent 1px);
+            background-size: 36px 36px;
+        }
+
+        button,
+        input {
+            font: inherit;
+        }
+
+        button {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .app {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* =========================================
+           CABEÇALHO
+        ========================================= */
+
+        .topbar {
+            width: 100%;
+            min-height: 112px;
+            background: var(--dark);
+            border-bottom: 1px solid rgba(184,148,94,.42);
+            position: relative;
+            z-index: 2;
+        }
+
+        .topbar-inner {
+            max-width: 1500px;
+            width: 100%;
+            min-height: 112px;
+            margin: 0 auto;
+            padding: 14px 5%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+        }
+
+        .owner-brand {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            min-width: 0;
+        }
+
+        .owner-logo-box {
+            width: clamp(150px, 21vw, 270px);
+            height: 82px;
+            background: transparent;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .owner-logo {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .owner-info {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 0;
+        }
+
+        .owner-info strong {
+            font-family: var(--font-display);
+            font-size: 19px;
+            font-weight: 800;
+            letter-spacing: .055em;
+            color: #fff;
+            white-space: nowrap;
+        }
+
+        .owner-info span {
+            font-family: var(--font-mono);
+            font-size: 9px;
+            color: #a29e95;
+            letter-spacing: .16em;
+            white-space: nowrap;
+        }
+
+        .developer-brand {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 14px;
+            min-width: 0;
+        }
+
+        .developer-info {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            text-align: right;
+        }
+
+        .developer-info span {
+            color: #898981;
+            font-family: var(--font-mono);
+            font-size: 8px;
+            letter-spacing: .16em;
+        }
+
+        .developer-info strong {
+            color: #e5e1d8;
+            font-size: 11px;
+            white-space: nowrap;
+        }
+
+        .developer-logo-box {
+            width: clamp(115px, 15vw, 190px);
+            height: 75px;
+            background: transparent;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .developer-logo {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* =========================================
+           CONTEÚDO PRINCIPAL
+        ========================================= */
+
+        .main {
+            width: 100%;
+            max-width: 1350px;
+            margin: 0 auto;
+            padding: 76px 6% 65px;
+            flex: 1;
+        }
+
+        .page-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 17px;
+        }
+
+        .page-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #92764d;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            letter-spacing: .16em;
+            text-transform: uppercase;
+        }
+
+        .page-label::before {
+            content: "";
+            width: 23px;
+            height: 1px;
+            background: var(--gold);
+            flex-shrink: 0;
+        }
+
+        .page-code {
+            color: #a5a094;
+            font-family: var(--font-mono);
+            font-size: 9px;
+            white-space: nowrap;
+        }
+
+        .heading {
+            max-width: 740px;
+        }
+
+        .heading h1 {
+            font-family: var(--font-display);
+            font-size: clamp(35px, 4.5vw, 51px);
+            font-weight: 600;
+            letter-spacing: -.065em;
+            line-height: 1.12;
+            color: #25282a;
+        }
+
+        .heading h1 span {
+            color: var(--gold);
+        }
+
+        .heading p {
+            color: #85847d;
+            font-size: 13px;
+            margin-top: 13px;
+            line-height: 1.7;
+        }
+
+        /* =========================================
+           CARTÕES DE ACESSO
+        ========================================= */
+
+        .access-area {
+            margin-top: 55px;
+        }
+
+        .access-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #d8d4ca;
+            margin-bottom: 20px;
+        }
+
+        .access-header strong {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            letter-spacing: .16em;
+            color: #77766e;
+        }
+
+        .access-header span {
+            font-family: var(--font-mono);
+            font-size: 9px;
+            color: #a19b90;
+            white-space: nowrap;
+        }
+
+        .access-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 19px;
+        }
+
+        .access-card {
+            position: relative;
+            min-width: 0;
+            min-height: 255px;
+            padding: 26px 28px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            text-decoration: none;
+            color: inherit;
+            border: 1px solid #dcd8d0;
+            background: var(--surface);
+            transition:
+                transform .22s ease,
+                border-color .22s ease,
+                box-shadow .22s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .access-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--gold);
+            box-shadow: 0 14px 30px rgba(26,27,25,.08);
+        }
+
+        .access-card.primary {
+            background: var(--dark-soft);
+            border-color: var(--dark-soft);
+            color: #fff;
+        }
+
+        .card-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .card-index {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: var(--gold);
+            letter-spacing: .06em;
+        }
+
+        .card-symbol {
+            width: 45px;
+            height: 45px;
+            display: grid;
+            place-items: center;
+            border: 1px solid #e6e2d9;
+            background: #f7f6f2;
+            color: #92744b;
+            flex-shrink: 0;
+        }
+
+        .primary .card-symbol {
+            background: #2e3336;
+            border-color: #41474a;
+            color: var(--gold-light);
+        }
+
+        .card-symbol svg {
+            width: 21px;
+            height: 21px;
+            stroke: currentColor;
+            stroke-width: 1.5;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .card-content {
+            margin-top: 24px;
+        }
+
+        .card-content h2 {
+            font-family: var(--font-display);
+            font-size: 19px;
+            font-weight: 700;
+            line-height: 1.35;
+        }
+
+        .card-content p {
+            margin-top: 7px;
+            font-size: 11px;
+            color: #88877e;
+            line-height: 1.6;
+        }
+
+        .card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            border-top: 1px solid #e8e5de;
+            padding-top: 15px;
+            margin-top: 22px;
+        }
+
+        .primary .card-footer {
+            border-color: #3b4143;
+        }
+
+        .card-footer span {
+            font-family: var(--font-mono);
+            font-size: 9px;
+            color: #817867;
+            letter-spacing: .04em;
+        }
+
+        .card-arrow {
+            width: 32px;
+            height: 32px;
+            display: grid;
+            place-items: center;
+            border: 1px solid #ddd5c8;
+            color: var(--gold);
+            flex-shrink: 0;
+            font-size: 17px;
+        }
+
+        /* =========================================
+           RODAPÉ
+        ========================================= */
+
+        .footer {
+            min-height: 61px;
+            padding: 15px 5%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            border-top: 1px solid #d9d5cd;
+            background: #e6e3dc;
+            font-family: var(--font-mono);
+            font-size: 8px;
+            color: #8c887f;
+        }
+
+        .footer-right {
+            text-align: right;
+        }
+
+        .footer-right strong {
+            color: #8d7044;
+        }
+
+        /* =========================================
+           TELA DE LOGIN
+        ========================================= */
+
+        .auth-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-y: auto;
+            background: rgba(15,18,20,.88);
+            backdrop-filter: blur(9px);
+            -webkit-backdrop-filter: blur(9px);
+            transition: opacity .25s ease, visibility .25s ease;
+        }
+
+        .auth-overlay.is-hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .auth-card {
+            position: relative;
+            width: 100%;
+            max-width: 440px;
+            margin: auto;
+            padding: 34px 32px 28px;
+            border: 1px solid rgba(184,148,94,.35);
+            border-radius: 18px;
+            background: #fff;
+            box-shadow: 0 25px 80px rgba(0,0,0,.3);
+            animation: authEnter .35s ease both;
+        }
+
+        @keyframes authEnter {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .auth-brand {
+            width: 100%;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 23px;
+            border-bottom: 1px solid #eeeae3;
+        }
+
+        .auth-brand img {
+            display: block;
+            width: 112px;
+            max-width: 100%;
+            height: 48px;
+            object-fit: contain;
+        }
+
+        .auth-brand img:first-child {
+            width: 135px;
+            justify-self: start;
+        }
+
+        .auth-brand img:last-child {
+            width: 105px;
+            justify-self: end;
+        }
+
+        .tag-muted {
+            white-space: nowrap;
+            font-family: var(--font-mono);
+            font-size: 8px;
+            letter-spacing: .1em;
+            color: #77736b;
+            background: #f7f6f2;
+            border: 1px solid #e8e3da;
+            padding: 7px 9px;
+            border-radius: 999px;
+            line-height: 1;
+        }
+
+        .auth-heading {
+            text-align: center;
+            margin-top: 27px;
+        }
+
+        .auth-lock {
+            width: 48px;
+            height: 48px;
+            display: grid;
+            place-items: center;
+            margin: 0 auto 15px;
+            border-radius: 14px;
+            color: #a17d4a;
+            background: #f6f1e9;
+            border: 1px solid #eee3d3;
+            font-size: 18px;
+        }
+
+        .auth-heading h2 {
+            font-family: var(--font-display);
+            font-size: 23px;
+            font-weight: 800;
+            letter-spacing: -.04em;
+            color: #1a1d1f;
+        }
+
+        .auth-heading span {
+            display: block;
+            margin-top: 7px;
+            font-family: var(--font-mono);
+            font-size: 9px;
+            letter-spacing: .13em;
+            color: #a17d4a;
+            text-transform: uppercase;
+        }
+
+        .auth-description {
+            font-size: 12px;
+            color: #85827b;
+            line-height: 1.7;
+            text-align: center;
+            margin: 17px 0 24px;
+        }
+
+        .auth-card label {
+            display: block;
+            margin-bottom: 9px;
+            color: #292b2c;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .password-field {
+            position: relative;
+            width: 100%;
+        }
+
+        .auth-card input {
+            display: block;
+            width: 100%;
+            height: 49px;
+            padding: 0 48px 0 15px;
+            border: 1px solid #dedbd4;
+            border-radius: 10px;
+            background: #fbfaf8;
+            color: #25282a;
+            font-size: 14px;
+            outline: none;
+            transition: border-color .2s, box-shadow .2s, background .2s;
+        }
+
+        .auth-card input::placeholder {
+            color: #aaa69d;
+        }
+
+        .auth-card input:focus {
+            border-color: var(--gold);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(184,148,94,.12);
+        }
+
+        .toggle-password {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 47px;
+            height: 49px;
+            display: grid;
+            place-items: center;
+            border: 0;
+            background: transparent;
+            color: #8b877f;
+            cursor: pointer;
+            border-radius: 0 10px 10px 0;
+        }
+
+        .toggle-password:hover {
+            color: #9a7749;
+        }
+
+        .auth-error {
+            display: none;
+            margin: 0 0 15px;
+            padding: 11px 12px;
+            border: 1px solid #fecdca;
+            border-radius: 9px;
+            background: #fef3f2;
+            color: #b42318;
+            font-size: 11px;
+            line-height: 1.5;
+        }
+
+        .auth-error.show {
+            display: block;
+        }
+
+        .btn-primary {
+            width: 100%;
+            min-height: 49px;
+            margin-top: 19px;
+            padding: 0 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 11px;
+            border: 1px solid #171a1d;
+            border-radius: 10px;
+            background: #171a1d;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: .02em;
+            cursor: pointer;
+            transition: background .2s, transform .2s, border-color .2s;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #30363a;
+            border-color: #30363a;
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:disabled {
+            opacity: .7;
+            cursor: wait;
+        }
+
+        .auth-footnote {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            margin-top: 21px;
+            color: #aaa59b;
+            font-family: var(--font-mono);
+            font-size: 8px;
+            letter-spacing: .06em;
+            text-align: center;
+        }
+
+        .auth-footnote i {
+            color: #a17d4a;
+        }
+
+        /* =========================================
+           TABLETS
+        ========================================= */
+
+        @media (max-width: 900px) {
+            .topbar-inner {
+                gap: 15px;
+                padding-left: 4%;
+                padding-right: 4%;
+            }
+
+            .owner-brand {
+                gap: 11px;
+            }
+
+            .owner-logo-box {
+                width: 170px;
+                height: 68px;
+            }
+
+            .owner-info strong {
+                font-size: 15px;
+            }
+
+            .owner-info span {
+                font-size: 7px;
+            }
+
+            .developer-logo-box {
+                width: 125px;
+                height: 65px;
+            }
+
+            .developer-info span {
+                font-size: 7px;
+            }
+
+            .developer-info strong {
+                font-size: 10px;
+            }
+
+            .main {
+                padding-top: 58px;
+            }
+        }
+
+        /* =========================================
+           CELULARES
+        ========================================= */
+
+        @media (max-width: 650px) {
+            .topbar {
+                min-height: auto;
+            }
+
+            .topbar-inner {
+                min-height: auto;
+                padding: 13px 5% 14px;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+
+            .owner-brand {
+                width: 100%;
+                justify-content: flex-start;
+                gap: 12px;
+            }
+
+            .owner-logo-box {
+                width: 125px;
+                height: 58px;
+            }
+
+            .owner-info {
+                gap: 4px;
+            }
+
+            .owner-info strong {
+                font-size: 13px;
+                letter-spacing: .04em;
+            }
+
+            .owner-info span {
+                font-size: 7px;
+                letter-spacing: .1em;
+            }
+
+            .developer-brand {
+                width: 100%;
+                padding-top: 9px;
+                border-top: 1px solid rgba(255,255,255,.09);
+                justify-content: flex-end;
+                gap: 10px;
+            }
+
+            .developer-logo-box {
+                width: 105px;
+                height: 49px;
+            }
+
+            .developer-info span {
+                font-size: 7px;
+                letter-spacing: .1em;
+            }
+
+            .developer-info strong {
+                font-size: 9px;
+            }
+
+            .main {
+                padding: 40px 5% 42px;
+            }
+
+            .page-top {
+                margin-bottom: 14px;
+            }
+
+            .page-label {
+                font-size: 9px;
+            }
+
+            .page-code {
+                font-size: 8px;
+            }
+
+            .heading h1 {
+                font-size: clamp(34px, 9vw, 43px);
+            }
+
+            .heading p {
+                font-size: 12px;
+                margin-top: 10px;
+            }
+
+            .access-area {
+                margin-top: 37px;
+            }
+
+            .access-header {
+                margin-bottom: 15px;
+                padding-bottom: 12px;
+            }
+
+            .access-header strong {
+                font-size: 9px;
+                letter-spacing: .1em;
+            }
+
+            .access-header span {
+                font-size: 8px;
+            }
+
+            .access-grid {
+                grid-template-columns: minmax(0, 1fr);
+                gap: 13px;
+            }
+
+            .access-card {
+                min-height: 218px;
+                padding: 21px 21px;
+            }
+
+            .card-content {
+                margin-top: 20px;
+            }
+
+            .card-content h2 {
+                font-size: 18px;
+            }
+
+            .card-content p {
+                font-size: 11px;
+            }
+
+            .footer {
+                min-height: auto;
+                padding: 15px 5%;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                text-align: center;
+                font-size: 7px;
+            }
+
+            .footer-right {
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .owner-logo-box {
+                width: 105px;
+                height: 52px;
+            }
+
+            .owner-info strong {
+                font-size: 11px;
+            }
+
+            .owner-info span {
+                font-size: 6px;
+            }
+
+            .developer-logo-box {
+                width: 88px;
+                height: 43px;
+            }
+
+            .developer-info span {
+                font-size: 6px;
+            }
+
+            .developer-info strong {
+                font-size: 8px;
+            }
+
+            .auth-overlay {
+                padding: 12px;
+            }
+
+            .auth-card {
+                padding: 25px 19px 22px;
+                border-radius: 15px;
+            }
+
+            .auth-brand {
+                gap: 5px;
+                padding-bottom: 17px;
+            }
+
+            .auth-brand img:first-child {
+                width: 105px;
+                height: 39px;
+            }
+
+            .auth-brand img:last-child {
+                width: 80px;
+                height: 39px;
+            }
+
+            .tag-muted {
+                font-size: 7px;
+                padding: 6px 7px;
+            }
+
+            .auth-heading {
+                margin-top: 21px;
+            }
+
+            .auth-heading h2 {
+                font-size: 21px;
+            }
+
+            .auth-description {
+                font-size: 11px;
+                margin-bottom: 20px;
+            }
+        }
+
+        @media (max-height: 650px) {
+            .auth-overlay {
+                align-items: flex-start;
+            }
+
+            .auth-card {
+                margin-top: 8px;
+                margin-bottom: 8px;
+                padding-top: 22px;
+                padding-bottom: 20px;
+            }
+
+            .auth-heading {
+                margin-top: 17px;
+            }
+
+            .auth-lock {
+                width: 40px;
+                height: 40px;
+                margin-bottom: 10px;
+            }
+
+            .auth-description {
+                margin: 12px 0 17px;
+            }
+
+            .auth-footnote {
+                margin-top: 14px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                scroll-behavior: auto !important;
+                animation-duration: .01ms !important;
+                transition-duration: .01ms !important;
+            }
+        }
     </style>
 </head>
+
 <body>
 <div class="app">
+
+    <!-- CABEÇALHO -->
     <header class="topbar">
         <div class="topbar-inner">
-            <div class="owner-brand"><div class="owner-logo-box"><img src="/assets/img/logo-engenheiro.png" class="owner-logo"></div><div class="owner-info"><strong>PH ENGENHARIA</strong><span>GESTÃO E ENGENHARIA</span></div></div>
-            <div class="developer-brand"><div class="developer-info"><span>TECNOLOGIA E SISTEMAS</span><strong>DESENVOLVIMENTO</strong></div><div class="developer-logo-box"><img src="/assets/img/logo-desenvolvimento.png" class="developer-logo"></div></div>
+
+            <div class="owner-brand">
+                <div class="owner-logo-box">
+                    <img
+                        src="/assets/img/logo-engenheiro.png"
+                        class="owner-logo"
+                        alt="Logo PH Engenharia"
+                    >
+                </div>
+
+                <div class="owner-info">
+                    <strong>PH ENGENHARIA</strong>
+                    <span>GESTÃO E ENGENHARIA</span>
+                </div>
+            </div>
+
+            <div class="developer-brand">
+                <div class="developer-info">
+                    <span>TECNOLOGIA E SISTEMAS</span>
+                    <strong>DESENVOLVIMENTO</strong>
+                </div>
+
+                <div class="developer-logo-box">
+                    <img
+                        src="/assets/img/logo-desenvolvimento.png"
+                        class="developer-logo"
+                        alt="Logo de desenvolvimento"
+                    >
+                </div>
+            </div>
+
         </div>
     </header>
+
+    <!-- CONTEÚDO PRINCIPAL -->
     <main class="main">
-        <div class="page-top"><div class="page-label">CENTRAL DE ACESSO</div><div class="page-code">PH / SYSTEM</div></div>
-        <section class="heading"><h1>Central de <span>gestão.</span></h1><p>Selecione o ambiente para acessar a plataforma.</p></section>
+
+        <div class="page-top">
+            <div class="page-label">CENTRAL DE ACESSO</div>
+            <div class="page-code">PH / SYSTEM</div>
+        </div>
+
+        <section class="heading">
+            <h1>Central de <span>gestão.</span></h1>
+            <p>Selecione o ambiente para acessar a plataforma.</p>
+        </section>
+
         <section class="access-area">
-            <div class="access-header"><strong>AMBIENTES DISPONÍVEIS</strong><span>02 MÓDULOS</span></div>
+
+            <div class="access-header">
+                <strong>AMBIENTES DISPONÍVEIS</strong>
+                <span>02 MÓDULOS</span>
+            </div>
+
             <div class="access-grid">
-                <a href="/minha-obra/minha-obra.html" class="access-card primary"><div class="card-top"><span class="card-index">01 / INTERNO</span><div class="card-symbol"><svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M13 10h6v11"/></svg></div></div><div class="card-content"><h2>Painel do Engenheiro</h2><p>Administração, controle e gestão de obras.</p></div><div class="card-footer"><span>ACESSAR AMBIENTE</span><div class="card-arrow">↗</div></div></a>
-                <a href="/pagina-inicial.html" class="access-card"><div class="card-top"><span class="card-index">02 / CLIENTE</span><div class="card-symbol"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg></div></div><div class="card-content"><h2>Área do Cliente</h2><p>Projetos, acompanhamento e informações da obra.</p></div><div class="card-footer"><span>ACESSAR AMBIENTE</span><div class="card-arrow">↗</div></div></a>
+
+                <!-- PAINEL DO ENGENHEIRO -->
+                <a
+                    href="/minha-obra/minha-obra.html"
+                    class="access-card primary"
+                >
+                    <div class="card-top">
+                        <span class="card-index">01 / INTERNO</span>
+
+                        <div class="card-symbol">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M3 21h18"/>
+                                <path d="M5 21V7l8-4v18"/>
+                                <path d="M13 10h6v11"/>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div class="card-content">
+                        <h2>Painel do Engenheiro</h2>
+                        <p>Administração, controle e gestão de obras.</p>
+                    </div>
+
+                    <div class="card-footer">
+                        <span>ACESSAR AMBIENTE</span>
+                        <div class="card-arrow">↗</div>
+                    </div>
+                </a>
+
+                <!-- ÁREA DO CLIENTE -->
+                <a
+                    href="/pagina-inicial.html"
+                    class="access-card"
+                >
+                    <div class="card-top">
+                        <span class="card-index">02 / CLIENTE</span>
+
+                        <div class="card-symbol">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M3 10.5 12 3l9 7.5"/>
+                                <path d="M5 9.5V21h14V9.5"/>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div class="card-content">
+                        <h2>Área do Cliente</h2>
+                        <p>Projetos, acompanhamento e informações da obra.</p>
+                    </div>
+
+                    <div class="card-footer">
+                        <span>ACESSAR AMBIENTE</span>
+                        <div class="card-arrow">↗</div>
+                    </div>
+                </a>
+
             </div>
         </section>
     </main>
-    <footer class="footer"><div>PH ENGENHARIA © 2026</div><div><strong>PLATAFORMA DE GESTÃO</strong> / AMBIENTE CORPORATIVO</div></footer>
+
+    <!-- RODAPÉ -->
+    <footer class="footer">
+        <div>PH ENGENHARIA © 2026</div>
+
+        <div class="footer-right">
+            <strong>PLATAFORMA DE GESTÃO</strong>
+            / AMBIENTE CORPORATIVO
+        </div>
+    </footer>
+
 </div>
 
-<!-- LOGIN DIRETO NO HTML PEGANDO DO RENDER -->
+<!-- =========================================
+     LOGIN ADMINISTRATIVO
+========================================= -->
+
 <div class="auth-overlay" id="authOverlay">
-  <form class="auth-card" id="authForm">
-    <div class="auth-brand">
-      <img src="/assets/img/logo-engenheiro.png" alt="PH">
-      <span class="tag-muted">ÁREA RESTRITA</span>
-      <img src="/assets/img/logo-desenvolvimento.png" alt="DL">
-    </div>
-    <div class="auth-brand h2"><h2>Gestão de Obras</h2></div>
-    <p>Informe a sua senha para acessar o seu painel administrativo e a gestão de todos os seus clientes.</p>
-    <div id="authError" class="auth-error"></div>
-    <label for="adminPassword">Senha:</label>
-    <input type="password" id="adminPassword" required placeholder="Digite sua senha">
-    <button type="submit" class="btn-primary" id="btnEntrar">Entrar no sistema <i class="fa-solid fa-arrow-right"></i></button>
-  </form>
+
+    <form class="auth-card" id="authForm" autocomplete="on">
+
+        <div class="auth-brand">
+
+            <img
+                src="/assets/img/logo-engenheiro.png"
+                alt="PH Engenharia"
+            >
+
+            <span class="tag-muted">ÁREA RESTRITA</span>
+
+            <img
+                src="/assets/img/logo-desenvolvimento.png"
+                alt="Desenvolvimento"
+            >
+
+        </div>
+
+        <div class="auth-heading">
+
+            <div class="auth-lock">
+                <i class="fa-solid fa-lock"></i>
+            </div>
+
+            <h2>Gestão de Obras</h2>
+            <span>Acesso administrativo</span>
+
+        </div>
+
+        <p class="auth-description">
+            Informe sua senha para acessar a central administrativa
+            e realizar a gestão de obras, projetos e clientes.
+        </p>
+
+        <div id="authError" class="auth-error" role="alert" aria-live="polite"></div>
+
+        <label for="adminPassword">Senha de acesso</label>
+
+        <div class="password-field">
+
+            <input
+                type="password"
+                id="adminPassword"
+                name="password"
+                required
+                autocomplete="current-password"
+                placeholder="Digite sua senha"
+            >
+
+            <button
+                type="button"
+                class="toggle-password"
+                id="togglePassword"
+                aria-label="Mostrar senha"
+                title="Mostrar senha"
+            >
+                <i class="fa-regular fa-eye"></i>
+            </button>
+
+        </div>
+
+        <button
+            type="submit"
+            class="btn-primary"
+            id="btnEntrar"
+        >
+            <span>Entrar no sistema</span>
+            <i class="fa-solid fa-arrow-right"></i>
+        </button>
+
+        <div class="auth-footnote">
+            <i class="fa-solid fa-shield-halved"></i>
+            AMBIENTE PROTEGIDO · PH ENGENHARIA
+        </div>
+
+    </form>
+
 </div>
 
 <script>
-/* ESSA LINHA PEGA DIRETO DO RENDER - VOCÊ JÁ COLOCOU LÁ EM Environment > ADMIN_PASSWORD */
-const SENHA_RENDER = "__ADMIN_PASSWORD__";
+/* =========================================
+   AUTENTICAÇÃO COM O SERVIDOR / RENDER
+
+   A senha NÃO fica neste HTML.
+   O servidor compara com process.env.ADMIN_PASSWORD.
+========================================= */
 
 const authForm = document.getElementById('authForm');
 const authOverlay = document.getElementById('authOverlay');
 const authError = document.getElementById('authError');
+const adminPassword = document.getElementById('adminPassword');
+const btnEntrar = document.getElementById('btnEntrar');
+const togglePassword = document.getElementById('togglePassword');
 
-if(localStorage.getItem('ph_auth') === 'ok'){
-  authOverlay.style.display = 'none';
+const botaoOriginal = btnEntrar.innerHTML;
+
+/* Mostra mensagem de erro */
+function mostrarErro(mensagem) {
+    authError.textContent = mensagem;
+    authError.classList.add('show');
 }
 
-authForm.addEventListener('submit', (e) => {
-  e.preventDefault();
-  const digitada = document.getElementById('adminPassword').value;
+/* Limpa mensagem de erro */
+function limparErro() {
+    authError.textContent = '';
+    authError.classList.remove('show');
+}
 
-  // Valida com a senha do Render
-  if(digitada === SENHA_RENDER){
-    localStorage.setItem('ph_auth', 'ok');
-    authOverlay.style.display = 'none';
-  } else {
-    authError.textContent = 'Senha incorreta.';
-    authError.classList.add('show');
-  }
+/* Libera a tela depois da autenticação confirmada */
+function liberarAcesso() {
+    authOverlay.classList.add('is-hidden');
+
+    setTimeout(() => {
+        authOverlay.style.display = 'none';
+    }, 260);
+}
+
+/* Verifica se já existe uma sessão válida no servidor */
+async function verificarSessao() {
+    try {
+        const resposta = await fetch('/api/auth/status', {
+            method: 'GET',
+            credentials: 'same-origin',
+            cache: 'no-store',
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
+
+        if (!resposta.ok) {
+            return;
+        }
+
+        const dados = await resposta.json();
+
+        if (dados.authenticated === true) {
+            liberarAcesso();
+        }
+
+    } catch (erro) {
+        /*
+         * Se a verificação falhar, mantém a tela de login.
+         * O usuário ainda poderá tentar entrar normalmente.
+         */
+        console.error('Não foi possível verificar a sessão:', erro);
+    }
+}
+
+/* Envia a senha para o servidor validar com a variável do Render */
+authForm.addEventListener('submit', async function(event) {
+    event.preventDefault();
+
+    limparErro();
+
+    const senha = adminPassword.value;
+
+    if (!senha) {
+        mostrarErro('Digite sua senha para continuar.');
+        adminPassword.focus();
+        return;
+    }
+
+    btnEntrar.disabled = true;
+    btnEntrar.innerHTML = `
+        <span>Validando acesso...</span>
+        <i class="fa-solid fa-spinner fa-spin"></i>
+    `;
+
+    try {
+        const resposta = await fetch('/api/login', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                password: senha
+            })
+        });
+
+        const dados = await resposta.json().catch(() => ({}));
+
+        if (!resposta.ok || dados.ok !== true) {
+            throw new Error(
+                dados.message || 'Senha incorreta. Verifique e tente novamente.'
+            );
+        }
+
+        adminPassword.value = '';
+        liberarAcesso();
+
+    } catch (erro) {
+        mostrarErro(
+            erro.message ||
+            'Não foi possível conectar ao servidor. Tente novamente.'
+        );
+
+        adminPassword.focus();
+        adminPassword.select();
+
+    } finally {
+        btnEntrar.disabled = false;
+        btnEntrar.innerHTML = botaoOriginal;
+    }
 });
+
+/* Mostrar e ocultar senha */
+togglePassword.addEventListener('click', function() {
+    const senhaVisivel = adminPassword.type === 'text';
+
+    adminPassword.type = senhaVisivel ? 'password' : 'text';
+
+    togglePassword.innerHTML = senhaVisivel
+        ? '<i class="fa-regular fa-eye"></i>'
+        : '<i class="fa-regular fa-eye-slash"></i>';
+
+    togglePassword.setAttribute(
+        'aria-label',
+        senhaVisivel ? 'Mostrar senha' : 'Ocultar senha'
+    );
+
+    togglePassword.setAttribute(
+        'title',
+        senhaVisivel ? 'Mostrar senha' : 'Ocultar senha'
+    );
+
+    adminPassword.focus();
+});
+
+/* Remove erro assim que o usuário começar a corrigir */
+adminPassword.addEventListener('input', limparErro);
+
+/* Confere a sessão quando a página abre */
+verificarSessao();
 </script>
+
 </body>
 </html>
