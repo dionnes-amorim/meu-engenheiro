@@ -15,6 +15,34 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
+
+<!-- MODAL DE LOGIN ADMINISTRATIVO -->
+<div class="auth-overlay" id="authOverlay">
+  <form class="auth-card" id="authForm">
+
+    <div class="auth-brand">
+      <img src="../assets/img/logo-engenheiro.png">
+      <span class="tag-muted">ÁREA RESTRITA</span>
+      <span class="auth-brand2"><img src="../assets/img/logo-desenvolvimento.png">
+    </div>
+
+    <div class="auth-brand h2">
+      <h2>Gestão de Obras</h2>
+    </div>
+
+    <p>Informe a sua senha para acessar o seu painel administrativo e a gestão de todos os seus clientes.</p>
+    <div id="authError" class="auth-error" role="alert"></div>
+    <label for="adminPassword">Senha:</label>
+    <input type="password" id="adminPassword" autocomplete="current-password" required placeholder="Digite sua senha">
+    <button type="submit" class="btn-primary" id="btnEntrar" style="width:100%;margin-top:16px">Entrar no sistema <i class="fa-solid fa-arrow-right"></i></button>
+  </form>
+</div>
+.auth-brand{display:flex;align-items:center;gap:12px;margin-bottom:24px}
+.auth-brand img{width:130px;height:140px;object-fit:contain;padding:5px 8px;border-radius:6px}
+.auth-brand2 img{width:130px;height:80px;object-fit:contain;padding:5px 8px;border-radius:6px}
+    
+
+    
     <style>
         :root {
             --dark: #171a1d;
@@ -709,31 +737,6 @@
         </div>
     </header>
 
-<!-- MODAL DE LOGIN ADMINISTRATIVO -->
-<div class="auth-overlay" id="authOverlay">
-  <form class="auth-card" id="authForm">
-
-    <div class="auth-brand">
-      <img src="../assets/img/logo-engenheiro.png">
-      <span class="tag-muted">ÁREA RESTRITA</span>
-      <span class="auth-brand2"><img src="../assets/img/logo-desenvolvimento.png">
-    </div>
-
-    <div class="auth-brand h2">
-      <h2>Gestão de Obras</h2>
-    </div>
-
-    <p>Informe a sua senha para acessar o seu painel administrativo e a gestão de todos os seus clientes.</p>
-    <div id="authError" class="auth-error" role="alert"></div>
-    <label for="adminPassword">Senha:</label>
-    <input type="password" id="adminPassword" autocomplete="current-password" required placeholder="Digite sua senha">
-    <button type="submit" class="btn-primary" id="btnEntrar" style="width:100%;margin-top:16px">Entrar no sistema <i class="fa-solid fa-arrow-right"></i></button>
-  </form>
-</div>
-.auth-brand{display:flex;align-items:center;gap:12px;margin-bottom:24px}
-.auth-brand img{width:130px;height:140px;object-fit:contain;padding:5px 8px;border-radius:6px}
-.auth-brand2 img{width:130px;height:80px;object-fit:contain;padding:5px 8px;border-radius:6px}
-    
     <main class="main">
 
         <div class="page-top">
