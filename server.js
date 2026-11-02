@@ -29,7 +29,7 @@ app.get('/health', (_req, res) => {
   res.status(200).send('OK');
 });
 
-app.get('/minha-obra.html', (_req, res) => {
+app.get('/public/minha-obra/minha-obra.html', (_req, res) => {
   res.redirect(302, '/painel-cliente.html');
 });
 
