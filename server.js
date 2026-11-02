@@ -8,6 +8,17 @@ const app = express();
 const PORT = process.env.PORT || 10000;
 const PUBLIC_DIR = path.join(__dirname, 'public');
 
+const SENHA_ADMIN = process.env.ERP_ADMIN_PASSWORD;
+
+if (!SENHA_ADMIN) {
+    throw new Error(
+        'A variável ERP_ADMIN_PASSWORD não foi configurada no Render.'
+    );
+}
+
+const SESSION_SECRET =
+    process.env.SESSION_SECRET || SENHA_ADMIN;
+
 app.set('trust proxy', 1);
 app.disable('x-powered-by');
 app.use(express.json({ limit: '1mb' }));
