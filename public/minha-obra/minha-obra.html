@@ -97,6 +97,34 @@
 @media(max-width:700px){.app-container{padding:12px 12px 30px}.page-intro{align-items:flex-start;flex-direction:column}.erp-nav{top:4px}.section-heading{align-items:flex-start;flex-direction:column}.form-grid,.calc-prices{grid-template-columns:1fr}.checkbox-grid{grid-template-columns:1fr 1fr}.cash-summary{grid-template-columns:1fr}.content-panel{padding:14px}.modal-content{padding:18px}}
 @media(max-width:420px){.dashboard-cards{grid-template-columns:1fr 1fr}.system-pill{font-size:8px}.checkbox-grid{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
+/* Navegação por módulos: cada área funciona como uma tela independente. */
+.erp-layout{display:grid;grid-template-columns:238px minmax(0,1fr);gap:20px;align-items:start;min-width:0}
+.erp-sidebar{position:sticky;top:16px;align-self:start;max-height:calc(100vh - 32px);overflow-y:auto;background:rgba(248,247,243,.98);border:1px solid #e2ddd3;border-radius:14px;padding:14px;box-shadow:0 8px 28px rgba(35,32,26,.045);scrollbar-width:thin;scrollbar-color:#d8cbb5 transparent}
+.sidebar-heading{padding:7px 7px 13px;border-bottom:1px solid #e9e3d9}
+.sidebar-kicker{display:block;color:#9a8058;font:9px var(--font-mono);letter-spacing:.16em;margin-bottom:7px}
+.sidebar-heading>strong{display:block;color:#33332f;font:700 14px var(--font-display);letter-spacing:-.02em}
+.sidebar-current{display:flex;align-items:center;gap:7px;margin-top:11px;padding:7px 9px;border-radius:7px;background:#efe9de;color:#806b49;font:10px var(--font-mono)}
+.sidebar-current>i{font-size:8px;color:#a98754}
+.erp-nav{position:static;display:grid;gap:5px;overflow:visible;padding:12px 0 0;margin:0;background:transparent;border:0;border-radius:0;backdrop-filter:none;scrollbar-width:auto}
+.erp-nav-btn{width:100%;display:flex;align-items:center;gap:11px;padding:11px 10px;border:1px solid transparent;border-radius:8px;background:transparent;color:#706e66;text-align:left;font:600 11px var(--font-main);cursor:pointer;transition:background .18s ease,color .18s ease,border-color .18s ease,transform .18s ease}
+.erp-nav-btn>i:first-child{width:17px;text-align:center;color:#9a8058;font-size:13px;flex:0 0 17px}
+.erp-nav-btn span{flex:1;min-width:0}
+.erp-nav-btn .nav-arrow{font-size:9px;color:#b2aa9a;opacity:0;transition:opacity .18s ease,transform .18s ease}
+.erp-nav-btn:hover{background:#f0e8da;color:#80643d;border-color:#e7dcc8;transform:translateX(2px)}
+.erp-nav-btn:hover .nav-arrow{opacity:1}
+.erp-nav-btn.active{background:#262a2d;color:#fff;border-color:#262a2d;box-shadow:0 5px 14px rgba(28,30,31,.12)}
+.erp-nav-btn.active>i:first-child{color:#d5b783}
+.erp-nav-btn.active .nav-arrow{opacity:1;color:#d5b783}
+.sidebar-foot{display:flex;align-items:center;gap:9px;margin:15px 5px 2px;padding:12px 7px 3px;border-top:1px solid #e9e3d9;color:#77746c;font:10px var(--font-main);line-height:1.5}
+.sidebar-foot>i{color:#9a8058;font-size:14px}
+.sidebar-foot small{color:#9b978d;font-size:9px}
+.erp-main{min-width:0;min-height:420px}
+.erp-section{display:none;scroll-margin-top:20px}
+.erp-section.active{display:block;animation:entradaSuave .22s ease both}
+@media(max-width:1000px){.erp-layout{grid-template-columns:205px minmax(0,1fr);gap:14px}.erp-sidebar{padding:11px}.erp-nav-btn{padding:10px 8px;gap:8px}}
+@media(max-width:700px){.erp-layout{grid-template-columns:minmax(0,1fr);gap:14px}.erp-sidebar{position:sticky;top:8px;z-index:80;max-height:none;overflow:visible;padding:10px}.sidebar-heading{padding:5px 5px 10px}.sidebar-foot{display:none}.erp-nav{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding-top:10px}.erp-nav-btn{min-height:42px;padding:9px 8px;font-size:10px}.erp-nav-btn .nav-arrow{display:none}.erp-main{min-height:0}}
+@media(max-width:420px){.erp-nav{grid-template-columns:repeat(2,minmax(0,1fr))}.erp-nav-btn{gap:6px;padding:9px 7px;font-size:9px}.erp-nav-btn>i:first-child{font-size:12px;width:15px;flex-basis:15px}}
 </style>
 </head>
 <body>
@@ -117,9 +145,9 @@
       <select id="obraSelecionada" aria-label="Selecionar obra" style="max-width:250px;min-width:190px">
         <option value="">Selecione uma obra</option>
       </select>
-      <button class="btn-secondary" id="btnNovaObra"><i class="fa-solid fa-plus"></i> Nova obra</button>
-      <button class="btn-primary" id="btnSalvar"><i class="fa-solid fa-cloud-arrow-up"></i> Salvar</button>
-      <button class="btn-secondary" id="btnSair" title="Encerrar sessão" aria-label="Sair"><i class="fa-solid fa-right-from-bracket"></i></button>
+      <button type="button" class="btn-secondary" id="btnNovaObra"><i class="fa-solid fa-plus"></i> Nova obra</button>
+      <button type="button" class="btn-primary" id="btnSalvar"><i class="fa-solid fa-cloud-arrow-up"></i> Salvar</button>
+      <button type="button" class="btn-secondary" id="btnSair" title="Encerrar sessão" aria-label="Sair"><i class="fa-solid fa-right-from-bracket"></i></button>
     </div>
   </header>
 
@@ -138,28 +166,61 @@
   <div class="status-bar">
     <span class="save-state" id="saveState"><i class="fa-solid fa-circle-check"></i> Nenhuma alteração pendente</span>
     <div class="toolbar">
-      <button class="btn-quiet" id="btnBackup" disabled><i class="fa-solid fa-download"></i> Backup JSON</button>
-      <button class="btn-quiet" id="btnCsv" disabled><i class="fa-solid fa-file-csv"></i> Exportar CSV</button>
-      <button class="btn-quiet" id="btnImportBackup" disabled><i class="fa-solid fa-upload"></i> Restaurar backup</button>
+      <button type="button" class="btn-quiet" id="btnBackup" disabled><i class="fa-solid fa-download"></i> Backup JSON</button>
+      <button type="button" class="btn-quiet" id="btnCsv" disabled><i class="fa-solid fa-file-csv"></i> Exportar CSV</button>
+      <button type="button" class="btn-quiet" id="btnImportBackup" disabled><i class="fa-solid fa-upload"></i> Restaurar backup</button>
       <input type="file" id="backupFile" accept="application/json,.json" hidden>
-      <button class="btn-quiet" id="btnEditarObra" disabled><i class="fa-solid fa-pen"></i> Editar cadastro</button>
-      <button class="btn-danger" id="btnExcluirObra" disabled><i class="fa-solid fa-trash"></i> Excluir obra</button>
+      <button type="button" class="btn-quiet" id="btnEditarObra" disabled><i class="fa-solid fa-pen"></i> Editar cadastro</button>
+      <button type="button" class="btn-danger" id="btnExcluirObra" disabled><i class="fa-solid fa-trash"></i> Excluir obra</button>
     </div>
   </div>
 
-  <nav class="erp-nav" aria-label="Navegação da gestão">
-    <a href="#visao-geral"><i class="fa-solid fa-chart-pie"></i> Visão geral</a>
-    <a href="#financeiro"><i class="fa-solid fa-scale-balanced"></i> Financeiro</a>
-    <a href="#caixa"><i class="fa-solid fa-building-columns"></i> Caixa</a>
-    <a href="#fornecedores"><i class="fa-solid fa-truck-field"></i> Fornecedores</a>
-    <a href="#estoque"><i class="fa-solid fa-boxes-stacked"></i> Estoque</a>
-    <a href="#calculadoras"><i class="fa-solid fa-calculator"></i> Calculadoras</a>
-    <a href="#fluxo"><i class="fa-solid fa-arrow-right-arrow-left"></i> Fluxo</a>
-    <a href="#documentos"><i class="fa-solid fa-file-contract"></i> Documentos</a>
-    <a href="#relatorios"><i class="fa-solid fa-file-pdf"></i> Relatórios</a>
-  </nav>
+  <div class="erp-layout">
+    <aside class="erp-sidebar" aria-label="Menu de módulos">
+      <div class="sidebar-heading">
+        <span class="sidebar-kicker">NAVEGAÇÃO</span>
+        <strong>Central de módulos</strong>
+        <span class="sidebar-current"><i class="fa-solid fa-circle-dot"></i> <span id="activeViewLabel">Visão geral</span></span>
+      </div>
 
-  <section id="visao-geral" class="erp-section">
+      <nav class="erp-nav" id="erpNavigation" aria-label="Navegação da gestão">
+        <button type="button" class="erp-nav-btn active" data-view="visao-geral" aria-controls="visao-geral" aria-current="page">
+          <i class="fa-solid fa-chart-pie"></i><span>Visão geral</span><i class="fa-solid fa-chevron-right nav-arrow"></i>
+        </button>
+        <button type="button" class="erp-nav-btn" data-view="financeiro" aria-controls="financeiro">
+          <i class="fa-solid fa-scale-balanced"></i><span>Orçamento</span><i class="fa-solid fa-chevron-right nav-arrow"></i>
+        </button>
+        <button type="button" class="erp-nav-btn" data-view="caixa" aria-controls="caixa">
+          <i class="fa-solid fa-building-columns"></i><span>CAIXA / MCMV</span><i class="fa-solid fa-chevron-right nav-arrow"></i>
+        </button>
+        <button type="button" class="erp-nav-btn" data-view="fornecedores" aria-controls="fornecedores">
+          <i class="fa-solid fa-truck-field"></i><span>Fornecedores</span><i class="fa-solid fa-chevron-right nav-arrow"></i>
+        </button>
+        <button type="button" class="erp-nav-btn" data-view="estoque" aria-controls="estoque">
+          <i class="fa-solid fa-boxes-stacked"></i><span>Estoque</span><i class="fa-solid fa-chevron-right nav-arrow"></i>
+        </button>
+        <button type="button" class="erp-nav-btn" data-view="calculadoras" aria-controls="calculadoras">
+          <i class="fa-solid fa-calculator"></i><span>Calculadoras</span><i class="fa-solid fa-chevron-right nav-arrow"></i>
+        </button>
+        <button type="button" class="erp-nav-btn" data-view="fluxo" aria-controls="fluxo">
+          <i class="fa-solid fa-arrow-right-arrow-left"></i><span>Fluxo de caixa</span><i class="fa-solid fa-chevron-right nav-arrow"></i>
+        </button>
+        <button type="button" class="erp-nav-btn" data-view="documentos" aria-controls="documentos">
+          <i class="fa-solid fa-file-contract"></i><span>Documentos</span><i class="fa-solid fa-chevron-right nav-arrow"></i>
+        </button>
+        <button type="button" class="erp-nav-btn" data-view="relatorios" aria-controls="relatorios">
+          <i class="fa-solid fa-file-pdf"></i><span>Relatórios</span><i class="fa-solid fa-chevron-right nav-arrow"></i>
+        </button>
+      </nav>
+
+      <div class="sidebar-foot">
+        <i class="fa-solid fa-shield-halved"></i>
+        <span>Ambiente administrativo<br><small>Navegação interna sem recarregar</small></span>
+      </div>
+    </aside>
+
+    <main class="erp-main" id="erpMain">
+  <section id="visao-geral" class="erp-section active" aria-hidden="false">
     <div class="section-heading">
       <div><div class="section-kicker">01 / INDICADORES</div><h2>Visão geral da obra</h2><p>Indicadores atualizados conforme os lançamentos realizados.</p></div>
       <span class="tag-muted" id="obraStatus">Aguardando seleção</span>
@@ -180,7 +241,7 @@
   <section id="financeiro" class="erp-section">
     <div class="section-heading">
       <div><div class="section-kicker">02 / CONTROLE FINANCEIRO</div><h2>Orçado x realizado por etapa</h2><p>Registre o orçamento e o custo efetivo de cada fase para identificar desvios.</p></div>
-      <button class="btn-add" id="btnAddEtapa"><i class="fa-solid fa-plus"></i> Nova etapa</button>
+      <button type="button" class="btn-add" id="btnAddEtapa"><i class="fa-solid fa-plus"></i> Nova etapa</button>
     </div>
     <div class="content-panel">
       <div class="table-wrap"><table class="tabela-controle"><thead><tr><th>Etapa</th><th>Orçado (R$)</th><th>Realizado (R$)</th><th>Saldo (R$)</th><th>Execução</th><th>Ação</th></tr></thead><tbody id="tbodyComparativo"><tr><td colspan="6" class="empty-row">Cadastre ou selecione uma obra.</td></tr></tbody></table></div>
@@ -203,17 +264,17 @@
         <div><label for="caixaProximaMedicao">Próxima medição</label><input type="date" id="caixaProximaMedicao" data-scope="caixa" data-key="proximaMedicao"></div>
       </div>
       <div class="hero-line"></div>
-      <div class="section-heading"><div><h2 style="font-size:13px">Checklist documental</h2><p>Marque os documentos recebidos e conferidos.</p></div><button class="btn-quiet btn-small" id="btnPdfCaixa"><i class="fa-solid fa-file-pdf"></i> PDF de medição</button></div>
+      <div class="section-heading"><div><h2 style="font-size:13px">Checklist documental</h2><p>Marque os documentos recebidos e conferidos.</p></div><button type="button" class="btn-quiet btn-small" id="btnPdfCaixa"><i class="fa-solid fa-file-pdf"></i> PDF de medição</button></div>
       <div class="checkbox-grid" id="checklistCaixa"></div>
       <div class="hero-line"></div>
-      <div class="section-heading"><div><h2 style="font-size:13px">Cronograma físico-financeiro de referência</h2><p>Distribuição inicial editável. Ajuste os percentuais e as datas conforme o contrato e o cronograma aprovado.</p></div><button class="btn-quiet btn-small" id="btnResetCronograma">Restaurar percentuais-base</button></div>
+      <div class="section-heading"><div><h2 style="font-size:13px">Cronograma físico-financeiro de referência</h2><p>Distribuição inicial editável. Ajuste os percentuais e as datas conforme o contrato e o cronograma aprovado.</p></div><button type="button" class="btn-quiet btn-small" id="btnResetCronograma">Restaurar percentuais-base</button></div>
       <div class="table-wrap"><table class="tabela-controle"><thead><tr><th>Etapa</th><th>% previsto</th><th>Valor de referência</th><th>Data prevista</th></tr></thead><tbody id="tbodyCronograma"></tbody></table></div>
       <p class="field-help">A distribuição exibida é uma referência editável, não substitui o cronograma físico-financeiro aprovado pela instituição financeira.</p>
     </div>
   </section>
 
   <section id="fornecedores" class="erp-section">
-    <div class="section-heading"><div><div class="section-kicker">04 / SUPRIMENTOS</div><h2>Cadastro e desempenho de fornecedores</h2><p>Acompanhe empresa, serviço contratado, valor, prazo e avaliação.</p></div><button class="btn-add" id="btnAddFornecedor"><i class="fa-solid fa-plus"></i> Adicionar fornecedor</button></div>
+    <div class="section-heading"><div><div class="section-kicker">04 / SUPRIMENTOS</div><h2>Cadastro e desempenho de fornecedores</h2><p>Acompanhe empresa, serviço contratado, valor, prazo e avaliação.</p></div><button type="button" class="btn-add" id="btnAddFornecedor"><i class="fa-solid fa-plus"></i> Adicionar fornecedor</button></div>
     <div class="content-panel">
       <div class="table-wrap"><table class="tabela-controle"><thead><tr><th>Empresa</th><th>CNPJ</th><th>Serviço</th><th>Valor (R$)</th><th>Atraso (dias)</th><th>Nota</th><th>Classificação</th><th>Ação</th></tr></thead><tbody id="tbodyFornecedores"></tbody></table></div>
       <div id="alertasFornecedor"></div>
@@ -221,7 +282,7 @@
   </section>
 
   <section id="estoque" class="erp-section">
-    <div class="section-heading"><div><div class="section-kicker">05 / MATERIAIS</div><h2>Almoxarifado e controle de estoque</h2><p>Registre entradas e consumo para acompanhar saldo e alertas de reposição.</p></div><button class="btn-add" id="btnAddEstoque"><i class="fa-solid fa-plus"></i> Adicionar material</button></div>
+    <div class="section-heading"><div><div class="section-kicker">05 / MATERIAIS</div><h2>Almoxarifado e controle de estoque</h2><p>Registre entradas e consumo para acompanhar saldo e alertas de reposição.</p></div><button type="button" class="btn-add" id="btnAddEstoque"><i class="fa-solid fa-plus"></i> Adicionar material</button></div>
     <div class="content-panel">
       <div class="table-wrap"><table class="tabela-controle"><thead><tr><th>Material</th><th>Unidade</th><th>Comprado</th><th>Utilizado</th><th>Saldo</th><th>% consumo</th><th>Alerta</th><th>Ação</th></tr></thead><tbody id="tbodyEstoque"></tbody></table></div>
     </div>
@@ -350,13 +411,15 @@
         <div><table class="tabela-resumo"><tr><td>Contrato</td><td id="resumoContrato">R$ 0,00</td></tr><tr><td>Orçamento planejado</td><td id="resumoOrcado">R$ 0,00</td></tr><tr><td>Realizado</td><td id="resumoGasto">R$ 0,00</td></tr><tr><td>Taxas e despesas gerais</td><td id="resumoTaxas">R$ 0,00</td></tr><tr><td>Saldo de contrato</td><td id="resumoSaldo">R$ 0,00</td></tr><tr class="total"><td>RESULTADO PROJETADO</td><td id="resumoLucro">R$ 0,00</td></tr><tr><td>Margem projetada</td><td id="resumoMargem">0%</td></tr></table></div>
         <div>
           <div class="cash-summary"><div><span>Fornecedores</span><strong id="resumoFornecedores">0</strong></div><div><span>Materiais</span><strong id="resumoMateriais">0</strong></div><div><span>Movimentações</span><strong id="resumoMovimentos">0</strong></div></div>
-          <button class="btn-gerar-relatorio" id="btnRelatorio"><i class="fa-solid fa-file-pdf"></i> GERAR RELATÓRIO GERENCIAL PDF</button>
-          <button class="btn-gerar-relatorio secondary" id="btnWhats"><i class="fa-brands fa-whatsapp"></i> Compartilhar resumo no WhatsApp</button>
+          <button type="button" class="btn-gerar-relatorio" id="btnRelatorio"><i class="fa-solid fa-file-pdf"></i> GERAR RELATÓRIO GERENCIAL PDF</button>
+          <button type="button" class="btn-gerar-relatorio secondary" id="btnWhats"><i class="fa-brands fa-whatsapp"></i> Compartilhar resumo no WhatsApp</button>
           <div id="relatorioPreview" class="field-help" style="white-space:pre-wrap;margin-top:12px"></div>
         </div>
       </div>
     </div>
   </section>
+    </main>
+  </div>
 
   <footer style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:22px 4px;color:#89877e;font:9px var(--font-mono);letter-spacing:.08em">
     <span>PH ENGENHARIA · SISTEMA INTEGRADO DE GESTÃO DE OBRAS</span>
@@ -1021,7 +1084,7 @@ function renderComparativo() {
       <td><input type="number" min="0" step="0.01" aria-label="Realizado" data-collection="financeiro.etapas" data-index="${index}" data-key="realizado" value="${real || ''}"></td>
       <td style="font-family:var(--font-mono);color:${over?'#b66e67':'#718a69'}">${currency(diff)}</td>
       <td><div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div><small>${budget ? pct.toFixed(0)+'%' : 'Sem orçamento'}</small></td>
-      <td><button class="btn-danger btn-small" data-remove="financeiro.etapas" data-index="${index}" aria-label="Remover etapa"><i class="fa-solid fa-trash"></i></button></td>
+      <td><button type="button" class="btn-danger btn-small" data-remove="financeiro.etapas" data-index="${index}" aria-label="Remover etapa"><i class="fa-solid fa-trash"></i></button></td>
     </tr>`;
   }).join('') : '<tr><td colspan="6" class="empty-row">Nenhuma etapa cadastrada.</td></tr>';
   $('#taxasObra').value = number(appState.data.financeiro.taxas) || 0;
@@ -1057,7 +1120,7 @@ function renderFornecedores() {
       <td><input type="number" min="0" data-collection="fornecedores" data-index="${index}" data-key="atraso" value="${number(item.atraso) || 0}"></td>
       <td><input type="number" min="0" max="10" step="0.1" data-collection="fornecedores" data-index="${index}" data-key="nota" value="${item.nota ?? ''}" placeholder="0 a 10"></td>
       <td><span class="score ${score.className}">${score.label}</span></td>
-      <td><button class="btn-danger btn-small" data-remove="fornecedores" data-index="${index}" aria-label="Remover fornecedor"><i class="fa-solid fa-trash"></i></button></td>
+      <td><button type="button" class="btn-danger btn-small" data-remove="fornecedores" data-index="${index}" aria-label="Remover fornecedor"><i class="fa-solid fa-trash"></i></button></td>
     </tr>`;
   }).join('') : '<tr><td colspan="8" class="empty-row">Nenhum fornecedor cadastrado. Use “Adicionar fornecedor” para começar.</td></tr>';
   const low = list.filter(item => supplierScore(item).className === 'low');
@@ -1087,7 +1150,7 @@ function renderEstoque() {
       <td><input type="number" min="0" step="0.01" data-collection="estoque" data-index="${index}" data-key="utilizado" value="${number(item.utilizado) || ''}"></td>
       <td style="font-family:var(--font-mono)">${balance.toLocaleString('pt-BR')} ${escapeHtml(item.unidade || 'un')}</td>
       <td>${percent.toFixed(1)}%</td><td><span class="stock-alert ${alert[0]}">${alert[1]}</span></td>
-      <td><button class="btn-danger btn-small" data-remove="estoque" data-index="${index}"><i class="fa-solid fa-trash"></i></button></td>
+      <td><button type="button" class="btn-danger btn-small" data-remove="estoque" data-index="${index}"><i class="fa-solid fa-trash"></i></button></td>
     </tr>`;
   }).join('') : '<tr><td colspan="8" class="empty-row">Nenhum material cadastrado no estoque.</td></tr>';
 }
@@ -1104,7 +1167,7 @@ function renderFluxo() {
       <td>${escapeHtml(item.descricao)}</td>
       <td style="font-family:var(--font-mono);color:${item.tipo === 'entrada' ? '#718a69' : '#b66e67'}">${item.tipo === 'entrada' ? '+' : '−'} ${currency(value)}</td>
       <td style="font-family:var(--font-mono)">${currency(balance)}</td>
-      <td><button class="btn-danger btn-small" data-remove="fluxo" data-id="${escapeHtml(item.id)}"><i class="fa-solid fa-trash"></i></button></td>
+      <td><button type="button" class="btn-danger btn-small" data-remove="fluxo" data-id="${escapeHtml(item.id)}"><i class="fa-solid fa-trash"></i></button></td>
     </tr>`;
   }).join('') : '<tr><td colspan="6" class="empty-row">Nenhuma entrada ou saída registrada.</td></tr>';
   $('#totalEntradas').textContent = currency(entries);
@@ -1627,7 +1690,74 @@ function calculateMasonry() {
   $('#argamassaEst').textContent = `${Math.ceil(area*.13)} sacos (referência)`;
 }
 
+const erpViewLabels = {
+  'visao-geral': 'Visão geral',
+  'financeiro': 'Orçamento',
+  'caixa': 'CAIXA / MCMV',
+  'fornecedores': 'Fornecedores',
+  'estoque': 'Estoque',
+  'calculadoras': 'Calculadoras',
+  'fluxo': 'Fluxo de caixa',
+  'documentos': 'Documentos',
+  'relatorios': 'Relatórios'
+};
+
+function getViewFromUrl() {
+  let view = '';
+  try { view = decodeURIComponent((window.location.hash || '').replace(/^#/, '')); } catch (_) {}
+  return Object.prototype.hasOwnProperty.call(erpViewLabels, view) ? view : 'visao-geral';
+}
+
+function navigateToView(viewId, options = {}) {
+  const view = Object.prototype.hasOwnProperty.call(erpViewLabels, viewId) ? viewId : 'visao-geral';
+  const target = document.getElementById(view);
+  if (!target) return;
+
+  $$('.erp-section').forEach(section => {
+    const active = section.id === view;
+    section.classList.toggle('active', active);
+    section.setAttribute('aria-hidden', active ? 'false' : 'true');
+  });
+
+  $$('#erpNavigation [data-view]').forEach(button => {
+    const active = button.dataset.view === view;
+    button.classList.toggle('active', active);
+    if (active) button.setAttribute('aria-current', 'page');
+    else button.removeAttribute('aria-current');
+  });
+
+  const currentLabel = $('#activeViewLabel');
+  if (currentLabel) currentLabel.textContent = erpViewLabels[view];
+
+  // Atualiza somente a URL/histórico local. Não faz uma nova requisição nem recarrega a página.
+  if (options.updateHistory !== false) {
+    const hash = '#' + view;
+    if (window.location.hash !== hash) {
+      window.history.pushState({ erpView: view }, '', window.location.pathname + window.location.search + hash);
+    }
+  }
+
+  if (options.scroll !== false) {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
 function wireEvents() {
+  // Proteção contra botões sem type: eles não devem enviar formulários por acidente.
+  document.querySelectorAll('button:not([type])').forEach(button => { button.type = 'button'; });
+
+  $('#erpNavigation').addEventListener('click', event => {
+    const button = event.target.closest('[data-view]');
+    if (!button) return;
+    event.preventDefault();
+    navigateToView(button.dataset.view);
+  });
+
+  // Voltar/avançar do navegador também troca o módulo sem recarregar o ERP.
+  window.addEventListener('popstate', () => {
+    navigateToView(getViewFromUrl(), { updateHistory: false });
+  });
+
   $('#authForm').addEventListener('submit', login);
   $('#btnSair').addEventListener('click', logout);
   $('#btnNovaObra').addEventListener('click', () => openNewModal());
@@ -1779,6 +1909,7 @@ async function init() {
   $('#reciboData').value = todayISO();
   $('#arquivoEtapa').innerHTML = '<option value="">Sem etapa específica</option>' + stageNames.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
   wireEvents();
+  navigateToView(getViewFromUrl(), { updateHistory: false, scroll: false });
   calculateConcrete(); calculateFloor(); calculateRoof(); calculateMasonry();
   try {
     const session = await api('/api/erp/session');
