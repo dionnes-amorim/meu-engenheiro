@@ -93,6 +93,23 @@
 .tag-muted{font:9px var(--font-mono);color:#888;border:1px solid #e8e2d7;padding:5px 8px;border-radius:5px}
 .status-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0 18px}
 .hero-line{height:1px;background:linear-gradient(90deg,var(--gold),transparent);margin:18px 0;opacity:.55}
+
+/* Central de alertas da visão geral */
+.dashboard-alerts{background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-top:17px;box-shadow:var(--shadow)}
+.dashboard-alerts-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:12px}
+.dashboard-alerts-head h3{font:800 14px var(--font-display);color:#303234;margin-top:5px}
+.dashboard-alerts-head p{font-size:10px;color:var(--text-muted);margin-top:4px;line-height:1.5}
+.dashboard-alert-count{white-space:nowrap;border:1px solid #e8e2d7;border-radius:99px;padding:6px 9px;font:9px var(--font-mono);color:#857657}
+.dashboard-alerts-list{display:grid;gap:7px}
+.dashboard-alert-item{display:flex;align-items:flex-start;gap:9px;padding:10px 11px;border-radius:8px;background:#f8f7f3;color:#68665f;font-size:10px;line-height:1.5}
+.dashboard-alert-item>i{width:14px;flex:0 0 14px;margin-top:1px;color:#a98754}
+.dashboard-alert-item.warning{background:#faf4e9;color:#80683f}
+.dashboard-alert-item.warning>i{color:#b58a4d}
+.dashboard-alert-item.danger{background:#fbefed;color:#9d5f59}
+.dashboard-alert-item.danger>i{color:#b66e67}
+.dashboard-alert-item.success{background:#eef4eb;color:#617a58}
+.dashboard-alert-item.success>i{color:#77956e}
+
 @media(max-width:1000px){.erp-nav{top:8px}.dashboard-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.calc-prices{grid-template-columns:1fr 1fr}}
 @media(max-width:700px){.app-container{padding:12px 12px 30px}.page-intro{align-items:flex-start;flex-direction:column}.erp-nav{top:4px}.section-heading{align-items:flex-start;flex-direction:column}.form-grid,.calc-prices{grid-template-columns:1fr}.checkbox-grid{grid-template-columns:1fr 1fr}.cash-summary{grid-template-columns:1fr}.content-panel{padding:14px}.modal-content{padding:18px}}
 @media(max-width:420px){.dashboard-cards{grid-template-columns:1fr 1fr}.system-pill{font-size:8px}.checkbox-grid{grid-template-columns:1fr}}
@@ -122,9 +139,23 @@
 .erp-main{min-width:0;min-height:420px}
 .erp-section{display:none;scroll-margin-top:20px}
 .erp-section.active{display:block;animation:entradaSuave .22s ease both}
+.erp-section[hidden],.erp-nav-btn[hidden]{display:none!important}
 @media(max-width:1000px){.erp-layout{grid-template-columns:205px minmax(0,1fr);gap:14px}.erp-sidebar{padding:11px}.erp-nav-btn{padding:10px 8px;gap:8px}}
-@media(max-width:700px){.erp-layout{grid-template-columns:minmax(0,1fr);gap:14px}.erp-sidebar{position:sticky;top:8px;z-index:80;max-height:none;overflow:visible;padding:10px}.sidebar-heading{padding:5px 5px 10px}.sidebar-foot{display:none}.erp-nav{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding-top:10px}.erp-nav-btn{min-height:42px;padding:9px 8px;font-size:10px}.erp-nav-btn .nav-arrow{display:none}.erp-main{min-height:0}}
-@media(max-width:420px){.erp-nav{grid-template-columns:repeat(2,minmax(0,1fr))}.erp-nav-btn{gap:6px;padding:9px 7px;font-size:9px}.erp-nav-btn>i:first-child{font-size:12px;width:15px;flex-basis:15px}}
+@media(max-width:700px){
+  .erp-layout{grid-template-columns:minmax(0,1fr);gap:14px}
+  .erp-sidebar{position:static;top:auto;z-index:auto;max-height:none;overflow:visible;padding:10px}
+  .sidebar-heading{padding:5px 5px 10px}
+  .sidebar-foot{display:none}
+  .erp-nav{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding-top:10px}
+  .erp-nav-btn{min-height:42px;padding:9px 8px;font-size:10px}
+  .erp-nav-btn .nav-arrow{display:none}
+  .erp-main{min-height:0}
+}
+@media(max-width:420px){
+  .erp-nav{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .erp-nav-btn{gap:6px;padding:9px 7px;font-size:9px}
+  .erp-nav-btn>i:first-child{font-size:12px;width:15px;flex-basis:15px}
+}
 </style>
 </head>
 <body>
@@ -176,7 +207,7 @@
   </div>
 
   <div class="erp-layout">
-    <aside class="erp-sidebar" aria-label="Menu de módulos">
+    <aside class="erp-sidebar" aria-label="Navegação principal dos módulos">
       <div class="sidebar-heading">
         <span class="sidebar-kicker">NAVEGAÇÃO</span>
         <strong>Central de módulos</strong>
@@ -220,6 +251,7 @@
     </aside>
 
     <main class="erp-main" id="erpMain">
+
   <section id="visao-geral" class="erp-section active" aria-hidden="false">
     <div class="section-heading">
       <div><div class="section-kicker">01 / INDICADORES</div><h2>Visão geral da obra</h2><p>Indicadores atualizados conforme os lançamentos realizados.</p></div>
@@ -235,6 +267,20 @@
       <div><span>Orçamento planejado</span><strong id="kpiOrcado">R$ 0,00</strong><div class="metric-note">Soma do orçamento por etapa</div></div>
       <div><span>Desvio do orçamento</span><strong id="kpiDesvio">R$ 0,00</strong><div class="metric-note" id="kpiDesvioNota">Sem lançamentos</div></div>
       <div><span>Saldo de caixa projetado</span><strong id="kpiFluxo">R$ 0,00</strong><div class="metric-note">Entradas menos saídas cadastradas</div></div>
+    </div>
+
+    <div class="dashboard-alerts" id="dashboardAlerts">
+      <div class="dashboard-alerts-head">
+        <div>
+          <span class="section-kicker">ACOMPANHAMENTO</span>
+          <h3>Alertas da obra</h3>
+          <p>Pontos que merecem atenção com base nos dados cadastrados.</p>
+        </div>
+        <span class="dashboard-alert-count" id="dashboardAlertCount">0 alertas</span>
+      </div>
+      <div class="dashboard-alerts-list" id="dashboardAlertsList">
+        <div class="dashboard-alert-item neutral"><i class="fa-solid fa-circle-info"></i><span>Selecione uma obra para visualizar os alertas.</span></div>
+      </div>
     </div>
   </section>
 
@@ -418,6 +464,7 @@
       </div>
     </div>
   </section>
+
     </main>
   </div>
 
@@ -739,6 +786,7 @@ function renderNoRecord() {
   setRecordButtons(false);
   setSaveState('', 'Nenhuma alteração pendente');
   updateCaixaVisibility();
+  renderDashboardAlerts();
 }
 
 async function openRecord(id) {
@@ -827,12 +875,34 @@ function updateCaixaFormVisibility() {
   $('#boxCaixaCadastro').style.display = ['caixa','mcmv'].includes(type) ? 'block' : 'none';
 }
 
+function hasCaixaFinancing(record = appState.current) {
+  const type = String(record?.tipo || '').trim().toLowerCase();
+  return type === 'caixa' || type === 'mcmv';
+}
+
 function updateCaixaVisibility() {
-  const enabled = ['caixa','mcmv'].includes(getMeta().tipo || '');
+  const enabled = hasCaixaFinancing();
+  const menuButton = $('#erpNavigation [data-view="caixa"]');
+  const section = $('#caixa');
+
+  if (menuButton) menuButton.hidden = !enabled;
+  if (section) {
+    section.hidden = !enabled;
+    if (!enabled) {
+      section.classList.remove('active');
+      section.setAttribute('aria-hidden', 'true');
+    }
+  }
+
   $('#painelCaixa').style.opacity = enabled ? '1' : '.72';
   $('#painelCaixa').dataset.disabled = enabled ? 'false' : 'true';
   $('#painelCaixa').querySelectorAll('input').forEach(input => input.disabled = !enabled);
   $('#btnPdfCaixa').disabled = !enabled;
+
+  // Se trocar para uma obra particular estando no CAIXA, retorna ao resumo.
+  if (!enabled && getViewFromUrl() === 'caixa') {
+    navigateToView('visao-geral', { scroll:false });
+  }
 }
 
 function onlyDigits(value) { return String(value || '').replace(/\D/g, ''); }
@@ -1191,8 +1261,76 @@ function renderDocuments() {
   $('#resumoMovimentos').textContent = appState.data.fluxo.length;
 }
 
+function renderDashboardAlerts() {
+  const list = $('#dashboardAlertsList');
+  const count = $('#dashboardAlertCount');
+  if (!list || !count) return;
+
+  if (!appState.current || !appState.data) {
+    count.textContent = '0 alertas';
+    list.innerHTML = '<div class="dashboard-alert-item neutral"><i class="fa-solid fa-circle-info"></i><span>Selecione uma obra para visualizar os alertas.</span></div>';
+    return;
+  }
+
+  const data = appState.data;
+  const alerts = [];
+  const contract = number(appState.current.valor_contrato);
+  const budget = data.financeiro.etapas.reduce((sum,item) => sum + number(item.orcado), 0);
+  const actualStages = data.financeiro.etapas.reduce((sum,item) => sum + number(item.realizado), 0);
+  const actualTotal = actualStages + number(data.financeiro.taxas);
+
+  if (contract > 0 && actualTotal > contract) {
+    alerts.push({type:'danger',icon:'fa-triangle-exclamation',text:`O custo registrado ultrapassou o valor do contrato em ${currency(actualTotal-contract)}.`});
+  }
+
+  if (budget > 0 && actualStages > budget) {
+    alerts.push({type:'warning',icon:'fa-chart-line',text:`O realizado por etapa está ${currency(actualStages-budget)} acima do orçamento planejado.`});
+  }
+
+  const supplierIssues = data.fornecedores.filter(item => supplierScore(item).className === 'low').length;
+  if (supplierIssues) {
+    alerts.push({type:'warning',icon:'fa-truck-field',text:`${supplierIssues} fornecedor(es) precisam de atenção por avaliação baixa ou atraso relevante.`});
+  }
+
+  const stockIssues = data.estoque.filter(item => {
+    const purchased = number(item.comprado);
+    const balance = purchased - number(item.utilizado);
+    return balance < 0 || (purchased > 0 && balance <= purchased * .2);
+  }).length;
+
+  if (stockIssues) {
+    alerts.push({type:'warning',icon:'fa-boxes-stacked',text:`${stockIssues} material(is) com estoque crítico ou necessidade de reposição.`});
+  }
+
+  if (hasCaixaFinancing() && data.caixa?.proximaMedicao) {
+    const medicao = new Date(`${data.caixa.proximaMedicao}T00:00:00`);
+    const hoje = new Date();
+    hoje.setHours(0,0,0,0);
+    const dias = Math.round((medicao.getTime()-hoje.getTime())/86400000);
+
+    if (dias < 0) {
+      alerts.push({type:'danger',icon:'fa-calendar-xmark',text:`A data prevista para a próxima medição (${formatDate(data.caixa.proximaMedicao)}) já passou. Atualize o cronograma.`});
+    } else if (dias <= 7) {
+      alerts.push({type:'warning',icon:'fa-calendar-check',text:`Próxima medição prevista para ${formatDate(data.caixa.proximaMedicao)}${dias === 0 ? ' (hoje)' : ` (em ${dias} dia(s))`}.`});
+    }
+  }
+
+  count.textContent = `${alerts.length} ${alerts.length === 1 ? 'alerta' : 'alertas'}`;
+
+  if (!alerts.length) {
+    list.innerHTML = '<div class="dashboard-alert-item success"><i class="fa-solid fa-circle-check"></i><span>Nenhum alerta identificado nos dados cadastrados. Continue atualizando os lançamentos para manter este acompanhamento preciso.</span></div>';
+    return;
+  }
+
+  list.innerHTML = alerts.map(alert => `<div class="dashboard-alert-item ${alert.type}"><i class="fa-solid ${alert.icon}"></i><span>${escapeHtml(alert.text)}</span></div>`).join('');
+}
+
 function updateKpis() {
-  if (!appState.current || !appState.data) return;
+  if (!appState.current || !appState.data) {
+    renderDashboardAlerts();
+    return;
+  }
+
   const contract = number(appState.current.valor_contrato);
   const budget = appState.data.financeiro.etapas.reduce((sum,item) => sum + number(item.orcado), 0);
   const actualStages = appState.data.financeiro.etapas.reduce((sum,item) => sum + number(item.realizado), 0);
@@ -1202,6 +1340,7 @@ function updateKpis() {
   const pct = contract > 0 ? actual / contract * 100 : 0;
   const plannedMargin = number(appState.data.meta.margem_lucro);
   const deviation = actualStages - budget;
+
   $('#kpiContrato').textContent = currency(contract);
   $('#kpiGasto').textContent = currency(actual);
   $('#kpiGasto').className = actual > contract && contract > 0 ? 'kpi-negative' : '';
@@ -1224,7 +1363,9 @@ function updateKpis() {
   $('#resumoSaldo').textContent = currency(balance);
   $('#resumoLucro').textContent = currency(profit);
   $('#resumoMargem').textContent = contract > 0 ? `${(profit / contract * 100).toFixed(1)}%` : '0%';
+
   updateBudgetAlert();
+  renderDashboardAlerts();
 }
 
 function updateBudgetAlert() {
@@ -1233,6 +1374,7 @@ function updateBudgetAlert() {
   const actual = appState.data.financeiro.etapas.reduce((sum,item) => sum + number(item.realizado), 0);
   const delta = actual - budget;
   const alert = $('#alertaEstouro');
+
   if (budget > 0 && delta > 0) {
     alert.style.display = 'block';
     alert.textContent = `Atenção: o realizado está ${currency(delta)} acima do orçamento total cadastrado.`;
@@ -1295,7 +1437,6 @@ async function saveCurrent(showMessage = true) {
     });
     requestSucceeded = true;
 
-    // Não sobrescreve alterações feitas enquanto a requisição estava em andamento.
     if (appState.current?.id === savedRecordId) {
       appState.current = result;
       appState.records = appState.records.map(row => row.id === result.id ? result : row);
@@ -1317,7 +1458,6 @@ async function saveCurrent(showMessage = true) {
     appState.saving = false;
     $('#btnSalvar').disabled = !appState.current;
 
-    // Se houve edição durante o salvamento, agenda uma segunda gravação.
     if (requestSucceeded && appState.dirty && appState.current?.id === savedRecordId) {
       window.clearTimeout(appState.saveTimer);
       appState.saveTimer = window.setTimeout(() => saveCurrent(false), 350);
@@ -1643,7 +1783,6 @@ function shareWhatsApp() {
 function calculateConcrete() {
   const m3 = Math.max(0,number($('#calcConcM3').value));
   const traco = $('#calcConcTraco').value;
-  // Coeficientes indicativos para orçamento preliminar; não substituem dosagem de laboratório/projeto.
   const coefficients = traco === '1152' ? {cement:9,sand:.5,gravel:.6} : traco === '134' ? {cement:5,sand:.8,gravel:.9} : {cement:7,sand:.6,gravel:.7};
   const cement = Math.ceil(coefficients.cement*m3);
   const sand = coefficients.sand*m3;
@@ -1709,7 +1848,13 @@ function getViewFromUrl() {
 }
 
 function navigateToView(viewId, options = {}) {
-  const view = Object.prototype.hasOwnProperty.call(erpViewLabels, viewId) ? viewId : 'visao-geral';
+  let view = Object.prototype.hasOwnProperty.call(erpViewLabels, viewId) ? viewId : 'visao-geral';
+
+  // Não permite abrir o módulo CAIXA em obras sem financiamento.
+  if (view === 'caixa' && !hasCaixaFinancing()) {
+    view = 'visao-geral';
+  }
+
   const target = document.getElementById(view);
   if (!target) return;
 
@@ -1729,7 +1874,6 @@ function navigateToView(viewId, options = {}) {
   const currentLabel = $('#activeViewLabel');
   if (currentLabel) currentLabel.textContent = erpViewLabels[view];
 
-  // Atualiza somente a URL/histórico local. Não faz uma nova requisição nem recarrega a página.
   if (options.updateHistory !== false) {
     const hash = '#' + view;
     if (window.location.hash !== hash) {
@@ -1743,8 +1887,10 @@ function navigateToView(viewId, options = {}) {
 }
 
 function wireEvents() {
-  // Proteção contra botões sem type: eles não devem enviar formulários por acidente.
-  document.querySelectorAll('button:not([type])').forEach(button => { button.type = 'button'; });
+  // Proteção contra botões sem type: não devem enviar formulários por acidente.
+  document.querySelectorAll('button:not([type])').forEach(button => {
+    button.type = 'button';
+  });
 
   $('#erpNavigation').addEventListener('click', event => {
     const button = event.target.closest('[data-view]');
@@ -1753,7 +1899,6 @@ function wireEvents() {
     navigateToView(button.dataset.view);
   });
 
-  // Voltar/avançar do navegador também troca o módulo sem recarregar o ERP.
   window.addEventListener('popstate', () => {
     navigateToView(getViewFromUrl(), { updateHistory: false });
   });
@@ -1771,9 +1916,13 @@ function wireEvents() {
   $('#obraSelecionada').addEventListener('change', event => openRecord(event.target.value));
   $('#btnFecharModal').addEventListener('click', closeModal);
   $('#btnCancelarObra').addEventListener('click', closeModal);
-  $('#modalObra').addEventListener('click', event => { if (event.target === $('#modalObra')) closeModal(); });
+  $('#modalObra').addEventListener('click', event => {
+    if (event.target === $('#modalObra')) closeModal();
+  });
   $('#tipoObraCadastro').addEventListener('change', updateCaixaFormVisibility);
+
   $('#obraForm').addEventListener('submit', submitWorkForm);
+
   $('#clienteVinculado').addEventListener('change', event => {
     const client = appState.portalClients.find(item => String(item.id) === event.target.value);
     if (client) {
@@ -1790,11 +1939,14 @@ function wireEvents() {
   $('#reciboForm').addEventListener('submit', onReceiptSubmit);
   $('#extraForm').addEventListener('submit', onExtraSubmit);
   $('#btnPdfCaixa').addEventListener('click', generateCajaPdf);
+
   $('#btnResetCronograma').addEventListener('click', () => {
     if (!appState.data) return;
     appState.data.caixa.cronograma = clone(cronogramaBase);
-    renderCaixa(); markDirty('Cronograma restaurado');
+    renderCaixa();
+    markDirty('Cronograma restaurado');
   });
+
   $('#btnRelatorio').addEventListener('click', generateFinalReport);
   $('#btnWhats').addEventListener('click', shareWhatsApp);
   $('#uploadForm').addEventListener('submit', uploadLinkedFile);
@@ -1808,18 +1960,22 @@ function wireEvents() {
     if (['calcTelhaM2','calcTelhaTipo','calcTelhaValor','calcTelhaPerda'].includes(el.id)) calculateRoof();
     if (['areaParede','tipoTijolo','valorMilheiro','perdaTijolo'].includes(el.id)) calculateMasonry();
   });
+
   document.addEventListener('change', event => {
     const el = event.target;
     if (el.matches('select[data-collection],input[type="checkbox"][data-scope]')) onFieldEdit(event);
   });
+
   document.addEventListener('click', event => {
     const remove = event.target.closest('[data-remove]');
     if (remove) removeCollectionItem(remove.dataset.remove, remove.dataset.index, remove.dataset.id);
+
     const docButton = event.target.closest('[data-doc-pdf]');
     if (docButton && appState.data) {
       const item = findDocument(docButton.dataset.docPdf, docButton.dataset.docKind);
       if (item) generateDocumentPdf(docButton.dataset.docKind, item);
     }
+
     const fileButton = event.target.closest('[data-delete-file]');
     if (fileButton) deleteLinkedFile(fileButton.dataset.deleteFile);
   });
@@ -1898,9 +2054,12 @@ async function deleteCurrentRecord() {
   try {
     await api('/api/erp/obras/' + encodeURIComponent(appState.current.id), { method:'DELETE' });
     toast('Gestão da obra excluída.', 'success');
-    appState.current = null; appState.data = null;
+    appState.current = null;
+    appState.data = null;
     await loadInitialData();
-  } catch (error) { toast(error.message, 'error'); }
+  } catch (error) {
+    toast(error.message, 'error');
+  }
 }
 
 async function init() {
@@ -1908,16 +2067,24 @@ async function init() {
   $('#fluxoData').value = todayISO();
   $('#reciboData').value = todayISO();
   $('#arquivoEtapa').innerHTML = '<option value="">Sem etapa específica</option>' + stageNames.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
+
   wireEvents();
   navigateToView(getViewFromUrl(), { updateHistory: false, scroll: false });
-  calculateConcrete(); calculateFloor(); calculateRoof(); calculateMasonry();
+
+  calculateConcrete();
+  calculateFloor();
+  calculateRoof();
+  calculateMasonry();
+
   try {
     const session = await api('/api/erp/session');
     setConnection(Boolean(session.configured), session.configured ? 'Servidor disponível' : 'Configuração pendente');
+
     if (!session.configured) {
       showAuth('O acesso ainda não está configurado. Defina ERP_ADMIN_PASSWORD e ERP_SESSION_SECRET no Render.');
       return;
     }
+
     if (session.authenticated) {
       appState.authenticated = true;
       hideAuth();
