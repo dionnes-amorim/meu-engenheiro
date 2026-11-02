@@ -5,38 +5,26 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#171a1d">
+<meta name="description" content="Central de acesso à plataforma de gestão da PH Engenharia.">
 
 <title>PH Engenharia | Central de Gestão</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
-
-/* =====================================================
-   PH ENGENHARIA — CENTRAL DE ACESSO
-   ===================================================== */
-
 :root {
     --dark: #171a1d;
     --dark-soft: #202428;
     --dark-card: #24292d;
-
     --background: #eeece7;
     --surface: #ffffff;
-    --surface-soft: #f7f6f2;
-
     --text: #242628;
     --muted: #85877f;
-
     --line: #e4e1da;
-
     --gold: #b8945e;
     --gold-light: #d5b783;
-
-    --success: #91a989;
-
     --font-main: 'DM Sans', sans-serif;
     --font-display: 'Manrope', sans-serif;
     --font-mono: 'DM Mono', monospace;
@@ -60,32 +48,17 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
-/* FUNDO */
-
 body::before {
     content: "";
     position: fixed;
     inset: 0;
     z-index: 0;
     pointer-events: none;
-
     background-image:
-        linear-gradient(
-            rgba(36,38,40,.018) 1px,
-            transparent 1px
-        ),
-        linear-gradient(
-            90deg,
-            rgba(36,38,40,.018) 1px,
-            transparent 1px
-        );
-
+        linear-gradient(rgba(36,38,40,.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(36,38,40,.018) 1px, transparent 1px);
     background-size: 36px 36px;
 }
-
-/* =====================================================
-   ESTRUTURA GERAL
-   ===================================================== */
 
 .app {
     position: relative;
@@ -95,18 +68,13 @@ body::before {
     flex-direction: column;
 }
 
-/* =====================================================
-   BARRA SUPERIOR
-   ===================================================== */
+/* CABEÇALHO */
 
 .topbar {
     width: 100%;
     min-height: 112px;
-
     background: var(--dark);
-
     border-bottom: 1px solid rgba(184,148,94,.42);
-
     position: relative;
     z-index: 2;
 }
@@ -115,18 +83,13 @@ body::before {
     max-width: 1500px;
     width: 100%;
     min-height: 112px;
-
     margin: 0 auto;
     padding: 15px 5%;
-
     display: flex;
     align-items: center;
     justify-content: space-between;
-
     gap: 30px;
 }
-
-/* MARCA PRINCIPAL */
 
 .owner-brand {
     display: flex;
@@ -135,35 +98,24 @@ body::before {
     min-width: 0;
 }
 
-/* ÁREA DA LOGO DA PH */
-
 .owner-logo-box {
     width: 218px;
     height: 80px;
-
     padding: 8px 13px;
-
     background: #f8f7f3;
-
     border: 1px solid rgba(255,255,255,.12);
-
     display: flex;
     align-items: center;
     justify-content: center;
-
     flex-shrink: 0;
 }
 
 .owner-logo {
     display: block;
-
     width: 100%;
     height: 100%;
-
     object-fit: contain;
 }
-
-/* IDENTIDADE PH */
 
 .owner-info {
     display: flex;
@@ -175,16 +127,13 @@ body::before {
     font-family: var(--font-display);
     font-size: 19px;
     font-weight: 800;
-
     letter-spacing: .055em;
-
     color: #fff;
 }
 
 .owner-info span {
     font-family: var(--font-mono);
     font-size: 9px;
-
     color: #a29e95;
     letter-spacing: .16em;
 }
@@ -195,7 +144,6 @@ body::before {
     display: flex;
     align-items: center;
     gap: 16px;
-
     flex-shrink: 0;
 }
 
@@ -208,7 +156,6 @@ body::before {
 
 .developer-info span {
     color: #898981;
-
     font-family: var(--font-mono);
     font-size: 8px;
     letter-spacing: .16em;
@@ -216,7 +163,6 @@ body::before {
 
 .developer-info strong {
     color: #e5e1d8;
-
     font-family: var(--font-main);
     font-size: 11px;
     font-weight: 600;
@@ -225,12 +171,9 @@ body::before {
 .developer-logo-box {
     width: 148px;
     height: 65px;
-
     background: #f8f7f3;
     border: 1px solid rgba(255,255,255,.1);
-
     padding: 7px 10px;
-
     display: flex;
     align-items: center;
     justify-content: center;
@@ -239,34 +182,25 @@ body::before {
 .developer-logo {
     max-width: 100%;
     max-height: 100%;
-
     width: 100%;
     height: 100%;
-
     object-fit: contain;
 }
 
-/* =====================================================
-   CONTEÚDO PRINCIPAL
-   ===================================================== */
+/* CONTEÚDO */
 
 .main {
     width: 100%;
     max-width: 1350px;
-
     margin: 0 auto;
     padding: 76px 6% 65px;
-
     flex: 1;
 }
-
-/* IDENTIFICAÇÃO DA PÁGINA */
 
 .page-top {
     display: flex;
     align-items: center;
     justify-content: space-between;
-
     margin-bottom: 17px;
 }
 
@@ -274,9 +208,7 @@ body::before {
     display: flex;
     align-items: center;
     gap: 10px;
-
     color: #92764d;
-
     font-family: var(--font-mono);
     font-size: 10px;
     letter-spacing: .16em;
@@ -292,13 +224,10 @@ body::before {
 
 .page-code {
     color: #a5a094;
-
     font-family: var(--font-mono);
     font-size: 9px;
     letter-spacing: .12em;
 }
-
-/* TÍTULO */
 
 .heading {
     max-width: 740px;
@@ -307,11 +236,9 @@ body::before {
 .heading h1 {
     font-family: var(--font-display);
     font-size: clamp(35px, 4.5vw, 51px);
-
     font-weight: 600;
     letter-spacing: -.065em;
     line-height: 1.12;
-
     color: #25282a;
 }
 
@@ -326,9 +253,7 @@ body::before {
     line-height: 1.7;
 }
 
-/* =====================================================
-   ÁREA DOS MÓDULOS
-   ===================================================== */
+/* MÓDULOS */
 
 .access-area {
     margin-top: 55px;
@@ -338,31 +263,24 @@ body::before {
     display: flex;
     align-items: center;
     justify-content: space-between;
-
     padding-bottom: 15px;
     border-bottom: 1px solid #d8d4ca;
-
     margin-bottom: 20px;
 }
 
 .access-header strong {
     font-family: var(--font-mono);
     font-weight: 500;
-
     font-size: 10px;
     letter-spacing: .16em;
-
     color: #77766e;
 }
 
 .access-header span {
     font-family: var(--font-mono);
     font-size: 9px;
-
     color: #a19b90;
 }
-
-/* GRID */
 
 .access-grid {
     display: grid;
@@ -370,50 +288,33 @@ body::before {
     gap: 19px;
 }
 
-/* =====================================================
-   CARTÕES / BOTÕES
-   ===================================================== */
+/* CARTÕES */
 
 .access-card {
     position: relative;
-
     min-height: 255px;
-
     padding: 26px 28px;
-
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-
     text-decoration: none;
     color: inherit;
-
     overflow: hidden;
-
     border: 1px solid #dcd8d0;
     background: var(--surface);
-
-    transition:
-        transform .22s ease,
-        box-shadow .22s ease,
-        border-color .22s ease;
+    transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
 }
 
 .access-card:hover {
     transform: translateY(-4px);
-
     border-color: var(--gold);
-
-    box-shadow:
-        0 14px 30px rgba(26,27,25,.08);
+    box-shadow: 0 14px 30px rgba(26,27,25,.08);
 }
 
 .access-card:focus-visible {
     outline: 3px solid var(--gold);
     outline-offset: 4px;
 }
-
-/* CARTÃO PRINCIPAL */
 
 .access-card.primary {
     background: var(--dark-soft);
@@ -426,24 +327,16 @@ body::before {
     box-shadow: 0 14px 30px rgba(20,22,22,.16);
 }
 
-/* DETALHE DECORATIVO */
-
 .access-card::after {
     content: "";
-
     position: absolute;
-
     width: 230px;
     height: 230px;
-
     border: 1px solid rgba(184,148,94,.13);
     border-radius: 50%;
-
     right: -105px;
     bottom: -120px;
-
     pointer-events: none;
-
     transition: transform .35s ease;
 }
 
@@ -451,13 +344,10 @@ body::before {
     transform: scale(1.25);
 }
 
-/* TOPO DO CARTÃO */
-
 .card-top {
     display: flex;
     align-items: center;
     justify-content: space-between;
-
     position: relative;
     z-index: 1;
 }
@@ -472,13 +362,10 @@ body::before {
 .card-symbol {
     width: 45px;
     height: 45px;
-
     display: grid;
     place-items: center;
-
     border: 1px solid #e6e2d9;
     background: #f7f6f2;
-
     color: #92744b;
 }
 
@@ -491,16 +378,12 @@ body::before {
 .card-symbol svg {
     width: 21px;
     height: 21px;
-
     stroke: currentColor;
     stroke-width: 1.5;
     fill: none;
-
     stroke-linecap: round;
     stroke-linejoin: round;
 }
-
-/* INFORMAÇÕES */
 
 .card-content {
     position: relative;
@@ -512,7 +395,6 @@ body::before {
     font-family: var(--font-display);
     font-size: 19px;
     font-weight: 700;
-
     letter-spacing: -.035em;
     margin-bottom: 7px;
 }
@@ -520,7 +402,6 @@ body::before {
 .card-content p {
     font-size: 11px;
     line-height: 1.6;
-
     color: #88877e;
 }
 
@@ -528,18 +409,13 @@ body::before {
     color: #a4a7a2;
 }
 
-/* RODAPÉ DO CARTÃO */
-
 .card-footer {
     position: relative;
     z-index: 1;
-
     display: flex;
     align-items: center;
     justify-content: space-between;
-
     border-top: 1px solid #e8e5de;
-
     padding-top: 15px;
     margin-top: 22px;
 }
@@ -552,7 +428,6 @@ body::before {
     font-family: var(--font-mono);
     font-size: 9px;
     letter-spacing: .13em;
-
     color: #817867;
 }
 
@@ -560,20 +435,14 @@ body::before {
     color: #d7c4a3;
 }
 
-/* SETA */
-
 .card-arrow {
     width: 32px;
     height: 32px;
-
     display: grid;
     place-items: center;
-
     border: 1px solid #ddd5c8;
-
     color: var(--gold);
     font-size: 17px;
-
     transition: all .22s ease;
 }
 
@@ -588,19 +457,14 @@ body::before {
     border-color: var(--gold);
 }
 
-/* =====================================================
-   RODAPÉ GERAL
-   ===================================================== */
+/* RODAPÉ */
 
 .footer {
     min-height: 61px;
-
     padding: 0 5%;
-
     display: flex;
     align-items: center;
     justify-content: space-between;
-
     border-top: 1px solid #d9d5cd;
     background: #e6e3dc;
 }
@@ -610,7 +474,6 @@ body::before {
     font-family: var(--font-mono);
     font-size: 8px;
     letter-spacing: .12em;
-
     color: #8c887f;
 }
 
@@ -619,12 +482,9 @@ body::before {
     font-weight: 500;
 }
 
-/* =====================================================
-   RESPONSIVIDADE — TABLET
-   ===================================================== */
+/* TABLET */
 
 @media(max-width: 900px) {
-
     .topbar-inner {
         padding: 15px 25px;
     }
@@ -648,24 +508,18 @@ body::before {
     }
 }
 
-/* =====================================================
-   RESPONSIVIDADE — CELULAR
-   ===================================================== */
+/* CELULAR */
 
 @media(max-width: 650px) {
-
     .topbar {
         min-height: auto;
     }
 
     .topbar-inner {
         min-height: auto;
-
         padding: 17px 18px;
-
         flex-direction: column;
         align-items: stretch;
-
         gap: 16px;
     }
 
@@ -676,7 +530,6 @@ body::before {
     .owner-logo-box {
         width: 160px;
         height: 61px;
-
         padding: 6px 9px;
     }
 
@@ -690,7 +543,6 @@ body::before {
 
     .developer-brand {
         justify-content: space-between;
-
         padding-top: 13px;
         border-top: 1px solid #34383a;
     }
@@ -745,9 +597,7 @@ body::before {
 
     .footer {
         min-height: 68px;
-
         padding: 15px 20px;
-
         gap: 10px;
         flex-wrap: wrap;
     }
@@ -761,7 +611,6 @@ body::before {
 /* CELULARES PEQUENOS */
 
 @media(max-width: 370px) {
-
     .owner-logo-box {
         width: 135px;
         height: 56px;
@@ -780,10 +629,9 @@ body::before {
     }
 }
 
-/* MOVIMENTO REDUZIDO */
+/* ACESSIBILIDADE */
 
 @media(prefers-reduced-motion: reduce) {
-
     *,
     *::before,
     *::after {
@@ -791,307 +639,148 @@ body::before {
         scroll-behavior: auto !important;
     }
 }
-
 </style>
 </head>
 
 <body>
-
 <div class="app">
 
-    <!-- ==========================================
-         CABEÇALHO CORPORATIVO
-    =========================================== -->
-
     <header class="topbar">
-
         <div class="topbar-inner">
 
-            <!-- LOGO DA EMPRESA PROPRIETÁRIA -->
-
             <div class="owner-brand">
-
                 <div class="owner-logo-box">
-
                     <img
                         src="/assets/img/logo-engenheiro.png"
                         alt="Logo PH Engenharia"
                         class="owner-logo"
                     >
-
                 </div>
 
                 <div class="owner-info">
-
                     <strong>PH ENGENHARIA</strong>
-
-                    <span>
-                        GESTÃO E ENGENHARIA
-                    </span>
-
+                    <span>GESTÃO E ENGENHARIA</span>
                 </div>
-
             </div>
 
-
-            <!-- LOGO DO DESENVOLVIMENTO -->
-
             <div class="developer-brand">
-
                 <div class="developer-info">
-
                     <span>TECNOLOGIA E SISTEMAS</span>
-
-                    <strong>
-                        DESENVOLVIMENTO
-                    </strong>
-
+                    <strong>DESENVOLVIMENTO</strong>
                 </div>
 
                 <div class="developer-logo-box">
-
                     <img
                         src="/assets/img/logo-desenvolvimento.png"
                         alt="Logo do desenvolvimento"
                         class="developer-logo"
                     >
-
                 </div>
-
             </div>
 
         </div>
-
     </header>
-
-
-    <!-- ==========================================
-         CONTEÚDO PRINCIPAL
-    =========================================== -->
 
     <main class="main">
 
-
-        <!-- IDENTIFICAÇÃO -->
-
         <div class="page-top">
-
-            <div class="page-label">
-                CENTRAL DE ACESSO
-            </div>
-
-            <div class="page-code">
-                PH / SYSTEM
-            </div>
-
+            <div class="page-label">CENTRAL DE ACESSO</div>
+            <div class="page-code">PH / SYSTEM</div>
         </div>
 
-
-        <!-- TÍTULO -->
-
         <section class="heading">
-
-            <h1>
-                Central de <span>gestão.</span>
-            </h1>
-
-            <p>
-                Selecione o ambiente para acessar a plataforma.
-            </p>
-
+            <h1>Central de <span>gestão.</span></h1>
+            <p>Selecione o ambiente para acessar a plataforma.</p>
         </section>
-
-
-        <!-- ======================================
-             MÓDULOS DO SISTEMA
-        ======================================= -->
 
         <section class="access-area">
 
             <div class="access-header">
-
-                <strong>
-                    AMBIENTES DISPONÍVEIS
-                </strong>
-
-                <span>
-                    02 MÓDULOS
-                </span>
-
+                <strong>AMBIENTES DISPONÍVEIS</strong>
+                <span>02 MÓDULOS</span>
             </div>
-
 
             <div class="access-grid">
 
-
-                <!-- =================================
-                     01 — PAINEL DO ENGENHEIRO
-
-                     DESTINO INVERTIDO:
-                     public/minha-obra/minha-obra.html
-                ================================== -->
-
+                <!-- PAINEL DO ENGENHEIRO -->
                 <a
                     href="/minha-obra/minha-obra.html"
                     class="access-card primary"
                     aria-label="Acessar painel do engenheiro"
                 >
-
                     <div class="card-top">
-
-                        <span class="card-index">
-                            01 / INTERNO
-                        </span>
+                        <span class="card-index">01 / INTERNO</span>
 
                         <div class="card-symbol">
-
                             <svg viewBox="0 0 24 24">
-
                                 <path d="M3 21h18"/>
-
                                 <path d="M5 21V7l8-4v18"/>
-
                                 <path d="M13 10h6v11"/>
-
                                 <path d="M8 9h2"/>
-
                                 <path d="M8 13h2"/>
-
                                 <path d="M8 17h2"/>
-
                                 <path d="M16 14h1"/>
-
                                 <path d="M16 17h1"/>
-
                             </svg>
-
                         </div>
-
                     </div>
-
 
                     <div class="card-content">
-
-                        <h2>
-                            Painel do Engenheiro
-                        </h2>
-
-                        <p>
-                            Administração, controle e gestão de obras.
-                        </p>
-
+                        <h2>Painel do Engenheiro</h2>
+                        <p>Administração, controle e gestão de obras.</p>
                     </div>
-
 
                     <div class="card-footer">
-
-                        <span>
-                            ACESSAR AMBIENTE
-                        </span>
-
-                        <div class="card-arrow">
-                            ↗
-                        </div>
-
+                        <span>ACESSAR AMBIENTE</span>
+                        <div class="card-arrow">↗</div>
                     </div>
-
                 </a>
 
-
-                <!-- =================================
-                     02 — ÁREA DO CLIENTE
-
-                     DESTINO INVERTIDO:
-                     pagina-inicial.html
-                ================================== -->
-
+                <!-- ÁREA DO CLIENTE -->
                 <a
-                    href="pagina-inicial.html"
+                    href="/pagina-inicial.html"
                     class="access-card"
                     aria-label="Acessar área do cliente"
                 >
-
                     <div class="card-top">
-
-                        <span class="card-index">
-                            02 / CLIENTE
-                        </span>
+                        <span class="card-index">02 / CLIENTE</span>
 
                         <div class="card-symbol">
-
                             <svg viewBox="0 0 24 24">
-
                                 <path d="M3 10.5 12 3l9 7.5"/>
-
                                 <path d="M5 9.5V21h14V9.5"/>
-
                                 <path d="M9 21v-7h6v7"/>
-
                                 <path d="M9 9h.01"/>
-
                                 <path d="M15 9h.01"/>
-
                             </svg>
-
                         </div>
-
                     </div>
-
 
                     <div class="card-content">
-
-                        <h2>
-                            Área do Cliente
-                        </h2>
-
-                        <p>
-                            Projetos, acompanhamento e informações da obra.
-                        </p>
-
+                        <h2>Área do Cliente</h2>
+                        <p>Projetos, acompanhamento e informações da obra.</p>
                     </div>
-
 
                     <div class="card-footer">
-
-                        <span>
-                            ACESSAR AMBIENTE
-                        </span>
-
-                        <div class="card-arrow">
-                            ↗
-                        </div>
-
+                        <span>ACESSAR AMBIENTE</span>
+                        <div class="card-arrow">↗</div>
                     </div>
-
                 </a>
 
-
             </div>
-
         </section>
-
     </main>
 
-
-    <!-- ==========================================
-         RODAPÉ
-    =========================================== -->
-
     <footer class="footer">
-
-        <div class="footer-left">
-            PH ENGENHARIA © 2026
-        </div>
+        <div class="footer-left">PH ENGENHARIA © 2026</div>
 
         <div class="footer-right">
             <strong>PLATAFORMA DE GESTÃO</strong>
             &nbsp; / &nbsp;
             AMBIENTE CORPORATIVO
         </div>
-
     </footer>
 
 </div>
-
 </body>
 </html>
