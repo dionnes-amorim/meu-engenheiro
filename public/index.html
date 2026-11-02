@@ -1,167 +1,802 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MEU ENGENHEIRO — CENTRAL</title>
-<link href="https://fonts.googleapis.com/css2?family=Fragment+Mono&family=Newsreader:opsz,wght@6..72,300;6..72,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#171613">
+
+<title>Meu Engenheiro | Sistema de Gestão</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+
 <style>
-:root{
-  --paper:#f3ece1; --paper2:#fffaf2; --ink:#15120f; --line:#15120f; --line2:#d6c9b8;
-  --gold:#b88a44; --gold2:#d9b97a; --concrete:#e8ddd0;
+:root {
+    --bg: #eae5dc;
+    --surface: #f8f6f1;
+    --surface2: #f0ece4;
+    --ink: #211f1b;
+    --muted: #858077;
+    --line: #d9d2c6;
+    --dark: #171613;
+    --dark2: #22201c;
+    --gold: #b58b4c;
+    --gold-light: #d6b77f;
+    --white: #fff;
 }
-*{margin:0;padding:0;box-sizing:border-box}
-body{
-  min-height:100vh; background: var(--paper); color:var(--ink);
-  font-family:"Fragment Mono", monospace;
-  display:flex; justify-content:center; padding:28px 18px;
-  background-image:
-    linear-gradient(rgba(21,18,15,.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(21,18,15,.05) 1px, transparent 1px),
-    url('https://images.unsplash.com/photo-1504307651254-35680f356dfd?q=80&w=1600&auto=format&fit=crop');
-  background-size: 32px 32px, 32px 32px, cover;
-  background-blend-mode: multiply, multiply, normal;
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
-body::before{content:""; position:fixed; inset:0; background:rgba(243,236,225,.92); pointer-events:none}
-.sistema{
-  position:relative; z-index:1; width:100%; max-width:1120px;
-  border:2.5px solid var(--line); background:var(--paper2);
-  box-shadow: 12px 12px 0 rgba(21,18,15,.08);
+
+body {
+    min-height: 100vh;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    overflow-x: hidden;
 }
-.header{
-  display:grid; grid-template-columns: auto 1fr 300px;
-  border-bottom:2.5px solid var(--line); min-height:78px;
+
+/* TEXTURA DE FUNDO */
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+
+    background-image:
+        linear-gradient(rgba(40,35,27,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(40,35,27,.035) 1px, transparent 1px);
+
+    background-size: 28px 28px;
 }
-.logo{
-  width:88px; border-right:2.5px solid var(--line); display:grid; place-items:center;
-  background:#fff; font-weight:900; font-size:22px; line-height:.9; letter-spacing:-.04em;
+
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: .045;
+
+    background-image: url("https://images.unsplash.com/photo-1504307651254-35680f356dfd?q=80&w=1600&auto=format&fit=crop");
+    background-size: cover;
+    background-position: center;
+    mix-blend-mode: multiply;
 }
-.logo small{display:block; font-size:8px; letter-spacing:.22em; margin-top:4px}
-.meio{padding:14px 20px; display:flex; flex-direction:column; justify-content:center; gap:6px}
-.meio .title{font-family:"Instrument Serif", serif; font-size:26px; line-height:1; letter-spacing:-.02em}
-.meio .sub{font-size:10px; opacity:.7; letter-spacing:.14em}
-.selo{border-left:2.5px solid var(--line); background:#fff; padding:14px 18px; display:flex; flex-direction:column; justify-content:center; gap:6px}
-.selo-line{display:flex; justify-content:space-between; font-size:9px; letter-spacing:.18em}
-.selo-line b{color:var(--gold)}
 
-.body{display:grid; grid-template-columns: 1.1fr .9fr; min-height:640px}
-.left{border-right:2.5px solid var(--line); padding:28px; display:flex; flex-direction:column}
-.tag{display:inline-flex; align-items:center; gap:10px; border:1.5px solid var(--line); padding:8px 12px; font-size:9px; letter-spacing:.18em; background:#fff; width:fit-content}
-.tag::before{content:""; width:7px; height:7px; background:var(--gold); border-radius:50%}
+/* ESTRUTURA */
 
-h1{margin-top:26px; font-family:"Newsreader", serif; font-weight:300; font-size:62px; line-height:.88; letter-spacing:-.04em}
-h1 i{font-family:"Instrument Serif", serif; font-style:italic; background: linear-gradient(to top, var(--gold2) 45%, transparent 45%);}
-
-.desc{margin-top:20px; display:grid; grid-template-columns: 1fr 1fr; gap:18px; border-top:1.5px dashed var(--line2); padding-top:18px}
-.desc p{font-size:11px; line-height:1.7; opacity:.8}
-
-.cards{margin-top:30px; display:grid; gap:14px}
-.card{
-  border:2px solid var(--line); background:#fff; display:grid; grid-template-columns: 72px 1fr 66px;
-  min-height:108px; text-decoration:none; color:var(--ink); position:relative;
+.app {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
-.card::after{content:""; position:absolute; top:8px; right:8px; width:6px; height:6px; background:var(--gold); border-radius:50%}
-.card:hover{transform:translate(-3px,-3px); box-shadow:6px 6px 0 var(--line)}
-.card-num{border-right:2px solid var(--line); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; background:var(--paper)}
-.card-num b{font-size:22px; line-height:1}
-.card-num span{font-size:8px; letter-spacing:.18em; opacity:.6}
-.card-main{padding:14px 16px; display:flex; flex-direction:column; justify-content:center}
-.card-main strong{font-size:12.5px; letter-spacing:.04em}
-.card-main p{font-size:10px; opacity:.65; margin-top:6px; line-height:1.5; max-width:340px}
-.card-arrow{border-left:2px solid var(--line); display:grid; place-items:center; font-size:20px; background:var(--paper)}
 
-.right{background:#12100e; color:#e8ddd0; padding:22px; display:flex; flex-direction:column}
-.right-head{display:flex; justify-content:space-between; font-size:9px; letter-spacing:.22em; opacity:.5; padding-bottom:12px; border-bottom:1px solid #24211e}
+/* BARRA GERENCIAL */
 
-.planta{margin-top:18px; border:1.5px solid #2a2724; background:#1a1816; aspect-ratio: 1.25 / .9; position:relative; padding:14px}
-.planta-grid{position:absolute; inset:14px; background-image: linear-gradient(#25221f 1px, transparent 1px), linear-gradient(90deg, #25221f 1px, transparent 1px); background-size: 24px 24px}
-.planta-box{position:absolute; left:22%; right:22%; top:22%; bottom:22%; border:1.5px solid var(--gold2); display:grid; place-items:center}
-.planta-box span{font-size:8px; letter-spacing:.28em; color:var(--gold2); background:#1a1816; padding:0 8px; transform:translateY(-14px)}
-.planta-linha{position:absolute; left:0; right:0; top:50%; height:1px; background:var(--gold2); opacity:.6}
-.planta-cota{position:absolute; bottom:6px; left:50%; transform:translateX(-50%); font-size:8px; color:var(--gold2); letter-spacing:.2em}
+.topbar {
+    height: 76px;
+    background: var(--dark);
+    color: var(--white);
 
-.specs{margin-top:18px; display:grid; grid-template-columns:1fr 1fr; gap:10px}
-.spec{border:1px solid #24211e; padding:10px 12px; background:#1c1917}
-.spec b{display:block; font-size:9px; letter-spacing:.18em; color:var(--gold2); margin-bottom:6px}
-.spec p{font-size:10px; line-height:1.5; opacity:.8}
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 
-.carimbo-gold{margin-top:auto; border:1.5px solid var(--gold2); padding:12px 14px; display:flex; gap:12px; color:var(--gold2); align-items:center}
-.carimbo-gold .ic{width:38px; height:38px; border:1.5px solid var(--gold2); display:grid; place-items:center; font-size:16px}
+    padding: 0 5.5%;
+    border-bottom: 1px solid rgba(214,183,127,.35);
+}
 
-.footer{height:38px; border-top:2.5px solid var(--line); background:#fff; display:flex; justify-content:space-between; align-items:center; padding:0 16px; font-size:8px; letter-spacing:.2em}
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
 
-@media(max-width:900px){
-  .header{grid-template-columns:1fr} .logo{width:100%; height:66px; border-right:0; border-bottom:2.5px solid var(--line); flex-direction:row} .selo{border-left:0; border-top:2.5px solid var(--line)} .body{grid-template-columns:1fr} .left{border-right:0; border-bottom:2.5px solid var(--line)} h1{font-size:48px} .desc{grid-template-columns:1fr}
+.brand-symbol {
+    width: 39px;
+    height: 39px;
+    border: 1px solid var(--gold);
+    display: grid;
+    place-items: center;
+    color: var(--gold-light);
+
+    font-family: 'Playfair Display', serif;
+    font-size: 21px;
+}
+
+.brand-name {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.brand-name strong {
+    font-family: 'Manrope', sans-serif;
+    font-size: 14px;
+    letter-spacing: .07em;
+    font-weight: 700;
+}
+
+.brand-name span {
+    font-family: 'DM Mono', monospace;
+    font-size: 8px;
+    color: #9b958a;
+    letter-spacing: .2em;
+}
+
+.top-center {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #b8b2a8;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: .13em;
+}
+
+.top-center .separator {
+    height: 17px;
+    width: 1px;
+    background: #49453e;
+}
+
+.top-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.system-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 9px 12px;
+    border: 1px solid #38352e;
+
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: #c7c1b6;
+    letter-spacing: .08em;
+}
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #92a77a;
+    box-shadow: 0 0 8px rgba(146,167,122,.5);
+}
+
+/* CONTEÚDO */
+
+.main {
+    width: 100%;
+    max-width: 1440px;
+    margin: auto;
+    padding: 65px 7% 55px;
+    flex: 1;
+}
+
+.intro {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 42px;
+}
+
+.intro-left {
+    max-width: 650px;
+}
+
+.eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    color: var(--gold);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+
+    margin-bottom: 19px;
+}
+
+.eyebrow::before {
+    content: "";
+    width: 25px;
+    height: 1px;
+    background: var(--gold);
+}
+
+h1 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 500;
+    font-size: clamp(38px, 5vw, 61px);
+    line-height: 1.08;
+    letter-spacing: -.035em;
+}
+
+h1 em {
+    color: var(--gold);
+    font-weight: 500;
+}
+
+.intro-description {
+    margin-top: 15px;
+    color: #777167;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.project-info {
+    text-align: right;
+    padding-bottom: 5px;
+}
+
+.project-info span {
+    display: block;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: #8d877d;
+    letter-spacing: .15em;
+    margin-bottom: 8px;
+}
+
+.project-info strong {
+    font-family: 'Manrope', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .04em;
+}
+
+/* LINHA DE DIVISÃO */
+
+.section-line {
+    height: 1px;
+    background: var(--line);
+    position: relative;
+    margin-bottom: 28px;
+}
+
+.section-line::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 75px;
+    height: 2px;
+    background: var(--gold);
+}
+
+/* MÓDULOS */
+
+.modules-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.modules-heading span {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: #888277;
+    letter-spacing: .17em;
+}
+
+.modules-heading small {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: #a59e92;
+}
+
+.modules {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+
+/* CARD DE ACESSO */
+
+.module {
+    position: relative;
+    min-height: 230px;
+
+    background: var(--surface);
+    border: 1px solid #d6cfc3;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    text-decoration: none;
+    color: var(--ink);
+
+    padding: 26px 27px;
+
+    overflow: hidden;
+
+    transition:
+        transform .25s ease,
+        box-shadow .25s ease,
+        border-color .25s ease;
+}
+
+.module:hover {
+    transform: translateY(-4px);
+    border-color: var(--gold);
+    box-shadow: 0 12px 30px rgba(35,29,20,.08);
+}
+
+.module::after {
+    content: "";
+    position: absolute;
+    width: 150px;
+    height: 150px;
+    border: 1px solid rgba(181,139,76,.13);
+    border-radius: 50%;
+    right: -45px;
+    bottom: -65px;
+    transition: transform .4s ease;
+}
+
+.module:hover::after {
+    transform: scale(1.4);
+}
+
+.module-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.module-number {
+    font-family: 'DM Mono', monospace;
+    color: var(--gold);
+    font-size: 11px;
+    letter-spacing: .1em;
+}
+
+.module-icon {
+    width: 42px;
+    height: 42px;
+
+    display: grid;
+    place-items: center;
+
+    background: var(--surface2);
+    border: 1px solid #e1d9cc;
+
+    color: #927044;
+}
+
+.module-icon svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.module-bottom {
+    position: relative;
+    z-index: 1;
+}
+
+.module-bottom h2 {
+    font-family: 'Manrope', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -.025em;
+    margin-bottom: 7px;
+}
+
+.module-bottom p {
+    font-size: 11px;
+    color: #898277;
+    line-height: 1.5;
+}
+
+.module-action {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    margin-top: 22px;
+    padding-top: 15px;
+
+    border-top: 1px solid #e4ded4;
+
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: .13em;
+    color: #756c5e;
+}
+
+.module-arrow {
+    width: 29px;
+    height: 29px;
+
+    border: 1px solid #d8c9b1;
+
+    display: grid;
+    place-items: center;
+
+    color: var(--gold);
+    font-size: 17px;
+
+    transition: all .25s ease;
+}
+
+.module:hover .module-arrow {
+    background: var(--gold);
+    color: white;
+    border-color: var(--gold);
+}
+
+/* RODAPÉ */
+
+.footer {
+    min-height: 57px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 5.5%;
+
+    background: #e3ddd3;
+    border-top: 1px solid #d2cabe;
+}
+
+.footer span {
+    font-family: 'DM Mono', monospace;
+    font-size: 8px;
+    color: #8c857a;
+    letter-spacing: .12em;
+}
+
+.footer strong {
+    color: #8d7044;
+    font-weight: 500;
+}
+
+/* RESPONSIVIDADE */
+
+@media(max-width: 800px) {
+
+    .topbar {
+        padding: 0 22px;
+        height: 68px;
+    }
+
+    .top-center {
+        display: none;
+    }
+
+    .main {
+        padding: 55px 25px 45px;
+    }
+
+    .intro {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 23px;
+    }
+
+    .project-info {
+        text-align: left;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .project-info span {
+        margin: 0;
+    }
+
+    .modules {
+        grid-template-columns: 1fr;
+    }
+
+    .module {
+        min-height: 210px;
+    }
+
+    .footer {
+        padding: 18px 22px;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+}
+
+@media(max-width: 430px) {
+
+    .brand-symbol {
+        width: 35px;
+        height: 35px;
+    }
+
+    .brand-name strong {
+        font-size: 12px;
+    }
+
+    .system-status {
+        padding: 8px;
+        font-size: 8px;
+    }
+
+    .main {
+        padding: 43px 19px;
+    }
+
+    h1 {
+        font-size: 43px;
+    }
+
+    .module {
+        padding: 22px;
+    }
+
+    .module-bottom h2 {
+        font-size: 16px;
+    }
+
+    .footer span {
+        font-size: 7px;
+    }
+}
+
+@media(prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        transition: none !important;
+        scroll-behavior: auto !important;
+    }
 }
 </style>
 </head>
+
 <body>
-<div class="sistema">
-  <div class="header">
-    <div class="logo">M—ENG<small>CENTRAL</small></div>
-    <div class="meio">
-      <div class="title">Meu Engenheiro</div>
-      <div class="sub">SISTEMA DE GESTÃO — DETALHE CONSTRUTIVO / OBRA FINA</div>
-    </div>
-    <div class="selo">
-      <div class="selo-line"><span>OBRA</span><b>ME-001 / 2026</b></div>
-      <div class="selo-line"><span>CIDADE</span><b>SEVERÍNIA — OLÍMPIA</b></div>
-      <div class="selo-line"><span>STATUS</span><b>EXECUÇÃO</b></div>
-    </div>
-  </div>
 
-  <div class="body">
-    <div class="left">
-      <div class="tag">FOLHA 01 — ACESSO TÉCNICO / 1:50</div>
-      <h1>Obra com<br><i>acabamento fino.</i></h1>
-      
-      <div class="desc">
-        <p>Interface pensada como prancheta de obra: linha grossa, papel concreto, cota e selo dourado. Sem blur, sem vidro, sem cara de template.</p>
-        <p>Fundo de tijolo em 8% — só textura, não compete. Golden #B88A44 como ferragem exposta, detalhe delicado.</p>
-      </div>
+<div class="app">
 
-      <div class="cards">
-        <a class="card" href="pagina-inicial.html">
-          <div class="card-num"><b>01</b><span>ENG</span></div>
-          <div class="card-main"><strong>PAINEL DO ENGENHEIRO</strong><p>Kanban por cidade, integração data_específica + cidade, clientes, bloqueios e horários reais.</p></div>
-          <div class="card-arrow">↗</div>
-        </a>
+    <!-- BARRA SUPERIOR GERENCIAL -->
 
-        <a class="card" href="public/minha-obra/minha-obra.html">
-          <div class="card-num"><b>02</b><span>CLI</span></div>
-          <div class="card-main"><strong>MEUS PROJETOS / CLIENTE</strong><p>Se seu arquivo for obra-gestao.html, troque o href para obra-gestao.html. Esse já corrige o Cannot GET.</p></div>
-          <div class="card-arrow">↗</div>
-        </a>
-      </div>
-    </div>
+    <header class="topbar">
 
-    <div class="right">
-      <div class="right-head"><span>DETALHE — COTA / MATERIAL</span><span>ESC 1:25</span></div>
+        <div class="brand">
 
-      <div class="planta">
-        <div class="planta-grid"></div>
-        <div class="planta-box"><span>ÁREA TÉCNICA</span><div class="planta-linha"></div></div>
-        <div class="planta-cota">3.20m — MODULAÇÃO GOLDEN</div>
-      </div>
+            <div class="brand-symbol">
+                M.
+            </div>
 
-      <div class="specs">
-        <div class="spec"><b>PAPEL</b><p>#F3ECE1 + véu 92% sobre tijolo. Textura sem poluir.</p></div>
-        <div class="spec"><b>FERRO</b><p>Golden #B88A44 / #D9B97A só em selo, cota e ponto.</p></div>
-        <div class="spec"><b>TRAÇO</b><p>Borda 2.5px + sombra dura 6px. Cara de carimbo.</p></div>
-        <div class="spec"><b>TIPO</b><p>Fragment Mono + Newsreader. Canteiro com delicadeza.</p></div>
-      </div>
+            <div class="brand-name">
+                <strong>MEU ENGENHEIRO</strong>
+                <span>ENGINEERING MANAGEMENT</span>
+            </div>
 
-      <div class="carimbo-gold">
-        <div class="ic">◫</div>
-        <div style="font-size:9px; line-height:1.5; letter-spacing:.1em">ACABAMENTO DELICADO<br>LINHA GROSSA + CONCRETO + TIJOLO SUTIL</div>
-      </div>
-    </div>
-  </div>
+        </div>
 
-  <div class="footer">
-    <span>© 2026 MEU ENGENHEIRO — NÃO É SITE, É SISTEMA</span>
-    <span>DET 01 — REV A</span>
-  </div>
+        <div class="top-center">
+            <span>PLATAFORMA</span>
+            <div class="separator"></div>
+            <span>GESTÃO DE OBRAS</span>
+            <div class="separator"></div>
+            <span>2026</span>
+        </div>
+
+        <div class="top-right">
+
+            <div class="system-status">
+                <span class="status-dot"></span>
+                SISTEMA ONLINE
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <!-- ÁREA PRINCIPAL -->
+
+    <main class="main">
+
+        <section class="intro">
+
+            <div class="intro-left">
+
+                <div class="eyebrow">
+                    CENTRAL DE OPERAÇÕES
+                </div>
+
+                <h1>
+                    Gestão com<br>
+                    <em>precisão.</em>
+                </h1>
+
+                <p class="intro-description">
+                    Ambiente central de controle e acompanhamento
+                    de projetos, obras e clientes.
+                </p>
+
+            </div>
+
+            <div class="project-info">
+
+                <span>AMBIENTE</span>
+                <strong>ME-001 / 2026</strong>
+
+            </div>
+
+        </section>
+
+
+        <div class="section-line"></div>
+
+
+        <!-- ACESSOS -->
+
+        <section>
+
+            <div class="modules-heading">
+
+                <span>ACESSO AOS MÓDULOS</span>
+
+                <small>02 MÓDULOS</small>
+
+            </div>
+
+
+            <div class="modules">
+
+                <!-- ENGENHEIRO -->
+
+                <a
+                    class="module"
+                    href="pagina-inicial.html"
+                >
+
+                    <div class="module-top">
+
+                        <span class="module-number">
+                            01 / ENG
+                        </span>
+
+                        <div class="module-icon">
+
+                            <svg viewBox="0 0 24 24">
+                                <path d="M3 21h18"/>
+                                <path d="M5 21V7l8-4v18"/>
+                                <path d="M13 10h6v11"/>
+                                <path d="M8 9h2"/>
+                                <path d="M8 13h2"/>
+                                <path d="M8 17h2"/>
+                                <path d="M16 14h1"/>
+                                <path d="M16 17h1"/>
+                            </svg>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="module-bottom">
+
+                        <h2>
+                            Painel do Engenheiro
+                        </h2>
+
+                        <p>
+                            Gestão administrativa, obras e operações.
+                        </p>
+
+                        <div class="module-action">
+
+                            <span>ACESSAR PAINEL</span>
+
+                            <div class="module-arrow">
+                                ↗
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </a>
+
+
+                <!-- CLIENTE -->
+
+                <a
+                    class="module"
+                    href="public/minha-obra/minha-obra.html"
+                >
+
+                    <div class="module-top">
+
+                        <span class="module-number">
+                            02 / CLI
+                        </span>
+
+                        <div class="module-icon">
+
+                            <svg viewBox="0 0 24 24">
+                                <path d="M3 10.5 12 3l9 7.5"/>
+                                <path d="M5 9.5V21h14V9.5"/>
+                                <path d="M9 21v-7h6v7"/>
+                                <path d="M9 9h.01"/>
+                                <path d="M15 9h.01"/>
+                            </svg>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="module-bottom">
+
+                        <h2>
+                            Área do Cliente
+                        </h2>
+
+                        <p>
+                            Acompanhamento de projetos e informações da obra.
+                        </p>
+
+                        <div class="module-action">
+
+                            <span>ACESSAR PROJETOS</span>
+
+                            <div class="module-arrow">
+                                ↗
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </a>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- RODAPÉ -->
+
+    <footer class="footer">
+
+        <span>
+            MEU ENGENHEIRO © 2026
+        </span>
+
+        <span>
+            <strong>ENGINEERING SYSTEM</strong>
+            &nbsp; / &nbsp; REV. 02
+        </span>
+
+    </footer>
+
 </div>
+
 </body>
 </html>
