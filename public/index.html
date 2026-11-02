@@ -3,189 +3,90 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MEU ENGENHEIRO — CENTRAL</title>
-<link href="https://fonts.googleapis.com/css2?family=Fragment+Mono&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&display=swap" rel="stylesheet">
+<title>Meu Engenheiro</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700&display=swap" rel="stylesheet">
 <style>
-  :root{ --c: #f2ede6; --ink:#12100e; --line:#12100e; --brick:#d8cfc5; --gold:#b88a44; }
-  *{margin:0;padding:0;box-sizing:border-box}
-  html,body{height:100%}
-  body{
-    background-color: var(--c);
-    background-image:
-      linear-gradient(rgba(18,16,14,.06) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(18,16,14,.06) 1px, transparent 1px),
-      url('https://images.unsplash.com/photo-1504307651254-35680f356dfd?q=80&w=1200&auto=format&fit=crop');
-    background-blend-mode: multiply, multiply, normal;
-    background-size: 28px 28px, 28px 28px, cover;
-    background-position: 0 0, 0 0, center;
-    color:var(--ink);
-    font-family:"Fragment Mono", monospace;
-    display:flex; align-items:center; justify-content:center;
-    padding:16px;
-  }
-  body::before{
-    content:""; position:fixed; inset:0;
-    background: rgba(242,237,230,.92);
-    pointer-events:none;
-  }
-  .obra{
-    position:relative; z-index:1;
-    width:100%; max-width:980px;
-    border:2.5px solid var(--line);
-    background: var(--c);
-  }
-  /* topo carimbo */
-  .topo{
-    display:flex; border-bottom:2.5px solid var(--line);
-    height:62px;
-  }
-  .topo-esq{
-    flex:1; display:flex; align-items:center; gap:16px; padding:0 18px;
-    border-right:2.5px solid var(--line);
-  }
-  .marca{
-    width:42px; height:42px; border:2px solid var(--line);
-    display:grid; place-items:center; font-weight:900; font-size:14px;
-    background:#fff;
-  }
-  .marca small{font-size:8px; display:block; line-height:1}
-  .nome{line-height:1}
-  .nome b{font-size:13px; letter-spacing:.08em; display:block}
-  .nome i{font-family:"Newsreader", serif; font-style:italic; font-size:18px; margin-top:2px; display:block}
-  .topo-dir{
-    width:320px; display:flex; flex-direction:column; justify-content:center;
-    padding:0 18px; gap:4px; background:#fff;
-  }
-  .linha{font-size:9px; letter-spacing:.18em; display:flex; justify-content:space-between}
-  .linha span:last-child{color:var(--gold)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  min-height:100vh;
+  background:#f7f3ed;
+  display:flex; align-items:center; justify-content:center;
+  font-family:"Inter", sans-serif;
+  padding:24px;
+}
+.caixa{
+  width:100%; max-width:420px;
+  background:#fff;
+  border:1.5px solid #1a1a1a;
+  padding:32px 28px;
+}
+.topo{
+  display:flex; justify-content:space-between; align-items:center;
+  padding-bottom:20px; border-bottom:1.5px solid #1a1a1a;
+  margin-bottom:28px;
+}
+.logo{font-weight:700; font-size:14px; letter-spacing:.06em}
+.ano{font-size:10px; opacity:.6}
 
-  /* meio */
-  .miolo{display:grid; grid-template-columns:1.15fr .85fr; min-height:520px}
-  .esq{padding:28px 28px 20px; border-right:2.5px solid var(--line); display:flex; flex-direction:column}
-  .etiqueta{
-    display:inline-flex; border:1.5px solid var(--line); padding:6px 10px;
-    font-size:9px; letter-spacing:.18em; background:#fff; width:fit-content;
-  }
-  h1{
-    margin-top:22px; font-family:"Newsreader", serif; font-weight:400;
-    font-size:54px; line-height:.92; letter-spacing:-.03em;
-  }
-  h1 em{font-style:italic; background: linear-gradient(to top, var(--gold) 40%, transparent 40%); font-style:italic}
-  .riscado{margin-top:18px; border-top:1.5px dashed #12100e; padding-top:14px; font-size:11px; line-height:1.6; max-width:420px; opacity:.8}
+.botoes{display:flex; flex-direction:column; gap:14px}
 
-  .acessos{margin-top:28px; display:grid; gap:12px}
-  .bloco{
-    border:2px solid var(--line); background:#fff; display:grid; grid-template-columns:56px 1fr auto;
-    min-height:88px; text-decoration:none; color:var(--ink);
-    transition:.1s;
-  }
-  .bloco:hover{transform:translate(-2px,-2px); box-shadow:4px 4px 0 var(--line)}
-  .bloco:active{transform:translate(0,0); box-shadow:none}
-  .bloco-num{border-right:2px solid var(--line); display:grid; place-items:center; font-size:10px; background:var(--c)}
-  .bloco-txt{padding:12px 14px}
-  .bloco-txt strong{font-size:13px; letter-spacing:.02em; display:block}
-  .bloco-txt p{font-size:10px; margin-top:4px; line-height:1.4; opacity:.7}
-  .bloco-seta{width:54px; border-left:2px solid var(--line); display:grid; place-items:center; font-size:18px}
+.botao{
+  height:68px;
+  border:1.5px solid #1a1a1a;
+  background:#fff;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 20px;
+  text-decoration:none;
+  color:#1a1a1a;
+  font-size:13px; font-weight:700;
+  letter-spacing:.04em;
+  transition:.12s;
+}
+.botao:hover{
+  background:#1a1a1a;
+  color:#f7f3ed;
+}
+.botao.ouro{
+  background:#c9a86a;
+  border-color:#c9a86a;
+  color:#1a1a1a;
+}
+.botao.ouro:hover{
+  background:#b8965a;
+  border-color:#b8965a;
+  color:#fff;
+}
+.seta{font-size:16px}
 
-  .dir{background:#12100e; color:#f2ede6; padding:18px; display:flex; flex-direction:column}
-  .dir-titulo{font-size:9px; letter-spacing:.22em; opacity:.6; display:flex; justify-content:space-between; border-bottom:1px solid #2a2826; padding-bottom:10px}
-  .croqui{
-    margin-top:16px; border:1px solid #2a2826; padding:10px; background:#191715;
-    aspect-ratio: 1.2 / .85; position:relative; overflow:hidden;
-  }
-  .croqui::before{
-    content:""; position:absolute; inset:10px;
-    background:
-      linear-gradient(#2a2826 1px, transparent 1px),
-      linear-gradient(90deg, #2a2826 1px, transparent 1px);
-    background-size:22px 22px;
-  }
-  .croqui-linha{position:absolute; left:18%; right:18%; top:50%; height:2px; background:var(--gold); transform:rotate(-8deg)}
-  .croqui-ponto{position:absolute; width:8px; height:8px; background:#f2ede6; border:2px solid var(--gold)}
-  
-  .lista{margin-top:18px; display:grid; gap:0; border-top:1px solid #2a2826}
-  .lista-item{display:flex; gap:10px; padding:11px 0; border-bottom:1px solid #22201e; font-size:10px; line-height:1.4}
-  .lista-item b{color:var(--gold)}
-  
-  .carimbo{
-    margin-top:auto; border:1.5px solid var(--gold); padding:10px 12px;
-    display:flex; gap:10px; align-items:center; color:var(--gold);
-  }
-  .carimbo-mark{width:34px; height:34px; border:1.5px solid var(--gold); display:grid; place-items:center; font-size:12px}
-  .carimbo p{font-size:8.5px; line-height:1.4; letter-spacing:.06em}
-
-  .rodape{height:32px; border-top:2.5px solid var(--line); display:flex; justify-content:space-between; align-items:center; padding:0 14px; font-size:8.5px; letter-spacing:.16em; background:#fff}
-
-  @media(max-width:860px){.miolo{grid-template-columns:1fr} .esq{border-right:0; border-bottom:2.5px solid var(--line)} .topo{height:auto; flex-direction:column} .topo-esq{border-right:0; border-bottom:2.5px solid var(--line); height:62px} .topo-dir{width:100%; height:54px}}
+.rodape{
+  margin-top:28px;
+  font-size:9px;
+  letter-spacing:.18em;
+  opacity:.5;
+  text-align:center;
+}
 </style>
 </head>
 <body>
-<div class="obra">
-  <div class="topo">
-    <div class="topo-esq">
-      <div class="marca">M<small>ENG</small></div>
-      <div class="nome"><b>MEU ENGENHEIRO</b><i>central de obras</i></div>
+  <div class="caixa">
+    <div class="topo">
+      <div class="logo">MEU ENGENHEIRO</div>
+      <div class="ano">2026</div>
     </div>
-    <div class="topo-dir">
-      <div class="linha"><span>PROJETO</span><span>ME-001 / 2026</span></div>
-      <div class="linha"><span>STATUS</span><span>PRONTO P/ USO</span></div>
-      <div class="linha"><span>LOCAL</span><span>SEVERÍNIA — OLÍMPIA</span></div>
+
+    <div class="botoes">
+      <a href="pagina-inicial.html" class="botao ouro">
+        <span>PAINEL DO ENGENHEIRO</span>
+        <span class="seta">→</span>
+      </a>
+
+      <a href="public/minha-obra/minha-obra.html" class="botao">
+        <span>MEUS PROJETOS</span>
+        <span class="seta">→</span>
+      </a>
     </div>
+
+    <div class="rodape">OBRA • GESTÃO • CONSTRUÇÃO</div>
   </div>
-
-  <div class="miolo">
-    <div class="esq">
-      <span class="etiqueta">FOLHA 01 — ACESSO RESTRITO / OBRA</span>
-      <h1>Obra no<br><em>ponto certo.</em></h1>
-      <div class="riscado">
-        Sem gradiente. Sem botão redondo. Só linha, concreto e carimbo.<br>
-        Interface feita pra parecer instalada no canteiro — não site de template.
-      </div>
-
-      <div class="acessos">
-        <!-- CORREÇÃO AQUI: CAMINHO CERTO -->
-        <a class="bloco" href="pagina-inicial.html">
-          <div class="bloco-num">01</div>
-          <div class="bloco-txt"><strong>PAINEL DO ENGENHEIRO</strong><p>Kanban por cidade, disponibilidade com data_específica, clientes e agendamentos.</p></div>
-          <div class="bloco-seta">↗</div>
-        </a>
-
-        <!-- SEU ARQUIVO REAL É public/minha-obra/minha-obra.html -->
-        <a class="bloco" href="public/minha-obra/minha-obra.html">
-          <div class="bloco-num">02</div>
-          <div class="bloco-txt"><strong>MEUS PROJETOS / CLIENTE</strong><p>Se seu arquivo for obra-gestao.html, troque o href pra obra-gestao.html. Esse link já funciona.</p></div>
-          <div class="bloco-seta">↗</div>
-        </a>
-      </div>
-    </div>
-
-    <div class="dir">
-      <div class="dir-titulo"><span>CROQUI — ESC 1:50</span><span>CT-BRICK</span></div>
-      
-      <div class="croqui">
-        <div class="croqui-linha"></div>
-        <div class="croqui-ponto" style="left:18%; top:48%"></div>
-        <div class="croqui-ponto" style="right:18%; top:46%; background:var(--gold)"></div>
-      </div>
-
-      <div class="lista">
-        <div class="lista-item"><b>01</b><span>Tijolo de fundo em 8% de opacidade — não compete com leitura.</span></div>
-        <div class="lista-item"><b>02</b><span>Golden #B88A44 só em detalhe, como ferragem exposta.</span></div>
-        <div class="lista-item"><b>03</b><span>Todo clique tem sombra dura 4px — cara de carimbo de obra, não de IA.</span></div>
-        <div class="lista-item"><b>04</b><span>Link corrigido: public/minha-obra/minha-obra.html — Cannot GET resolvido.</span></div>
-      </div>
-
-      <div class="carimbo">
-        <div class="carimbo-mark">◫</div>
-        <p>ACABAMENTO DELICADO<br>LINHA GROSSA + PAPEL CONCRETO + TIJOLO SUTIL</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="rodape">
-    <span>© 2026 — MEU ENGENHEIRO</span>
-    <span>DET 01 — NÃO É SITE, É SISTEMA</span>
-  </div>
-</div>
 </body>
 </html>
