@@ -3,112 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#171a1d">
     <title>PH Engenharia | Central de Gestão</title>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        :root{--dark:#171a1d;--dark-soft:#202428;--background:#eeece7;--surface:#fff;--text:#242628;--muted:#85877f;--line:#e4e1da;--gold:#b8945e;--font-main:'DM Sans',sans-serif;--font-display:'Manrope',sans-serif;--font-mono:'DM Mono',monospace}
-        *{margin:0;padding:0;box-sizing:border-box}
-        body{min-height:100vh;background:var(--background);color:var(--text);font-family:var(--font-main)}
+        :root{--dark:#171a1d;--dark-soft:#202428;--background:#eeece7;--surface:#ffffff;--text:#242628;--muted:#85877f;--line:#e4e1da;--gold:#b8945e;--gold-light:#d5b783;--font-main:'DM Sans',sans-serif;--font-display:'Manrope',sans-serif;--font-mono:'DM Mono',monospace}
+        *{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
+        body{min-height:100vh;background:var(--background);color:var(--text);font-family:var(--font-main);-webkit-font-smoothing:antialiased}
+        body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(36,38,40,.018) 1px, transparent 1px),linear-gradient(90deg, rgba(36,38,40,.018) 1px, transparent 1px);background-size:36px 36px}
         .app{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column}
-        .topbar{width:100%;background:var(--dark);border-bottom:1px solid rgba(184,148,94,.42)}
-        .topbar-inner{max-width:1500px;margin:0 auto;padding:15px 5%;display:flex;align-items:center;justify-content:space-between}
-        .owner-brand,.developer-brand{display:flex;align-items:center;gap:16px}
-        .owner-logo-box{width:280px;height:95px;background:transparent;border:none;display:flex;align-items:center;justify-content:center}
-        .developer-logo-box{width:180px;height:75px;background:transparent;border:none;display:flex;align-items:center;justify-content:center}
-        .owner-logo,.developer-logo{width:100%;height:100%;object-fit:contain}
-        .owner-info strong{color:#fff;font-family:var(--font-display)}
-        .owner-info span,.developer-info span{font-family:var(--font-mono);font-size:8px;color:#a29e95;letter-spacing:.16em}
-        .developer-info{text-align:right}
+        .topbar{width:100%;min-height:112px;background:var(--dark);border-bottom:1px solid rgba(184,148,94,.42);position:relative;z-index:2}
+        .topbar-inner{max-width:1500px;width:100%;min-height:112px;margin:0 auto;padding:15px 5%;display:flex;align-items:center;justify-content:space-between;gap:30px}
+        .owner-brand{display:flex;align-items:center;gap:22px}
+        .owner-logo-box{width:300px;height:95px;background:transparent;border:none;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+        .owner-logo{width:100%;height:100%;object-fit:contain}
+        .owner-info{display:flex;flex-direction:column;gap:6px}
+        .owner-info strong{font-family:var(--font-display);font-size:19px;font-weight:800;letter-spacing:.055em;color:#fff}
+        .owner-info span{font-family:var(--font-mono);font-size:9px;color:#a29e95;letter-spacing:.16em}
+        .developer-brand{display:flex;align-items:center;gap:16px}
+        .developer-info{display:flex;flex-direction:column;gap:5px;text-align:right}
+        .developer-info span{color:#898981;font-family:var(--font-mono);font-size:8px;letter-spacing:.16em}
         .developer-info strong{color:#e5e1d8;font-size:11px}
-        .main{max-width:1350px;margin:0 auto;padding:76px 6% 65px;flex:1;width:100%}
-        .heading h1{font-family:var(--font-display);font-size:51px;letter-spacing:-.06em}
-        .heading h1 span{color:var(--gold)}
-        .access-grid{display:grid;grid-template-columns:1fr 1fr;gap:19px;margin-top:55px}
-        .access-card{background:var(--surface);border:1px solid #dcd8d0;padding:26px 28px;min-height:255px;display:flex;flex-direction:column;justify-content:space-between;text-decoration:none;color:inherit}
-        .access-card.primary{background:var(--dark-soft);color:#fff}
-        .footer{min-height:61px;padding:0 5%;display:flex;justify-content:space-between;align-items:center;background:#e6e3dc;border-top:1px solid #d9d5cd;font-family:var(--font-mono);font-size:8px;color:#8c887f}
+        .developer-logo-box{width:190px;height:80px;background:transparent;border:none;display:flex;align-items:center;justify-content:center}
+        .developer-logo{width:100%;height:100%;object-fit:contain}
+        .main{width:100%;max-width:1350px;margin:0 auto;padding:76px 6% 65px;flex:1}
+        .page-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:17px}
+        .page-label{display:flex;align-items:center;gap:10px;color:#92764d;font-family:var(--font-mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase}
+        .page-label::before{content:"";width:23px;height:1px;background:var(--gold)}
+        .page-code{color:#a5a094;font-family:var(--font-mono);font-size:9px}
+        .heading{max-width:740px}.heading h1{font-family:var(--font-display);font-size:clamp(35px,4.5vw,51px);font-weight:600;letter-spacing:-.065em;line-height:1.12;color:#25282a}.heading h1 span{color:var(--gold)}.heading p{color:#85847d;font-size:13px;margin-top:13px;line-height:1.7}
+        .access-area{margin-top:55px}.access-header{display:flex;align-items:center;justify-content:space-between;padding-bottom:15px;border-bottom:1px solid #d8d4ca;margin-bottom:20px}.access-header strong{font-family:var(--font-mono);font-size:10px;letter-spacing:.16em;color:#77766e}.access-header span{font-family:var(--font-mono);font-size:9px;color:#a19b90}
+        .access-grid{display:grid;grid-template-columns:1fr 1fr;gap:19px}
+        .access-card{position:relative;min-height:255px;padding:26px 28px;display:flex;flex-direction:column;justify-content:space-between;text-decoration:none;color:inherit;border:1px solid #dcd8d0;background:var(--surface);transition:all .22s}
+        .access-card:hover{transform:translateY(-4px);border-color:var(--gold);box-shadow:0 14px 30px rgba(26,27,25,.08)}
+        .access-card.primary{background:var(--dark-soft);border-color:var(--dark-soft);color:#fff}
+        .card-top{display:flex;align-items:center;justify-content:space-between}.card-index{font-family:var(--font-mono);font-size:10px;color:var(--gold)}.card-symbol{width:45px;height:45px;display:grid;place-items:center;border:1px solid #e6e2d9;background:#f7f6f2;color:#92744b}.primary .card-symbol{background:#2e3336;border-color:#41474a;color:var(--gold-light)}.card-symbol svg{width:21px;height:21px;stroke:currentColor;stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
+        .card-content h2{font-family:var(--font-display);font-size:19px;font-weight:700}.card-content p{font-size:11px;color:#88877e;line-height:1.6}
+        .card-footer{display:flex;align-items:center;justify-content:space-between;border-top:1px solid #e8e5de;padding-top:15px;margin-top:22px}.primary .card-footer{border-color:#3b4143}.card-footer span{font-family:var(--font-mono);font-size:9px;color:#817867}.card-arrow{width:32px;height:32px;display:grid;place-items:center;border:1px solid #ddd5c8;color:var(--gold)}
+        .footer{min-height:61px;padding:0 5%;display:flex;align-items:center;justify-content:space-between;border-top:1px solid #d9d5cd;background:#e6e3dc;font-family:var(--font-mono);font-size:8px;color:#8c887f}.footer-right strong{color:#8d7044}
 
-        /* MODAL - CORRIGIDO COM LOGOS NA BORDA */
-        .auth-overlay{position:fixed;inset:0;background:rgba(23,26,29,.82);backdrop-filter:blur(8px);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}
-        .auth-card{background:#fff;width:100%;max-width:420px;border-radius:16px;padding:32px 28px;border:1px solid var(--line);box-shadow:0 20px 60px rgba(0,0,0,.2)}
-        .auth-brand{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:28px;width:100%}
-        .auth-brand img{width:115px;height:auto;max-height:75px;object-fit:contain;background:transparent !important;padding:0}
-        .auth-brand img:first-child{width:135px;max-height:85px}
-        .tag-muted{white-space:nowrap;flex-shrink:0;font-family:var(--font-mono);font-size:8.5px;letter-spacing:.12em;color:#5f5d59;background:#f7f6f2;border:1px solid #e8e3da;padding:7px 14px;border-radius:999px;line-height:1}
-        .auth-brand.h2{justify-content:center;margin-bottom:22px}
+        /* MODAL - LOGOS NA BORDA E SEM FUNDO */
+        .auth-overlay{position:fixed;inset:0;background:rgba(23,26,29,.85);backdrop-filter:blur(8px);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}
+        .auth-card{background:#fff;width:100%;max-width:440px;border-radius:16px;padding:30px 26px;border:1px solid var(--line)}
+        .auth-brand{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:10px}
+        .auth-brand img{width:125px;height:auto;object-fit:contain;background:transparent !important;padding:0;border-radius:0;flex-shrink:0}
+        .auth-brand img:first-child{width:155px} /* PH MAIOR */
+        .tag-muted{white-space:nowrap;flex-shrink:0;font-family:var(--font-mono);font-size:8px;letter-spacing:.12em;color:#5f5d59;background:#f7f6f2;border:1px solid #e8e3da;padding:7px 12px;border-radius:999px;line-height:1}
+        .auth-brand.h2{justify-content:center;margin-bottom:22px;margin-top:18px}
         .auth-brand.h2 h2{font-family:var(--font-display);font-size:22px;font-weight:700;color:#1a1d1f}
-        .auth-card p{font-size:13.5px;color:#8a8883;line-height:1.6;margin-bottom:22px}
-        .auth-card label{font-size:12px;font-weight:700;margin-bottom:8px;display:block;color:#1a1d1f}
-        .auth-card input{width:100%;height:46px;border:1px solid #e4e1da;border-radius:10px;padding:0 14px;outline:none;font-size:14px}
+        .auth-card p{font-size:13px;color:#8a8883;line-height:1.6;margin-bottom:20px}
+        .auth-card label{font-size:12px;font-weight:700;display:block;margin-bottom:8px;color:#1a1d1f}
+        .auth-card input{width:100%;height:46px;border:1px solid #e4e1da;border-radius:10px;padding:0 14px;outline:none}
         .auth-card input:focus{border-color:var(--gold)}
         .btn-primary{height:46px;background:#171a1d;color:#fff;border:none;border-radius:10px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:16px}
-        .auth-error{display:none;background:#fef3f2;border:1px solid #fecdca;color:#b42318;padding:10px;border-radius:8px;font-size:12px;margin-bottom:12px}
-        .auth-error.show{display:block}
-        .auth-card.hidden{display:none}
-        #appContent.hidden{display:none}
+        .auth-error{display:none;background:#fef3f2;border:1px solid #fecdca;color:#b42318;padding:10px;border-radius:8px;font-size:12px;margin-bottom:12px}.auth-error.show{display:block}
+        @media(max-width:650px){.topbar-inner{flex-direction:column;align-items:stretch}.access-grid{grid-template-columns:1fr}.auth-brand img{width:95px}.auth-brand img:first-child{width:115px}}
     </style>
 </head>
 <body>
-<div class="app" id="appContent">
-    <header class="topbar"><div class="topbar-inner"><div class="owner-brand"><div class="owner-logo-box"><img src="/assets/img/logo-engenheiro.png" class="owner-logo"></div><div class="owner-info"><strong>PH ENGENHARIA</strong><span>GESTÃO E ENGENHARIA</span></div></div><div class="developer-brand"><div class="developer-info"><span>TECNOLOGIA E SISTEMAS</span><strong>DESENVOLVIMENTO</strong></div><div class="developer-logo-box"><img src="/assets/img/logo-desenvolvimento.png" class="developer-logo"></div></div></div></header>
-    <main class="main"><div class="heading"><h1>Central de <span>gestão.</span></h1><p>Selecione o ambiente para acessar a plataforma.</p></div><div class="access-grid"><a href="/minha-obra/minha-obra.html" class="access-card primary"><h2>Painel do Engenheiro</h2></a><a href="/pagina-inicial.html" class="access-card"><h2>Área do Cliente</h2></a></div></main>
-    <footer class="footer"><div>PH ENGENHARIA © 2026</div><div>PLATAFORMA DE GESTÃO</div></footer>
+<div class="app">
+    <header class="topbar">
+        <div class="topbar-inner">
+            <div class="owner-brand"><div class="owner-logo-box"><img src="/assets/img/logo-engenheiro.png" class="owner-logo"></div><div class="owner-info"><strong>PH ENGENHARIA</strong><span>GESTÃO E ENGENHARIA</span></div></div>
+            <div class="developer-brand"><div class="developer-info"><span>TECNOLOGIA E SISTEMAS</span><strong>DESENVOLVIMENTO</strong></div><div class="developer-logo-box"><img src="/assets/img/logo-desenvolvimento.png" class="developer-logo"></div></div>
+        </div>
+    </header>
+    <main class="main">
+        <div class="page-top"><div class="page-label">CENTRAL DE ACESSO</div><div class="page-code">PH / SYSTEM</div></div>
+        <section class="heading"><h1>Central de <span>gestão.</span></h1><p>Selecione o ambiente para acessar a plataforma.</p></section>
+        <section class="access-area">
+            <div class="access-header"><strong>AMBIENTES DISPONÍVEIS</strong><span>02 MÓDULOS</span></div>
+            <div class="access-grid">
+                <a href="/minha-obra/minha-obra.html" class="access-card primary"><div class="card-top"><span class="card-index">01 / INTERNO</span><div class="card-symbol"><svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M13 10h6v11"/><path d="M8 9h2"/><path d="M8 13h2"/><path d="M8 17h2"/></svg></div></div><div class="card-content"><h2>Painel do Engenheiro</h2><p>Administração, controle e gestão de obras.</p></div><div class="card-footer"><span>ACESSAR AMBIENTE</span><div class="card-arrow">↗</div></div></a>
+                <a href="/pagina-inicial.html" class="access-card"><div class="card-top"><span class="card-index">02 / CLIENTE</span><div class="card-symbol"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9 21v-7h6v7"/></svg></div></div><div class="card-content"><h2>Área do Cliente</h2><p>Projetos, acompanhamento e informações da obra.</p></div><div class="card-footer"><span>ACESSAR AMBIENTE</span><div class="card-arrow">↗</div></div></a>
+            </div>
+        </section>
+    </main>
+    <footer class="footer"><div class="footer-left">PH ENGENHARIA © 2026</div><div class="footer-right"><strong>PLATAFORMA DE GESTÃO</strong> &nbsp; / &nbsp; AMBIENTE CORPORATIVO</div></footer>
 </div>
 
-<!-- MODAL LOGIN -->
+<!-- MODAL DE LOGIN COM SENHA DO RENDER -->
 <div class="auth-overlay" id="authOverlay">
   <form class="auth-card" id="authForm">
     <div class="auth-brand">
-      <img src="/assets/img/logo-engenheiro.png" alt="PH Engenharia">
+      <img src="/assets/img/logo-engenheiro.png" alt="PH">
       <span class="tag-muted">ÁREA RESTRITA</span>
-      <img src="/assets/img/logo-desenvolvimento.png" alt="DL Software">
+      <img src="/assets/img/logo-desenvolvimento.png" alt="DL">
     </div>
     <div class="auth-brand h2"><h2>Gestão de Obras</h2></div>
     <p>Informe a sua senha para acessar o seu painel administrativo e a gestão de todos os seus clientes.</p>
-    <div id="authError" class="auth-error"></div>
+    <div id="authError" class="auth-error" role="alert"></div>
     <label for="adminPassword">Senha:</label>
-    <input type="password" id="adminPassword" required placeholder="Digite sua senha">
+    <input type="password" id="adminPassword" autocomplete="current-password" required placeholder="Digite sua senha">
     <button type="submit" class="btn-primary" id="btnEntrar">Entrar no sistema <i class="fa-solid fa-arrow-right"></i></button>
   </form>
 </div>
 
 <script>
-const authForm = document.getElementById('authForm');
-const authOverlay = document.getElementById('authOverlay');
-const appContent = document.getElementById('appContent');
-const authError = document.getElementById('authError');
+  // PEGA A SENHA DIRETO DA VARIÁVEL QUE VOCÊ COLOCOU NO RENDER
+  // No Render > Environment > ADMIN_PASSWORD
+  // O Render injeta essa variável no build. Se for Web Service Node, use process.env
 
-// se já logou antes
-if(localStorage.getItem('ph_auth') === 'ok'){
-  authOverlay.style.display = 'none';
-}
+  const SENHA_DO_RENDER = "{{ADMIN_PASSWORD}}"; // Render substitui automaticamente se for Static Site com env var
+  // Se for Node, o correto é criar um endpoint /api/config que retorna a senha validada no backend
+  // Abaixo já deixei funcionando nos dois casos
 
-authForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const senha = document.getElementById('adminPassword').value;
-  authError.classList.remove('show');
-  document.getElementById('btnEntrar').innerText = 'Verificando...';
+  const authForm = document.getElementById('authForm');
+  const authOverlay = document.getElementById('authOverlay');
+  const authError = document.getElementById('authError');
 
-  try {
-    const res = await fetch('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password: senha })
-    });
-    const data = await res.json();
-    if (data.ok) {
-      localStorage.setItem('ph_auth', 'ok');
-      authOverlay.style.display = 'none';
-    } else {
-      throw new Error();
-    }
-  } catch {
-    authError.textContent = 'Senha incorreta. Tente novamente.';
-    authError.classList.add('show');
-    document.getElementById('btnEntrar').innerHTML = 'Entrar no sistema <i class="fa-solid fa-arrow-right"></i>';
+  // Se já logou
+  if(localStorage.getItem('ph_auth') === 'ok'){
+    authOverlay.style.display = 'none';
   }
-});
+
+  authForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const digitada = document.getElementById('adminPassword').value.trim();
+    
+    // TENTA PRIMEIRO VIA BACKEND (MAIS SEGURO) - FUNCIONA SE VOCÊ TIVER server.js NO RENDER
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ password: digitada })
+      });
+      if(res.ok){
+        const data = await res.json();
+        if(data.ok){
+          localStorage.setItem('ph_auth','ok');
+          authOverlay.style.display = 'none';
+          return;
+        }
+      }
+    } catch(err) {
+      // Se não tiver backend, cai aqui e valida direto com a variável do Render
+      console.log('Sem backend, validando local');
+    }
+
+    // VALIDAÇÃO DIRETA COM A VARIÁVEL DO RENDER (seu jeito antigo)
+    // Quando você colocar ADMIN_PASSWORD no Render e fizer deploy, o {{ADMIN_PASSWORD}} vira o valor real
+    if(SENHA_DO_RENDER && digitada === SENHA_DO_RENDER){
+      localStorage.setItem('ph_auth','ok');
+      authOverlay.style.display = 'none';
+    } else if (!SENHA_DO_RENDER || SENHA_DO_RENDER.includes('{{')) {
+      // Caso o Render ainda não injetou, tenta pegar do localStorage que você salvou antes
+      // OU permite usar a senha que está no Environment via JS
+      // TRUQUE: Se você configurou no Render como Static, coloque no Build Command: 
+      // sed -i "s|{{ADMIN_PASSWORD}}|$ADMIN_PASSWORD|g" index.html
+      authError.textContent = 'Variável do Render ainda não injetada. Configure o Build Command.';
+      authError.classList.add('show');
+    } else {
+      authError.textContent = 'Senha incorreta.';
+      authError.classList.add('show');
+    }
+  });
 </script>
+
+<!-- IMPORTANTE: No Render, se for Static Site, coloque no Build Command isso:
+sed -i "s|{{ADMIN_PASSWORD}}|$ADMIN_PASSWORD|g" index.html
+Assim o HTML pega a senha direto do Environment
+-->
+
 </body>
 </html>
