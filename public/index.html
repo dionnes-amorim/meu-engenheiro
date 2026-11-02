@@ -3,90 +3,165 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Meu Engenheiro</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700&display=swap" rel="stylesheet">
+<title>MEU ENGENHEIRO — CENTRAL</title>
+<link href="https://fonts.googleapis.com/css2?family=Fragment+Mono&family=Newsreader:opsz,wght@6..72,300;6..72,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 <style>
+:root{
+  --paper:#f3ece1; --paper2:#fffaf2; --ink:#15120f; --line:#15120f; --line2:#d6c9b8;
+  --gold:#b88a44; --gold2:#d9b97a; --concrete:#e8ddd0;
+}
 *{margin:0;padding:0;box-sizing:border-box}
 body{
-  min-height:100vh;
-  background:#f7f3ed;
-  display:flex; align-items:center; justify-content:center;
-  font-family:"Inter", sans-serif;
-  padding:24px;
+  min-height:100vh; background: var(--paper); color:var(--ink);
+  font-family:"Fragment Mono", monospace;
+  display:flex; justify-content:center; padding:28px 18px;
+  background-image:
+    linear-gradient(rgba(21,18,15,.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(21,18,15,.05) 1px, transparent 1px),
+    url('https://images.unsplash.com/photo-1504307651254-35680f356dfd?q=80&w=1600&auto=format&fit=crop');
+  background-size: 32px 32px, 32px 32px, cover;
+  background-blend-mode: multiply, multiply, normal;
 }
-.caixa{
-  width:100%; max-width:420px;
-  background:#fff;
-  border:1.5px solid #1a1a1a;
-  padding:32px 28px;
+body::before{content:""; position:fixed; inset:0; background:rgba(243,236,225,.92); pointer-events:none}
+.sistema{
+  position:relative; z-index:1; width:100%; max-width:1120px;
+  border:2.5px solid var(--line); background:var(--paper2);
+  box-shadow: 12px 12px 0 rgba(21,18,15,.08);
 }
-.topo{
-  display:flex; justify-content:space-between; align-items:center;
-  padding-bottom:20px; border-bottom:1.5px solid #1a1a1a;
-  margin-bottom:28px;
+.header{
+  display:grid; grid-template-columns: auto 1fr 300px;
+  border-bottom:2.5px solid var(--line); min-height:78px;
 }
-.logo{font-weight:700; font-size:14px; letter-spacing:.06em}
-.ano{font-size:10px; opacity:.6}
+.logo{
+  width:88px; border-right:2.5px solid var(--line); display:grid; place-items:center;
+  background:#fff; font-weight:900; font-size:22px; line-height:.9; letter-spacing:-.04em;
+}
+.logo small{display:block; font-size:8px; letter-spacing:.22em; margin-top:4px}
+.meio{padding:14px 20px; display:flex; flex-direction:column; justify-content:center; gap:6px}
+.meio .title{font-family:"Instrument Serif", serif; font-size:26px; line-height:1; letter-spacing:-.02em}
+.meio .sub{font-size:10px; opacity:.7; letter-spacing:.14em}
+.selo{border-left:2.5px solid var(--line); background:#fff; padding:14px 18px; display:flex; flex-direction:column; justify-content:center; gap:6px}
+.selo-line{display:flex; justify-content:space-between; font-size:9px; letter-spacing:.18em}
+.selo-line b{color:var(--gold)}
 
-.botoes{display:flex; flex-direction:column; gap:14px}
+.body{display:grid; grid-template-columns: 1.1fr .9fr; min-height:640px}
+.left{border-right:2.5px solid var(--line); padding:28px; display:flex; flex-direction:column}
+.tag{display:inline-flex; align-items:center; gap:10px; border:1.5px solid var(--line); padding:8px 12px; font-size:9px; letter-spacing:.18em; background:#fff; width:fit-content}
+.tag::before{content:""; width:7px; height:7px; background:var(--gold); border-radius:50%}
 
-.botao{
-  height:68px;
-  border:1.5px solid #1a1a1a;
-  background:#fff;
-  display:flex; align-items:center; justify-content:space-between;
-  padding:0 20px;
-  text-decoration:none;
-  color:#1a1a1a;
-  font-size:13px; font-weight:700;
-  letter-spacing:.04em;
-  transition:.12s;
-}
-.botao:hover{
-  background:#1a1a1a;
-  color:#f7f3ed;
-}
-.botao.ouro{
-  background:#c9a86a;
-  border-color:#c9a86a;
-  color:#1a1a1a;
-}
-.botao.ouro:hover{
-  background:#b8965a;
-  border-color:#b8965a;
-  color:#fff;
-}
-.seta{font-size:16px}
+h1{margin-top:26px; font-family:"Newsreader", serif; font-weight:300; font-size:62px; line-height:.88; letter-spacing:-.04em}
+h1 i{font-family:"Instrument Serif", serif; font-style:italic; background: linear-gradient(to top, var(--gold2) 45%, transparent 45%);}
 
-.rodape{
-  margin-top:28px;
-  font-size:9px;
-  letter-spacing:.18em;
-  opacity:.5;
-  text-align:center;
+.desc{margin-top:20px; display:grid; grid-template-columns: 1fr 1fr; gap:18px; border-top:1.5px dashed var(--line2); padding-top:18px}
+.desc p{font-size:11px; line-height:1.7; opacity:.8}
+
+.cards{margin-top:30px; display:grid; gap:14px}
+.card{
+  border:2px solid var(--line); background:#fff; display:grid; grid-template-columns: 72px 1fr 66px;
+  min-height:108px; text-decoration:none; color:var(--ink); position:relative;
+}
+.card::after{content:""; position:absolute; top:8px; right:8px; width:6px; height:6px; background:var(--gold); border-radius:50%}
+.card:hover{transform:translate(-3px,-3px); box-shadow:6px 6px 0 var(--line)}
+.card-num{border-right:2px solid var(--line); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; background:var(--paper)}
+.card-num b{font-size:22px; line-height:1}
+.card-num span{font-size:8px; letter-spacing:.18em; opacity:.6}
+.card-main{padding:14px 16px; display:flex; flex-direction:column; justify-content:center}
+.card-main strong{font-size:12.5px; letter-spacing:.04em}
+.card-main p{font-size:10px; opacity:.65; margin-top:6px; line-height:1.5; max-width:340px}
+.card-arrow{border-left:2px solid var(--line); display:grid; place-items:center; font-size:20px; background:var(--paper)}
+
+.right{background:#12100e; color:#e8ddd0; padding:22px; display:flex; flex-direction:column}
+.right-head{display:flex; justify-content:space-between; font-size:9px; letter-spacing:.22em; opacity:.5; padding-bottom:12px; border-bottom:1px solid #24211e}
+
+.planta{margin-top:18px; border:1.5px solid #2a2724; background:#1a1816; aspect-ratio: 1.25 / .9; position:relative; padding:14px}
+.planta-grid{position:absolute; inset:14px; background-image: linear-gradient(#25221f 1px, transparent 1px), linear-gradient(90deg, #25221f 1px, transparent 1px); background-size: 24px 24px}
+.planta-box{position:absolute; left:22%; right:22%; top:22%; bottom:22%; border:1.5px solid var(--gold2); display:grid; place-items:center}
+.planta-box span{font-size:8px; letter-spacing:.28em; color:var(--gold2); background:#1a1816; padding:0 8px; transform:translateY(-14px)}
+.planta-linha{position:absolute; left:0; right:0; top:50%; height:1px; background:var(--gold2); opacity:.6}
+.planta-cota{position:absolute; bottom:6px; left:50%; transform:translateX(-50%); font-size:8px; color:var(--gold2); letter-spacing:.2em}
+
+.specs{margin-top:18px; display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.spec{border:1px solid #24211e; padding:10px 12px; background:#1c1917}
+.spec b{display:block; font-size:9px; letter-spacing:.18em; color:var(--gold2); margin-bottom:6px}
+.spec p{font-size:10px; line-height:1.5; opacity:.8}
+
+.carimbo-gold{margin-top:auto; border:1.5px solid var(--gold2); padding:12px 14px; display:flex; gap:12px; color:var(--gold2); align-items:center}
+.carimbo-gold .ic{width:38px; height:38px; border:1.5px solid var(--gold2); display:grid; place-items:center; font-size:16px}
+
+.footer{height:38px; border-top:2.5px solid var(--line); background:#fff; display:flex; justify-content:space-between; align-items:center; padding:0 16px; font-size:8px; letter-spacing:.2em}
+
+@media(max-width:900px){
+  .header{grid-template-columns:1fr} .logo{width:100%; height:66px; border-right:0; border-bottom:2.5px solid var(--line); flex-direction:row} .selo{border-left:0; border-top:2.5px solid var(--line)} .body{grid-template-columns:1fr} .left{border-right:0; border-bottom:2.5px solid var(--line)} h1{font-size:48px} .desc{grid-template-columns:1fr}
 }
 </style>
 </head>
 <body>
-  <div class="caixa">
-    <div class="topo">
-      <div class="logo">MEU ENGENHEIRO</div>
-      <div class="ano">2026</div>
+<div class="sistema">
+  <div class="header">
+    <div class="logo">M—ENG<small>CENTRAL</small></div>
+    <div class="meio">
+      <div class="title">Meu Engenheiro</div>
+      <div class="sub">SISTEMA DE GESTÃO — DETALHE CONSTRUTIVO / OBRA FINA</div>
     </div>
-
-    <div class="botoes">
-      <a href="pagina-inicial.html" class="botao ouro">
-        <span>PAINEL DO ENGENHEIRO</span>
-        <span class="seta">→</span>
-      </a>
-
-      <a href="public/minha-obra/minha-obra.html" class="botao">
-        <span>MEUS PROJETOS</span>
-        <span class="seta">→</span>
-      </a>
+    <div class="selo">
+      <div class="selo-line"><span>OBRA</span><b>ME-001 / 2026</b></div>
+      <div class="selo-line"><span>CIDADE</span><b>SEVERÍNIA — OLÍMPIA</b></div>
+      <div class="selo-line"><span>STATUS</span><b>EXECUÇÃO</b></div>
     </div>
-
-    <div class="rodape">OBRA • GESTÃO • CONSTRUÇÃO</div>
   </div>
+
+  <div class="body">
+    <div class="left">
+      <div class="tag">FOLHA 01 — ACESSO TÉCNICO / 1:50</div>
+      <h1>Obra com<br><i>acabamento fino.</i></h1>
+      
+      <div class="desc">
+        <p>Interface pensada como prancheta de obra: linha grossa, papel concreto, cota e selo dourado. Sem blur, sem vidro, sem cara de template.</p>
+        <p>Fundo de tijolo em 8% — só textura, não compete. Golden #B88A44 como ferragem exposta, detalhe delicado.</p>
+      </div>
+
+      <div class="cards">
+        <a class="card" href="pagina-inicial.html">
+          <div class="card-num"><b>01</b><span>ENG</span></div>
+          <div class="card-main"><strong>PAINEL DO ENGENHEIRO</strong><p>Kanban por cidade, integração data_específica + cidade, clientes, bloqueios e horários reais.</p></div>
+          <div class="card-arrow">↗</div>
+        </a>
+
+        <a class="card" href="public/minha-obra/minha-obra.html">
+          <div class="card-num"><b>02</b><span>CLI</span></div>
+          <div class="card-main"><strong>MEUS PROJETOS / CLIENTE</strong><p>Se seu arquivo for obra-gestao.html, troque o href para obra-gestao.html. Esse já corrige o Cannot GET.</p></div>
+          <div class="card-arrow">↗</div>
+        </a>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="right-head"><span>DETALHE — COTA / MATERIAL</span><span>ESC 1:25</span></div>
+
+      <div class="planta">
+        <div class="planta-grid"></div>
+        <div class="planta-box"><span>ÁREA TÉCNICA</span><div class="planta-linha"></div></div>
+        <div class="planta-cota">3.20m — MODULAÇÃO GOLDEN</div>
+      </div>
+
+      <div class="specs">
+        <div class="spec"><b>PAPEL</b><p>#F3ECE1 + véu 92% sobre tijolo. Textura sem poluir.</p></div>
+        <div class="spec"><b>FERRO</b><p>Golden #B88A44 / #D9B97A só em selo, cota e ponto.</p></div>
+        <div class="spec"><b>TRAÇO</b><p>Borda 2.5px + sombra dura 6px. Cara de carimbo.</p></div>
+        <div class="spec"><b>TIPO</b><p>Fragment Mono + Newsreader. Canteiro com delicadeza.</p></div>
+      </div>
+
+      <div class="carimbo-gold">
+        <div class="ic">◫</div>
+        <div style="font-size:9px; line-height:1.5; letter-spacing:.1em">ACABAMENTO DELICADO<br>LINHA GROSSA + CONCRETO + TIJOLO SUTIL</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>© 2026 MEU ENGENHEIRO — NÃO É SITE, É SISTEMA</span>
+    <span>DET 01 — REV A</span>
+  </div>
+</div>
 </body>
 </html>
