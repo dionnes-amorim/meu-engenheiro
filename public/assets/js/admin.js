@@ -51,7 +51,6 @@
                  href="/login-cliente.html"
                  target="_blank"
                  rel="noopener">↗ Prévia da área do cliente</a>
-                 </div>
             <div class="topbar-actions">
               <a class="btn btn-light hide-mobile"
                  href="/minha-obra/minha-obra.html"
