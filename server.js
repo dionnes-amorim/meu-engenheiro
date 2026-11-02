@@ -8,8 +8,10 @@ const app = express();
 const PORT = process.env.PORT || 10000;
 const PUBLIC_DIR = path.join(__dirname, 'public');
 
+app.set('trust proxy', 1);
 app.disable('x-powered-by');
 app.use(express.json({ limit: '1mb' }));
+registerErpApi(app);
 
 // --------------------------------------------------
 // CONFIGURAÇÕES E UTILITÁRIOS
@@ -31,7 +33,7 @@ app.get('/health', (_req, res) => {
 });
 
 app.get('/public/minha-obra/minha-obra.html', (_req, res) => {
-  res.redirect(302, '/painel-cliente.html');
+  res.redirect(302, '/minha-obra/minha-obra.html');
 });
 
 function validId(value) {
