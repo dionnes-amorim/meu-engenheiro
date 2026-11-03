@@ -1,10 +1,4 @@
 
-/* =========================================================
-   PH ENGENHARIA — SISTEMA DE GESTÃO
-   DESIGN SYSTEM 3.0 — GOLDEN ARCHITECTURE
-   Identidade visual alinhada à página inicial
-   ========================================================= */
-
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap');
 
 /* =========================================================
@@ -340,7 +334,7 @@ a {
     padding: 0;
     object-fit: contain;
 
-    background: transparent;
+    background: linear-gradient(135deg, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C);
     border: none;
     border-radius: 0;
 
