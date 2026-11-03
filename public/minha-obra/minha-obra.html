@@ -330,44 +330,121 @@
     </div>
   </section>
 
-  <section id="calculadoras" class="erp-section">
-    <div class="section-heading"><div><div class="section-kicker">06 / PLANEJAMENTO TÉCNICO</div><h2>Calculadoras de materiais</h2><p>Estimativas rápidas para apoiar o levantamento quantitativo. Confirme os parâmetros com projeto e especificação técnica.</p></div></div>
+<section id="calculadoras" class="erp-section">
+    <div class="section-heading"><div><div class="section-kicker">06 / PLANEJAMENTO TÉCNICO</div><h2>Calculadoras de materiais</h2><p>Estimativas com perda. Confirme sempre com projeto.</p></div></div>
+    
     <div class="grid-3">
+      <!-- 1. CONCRETO COMPLETO -->
       <article class="controle-tijolo-box">
-        <h4><i class="fa-solid fa-cube"></i> Concreto</h4>
-        <label for="calcConcM3">Volume de concreto (m³)</label><input type="number" id="calcConcM3" min="0" step="0.01" value="1">
-        <label for="calcConcTraco">Traço de referência</label><select id="calcConcTraco"><option value="123">1:2:3 — referência</option><option value="1152">1:1,5:2 — referência</option><option value="134">1:3:4 — referência</option></select>
-        <div class="calc-prices"><div><label for="precoCimento">Cimento / saco</label><input type="number" id="precoCimento" min="0" value="42"></div><div><label for="precoAreia">Areia / m³</label><input type="number" id="precoAreia" min="0" value="180"></div><div><label for="precoBrita">Brita / m³</label><input type="number" id="precoBrita" min="0" value="220"></div></div>
-        <div class="calc-result"><span id="resConcCimento">Cimento: —</span><span id="resConcAreia">Areia: —</span><span id="resConcBrita">Brita: —</span><strong id="resConcValor">Custo estimado: R$ 0,00</strong></div>
+        <h4><i class="fa-solid fa-cube"></i> Concreto - Areia, Brita, Cimento</h4>
+        <label>Volume (m³)</label><input type="number" id="calcConcM3" min="0" step="0.01" value="1">
+        <label>Traço</label><select id="calcConcTraco"><option value="123">1:2:3 - Laje/Viga</option><option value="1152">1:1,5:2 - Mais forte</option><option value="134">1:3:4 - Magro</option></select>
+        <div class="calc-prices">
+          <div><label>Cimento/saco R$</label><input type="number" id="precoCimento" value="42"></div>
+          <div><label>Areia/m³ R$</label><input type="number" id="precoAreia" value="180"></div>
+          <div><label>Brita/m³ R$</label><input type="number" id="precoBrita" value="220"></div>
+        </div>
+        <div class="calc-result">
+          <span id="resConcCimento">Cimento: —</span>
+          <span id="resConcAreia">Areia: —</span>
+          <span id="resConcBrita">Brita: —</span>
+          <strong id="resConcValor">Custo: R$ 0,00</strong>
+        </div>
       </article>
-      <article class="controle-tijolo-box">
-        <h4><i class="fa-solid fa-border-all"></i> Piso / porcelanato</h4>
-        <label for="calcPisoM2">Área (m²)</label><input type="number" id="calcPisoM2" min="0" value="10">
-        <label for="calcPisoValor">Preço por m² (R$)</label><input type="number" id="calcPisoValor" min="0" value="60">
-        <label for="calcPisoPerda">Perda estimada (%)</label><input type="number" id="calcPisoPerda" min="0" max="100" value="10">
-        <div class="calc-result"><span id="resPisoQtd">Área com perda: —</span><span id="resPisoArg">Argamassa estimada: —</span><span id="resPisoRej">Rejunte estimado: —</span><strong id="resPisoValor">Custo estimado: R$ 0,00</strong></div>
+
+      <!-- 2. ATERRO / TERRA -->
+      <article class="controle-tijolo-box" style="border-left:3px solid #a98754">
+        <h4><i class="fa-solid fa-mountain"></i> Terra / Aterro / Cascalho</h4>
+        <label>Comprimento (m)</label><input type="number" id="terraComp" value="10">
+        <label>Largura (m)</label><input type="number" id="terraLarg" value="5">
+        <label>Altura/Camada (m)</label><input type="number" id="terraAlt" value="0.30" step="0.01">
+        <label>Empolamento (%)</label><input type="number" id="terraEmp" value="25">
+        <label>Preço Terra/m³ R$</label><input type="number" id="precoTerra" value="60">
+        <div class="calc-result">
+          <span id="resTerraM3">Volume compactado: —</span>
+          <span id="resTerraSolto">Volume solto (caminhão): —</span>
+          <strong id="resTerraValor">Custo: R$ 0,00</strong>
+        </div>
       </article>
+
+      <!-- 3. AREIA / LASTRO / CONTRAPISO -->
       <article class="controle-tijolo-box">
-        <h4><i class="fa-solid fa-house-chimney"></i> Cobertura</h4>
-        <label for="calcTelhaM2">Área de cobertura (m²)</label><input type="number" id="calcTelhaM2" min="0" value="50">
-        <label for="calcTelhaTipo">Tipo de cobertura</label><select id="calcTelhaTipo"><option value="16">Telha colonial — 16 un/m²</option><option value="36">Telha fibrocimento — 36 un/m²</option><option value="2.5">Painel sanduíche — 2,5 m²/chapa</option></select>
-        <label for="calcTelhaValor">Preço por unidade/chapa (R$)</label><input type="number" id="calcTelhaValor" min="0" value="3.5">
-        <label for="calcTelhaPerda">Perda (%)</label><input type="number" id="calcTelhaPerda" min="0" max="100" value="7">
-        <div class="calc-result"><span id="resTelhaQtd">Quantidade: —</span><span id="resTelhaMad">Madeiramento estimado: —</span><strong id="resTelhaValor">Custo estimado: R$ 0,00</strong></div>
+        <h4><i class="fa-solid fa-water"></i> Areia, Lastro e Contrapiso</h4>
+        <label>Área (m²)</label><input type="number" id="areiaArea" value="50">
+        <label>Espessura (cm)</label><input type="number" id="areiaEsp" value="5">
+        <label>Tipo</label>
+        <select id="areiaTipo">
+          <option value="1">Areia pura - aterro</option>
+          <option value="1.2">Lastro de areia + cimento</option>
+          <option value="5">Contrapiso (5cm)</option>
+        </select>
+        <div class="calc-result">
+          <span id="resAreiaM3">Areia: —</span>
+          <span id="resAreiaCimento">Cimento p/ contrapiso: —</span>
+          <strong id="resAreiaValor">Custo: R$ 0,00</strong>
+        </div>
       </article>
     </div>
+
+    <div class="grid-3" style="margin-top:15px">
+      <!-- 4. ARGAMASSA / REBOCO / CHAPISCO -->
+      <article class="controle-tijolo-box">
+        <h4><i class="fa-solid fa-trowel-bricks"></i> Argamassa, Reboco e Chapisco</h4>
+        <label>Área parede (m²)</label><input type="number" id="argArea" value="100">
+        <label>Espessura reboco (cm)</label><input type="number" id="argEsp" value="2">
+        <label>Traço</label>
+        <select id="argTraco">
+          <option value="reboco">Reboco 1:2:8 (cimento, cal, areia)</option>
+          <option value="assenta">Assentamento 1:1:6</option>
+          <option value="chapisco">Chapisco 1:3</option>
+        </select>
+        <div class="calc-result">
+          <span id="resArgAreia">Areia: —</span>
+          <span id="resArgCimento">Cimento: —</span>
+          <span id="resArgCal">Cal: —</span>
+          <strong id="resArgTotal">Traço completo</strong>
+        </div>
+      </article>
+
+      <!-- 5. PISO -->
+      <article class="controle-tijolo-box">
+        <h4><i class="fa-solid fa-border-all"></i> Piso / Porcelanato</h4>
+        <label>Área (m²)</label><input type="number" id="calcPisoM2" value="10">
+        <label>Preço m² R$</label><input type="number" id="calcPisoValor" value="60">
+        <label>Perda (%)</label><input type="number" id="calcPisoPerda" value="10">
+        <div class="calc-result">
+          <span id="resPisoQtd">Área c/ perda: —</span>
+          <span id="resPisoArg">Argamassa: —</span>
+          <strong id="resPisoValor">Custo: R$ 0,00</strong>
+        </div>
+      </article>
+
+      <!-- 6. CIMENTO TOTAL DA OBRA -->
+      <article class="controle-tijolo-box" style="background:#262a2d;color:#fff;border-color:#262a2d">
+        <h4 style="color:#d5b783"><i class="fa-solid fa-sack-xmark"></i> Resumo Cimento Total</h4>
+        <div class="calc-result" style="background:#2e3336;border-color:#41474a;color:#a5a094">
+          <span id="resTotalCimento" style="color:#fff">Total sacos: 0</span>
+          <span id="resTotalAreia">Total areia: 0 m³</span>
+          <span id="resTotalBrita">Total brita: 0 m³</span>
+          <span id="resTotalTerra">Total terra: 0 m³</span>
+          <strong id="resTotalGeral" style="color:#d5b783">Custo geral materiais: R$ 0,00</strong>
+        </div>
+        <p class="field-help" style="color:#8c887f">Soma automática de todos os calculos acima</p>
+      </article>
+    </div>
+
+    <!-- ALVENARIA -->
     <div class="controle-tijolo-box" style="margin-top:15px">
       <h3><i class="fa-solid fa-calculator"></i> Alvenaria — blocos e tijolos</h3>
       <div class="grid-4">
-        <div><label for="areaParede">Área de parede (m²)</label><input type="number" id="areaParede" min="0" placeholder="320"></div>
-        <div><label for="tipoTijolo">Tipo de bloco</label><select id="tipoTijolo"><option value="19">Bloco cerâmico — 19 un/m²</option><option value="32">Tijolinho — 32 un/m²</option><option value="12.5">Bloco de concreto — 12,5 un/m²</option></select></div>
-        <div><label for="valorMilheiro">Preço por milheiro (R$)</label><input type="number" id="valorMilheiro" min="0" placeholder="850"></div>
-        <div><label for="perdaTijolo">Perda (%)</label><input type="number" id="perdaTijolo" min="0" max="100" value="10"></div>
+        <div><label>Área parede (m²)</label><input type="number" id="areaParede" min="0" value="100"></div>
+        <div><label>Tipo bloco</label><select id="tipoTijolo"><option value="19">Cerâmico 19 un/m²</option><option value="32">Tijolinho 32 un/m²</option><option value="12.5">Concreto 12,5 un/m²</option></select></div>
+        <div><label>Preço milheiro R$</label><input type="number" id="valorMilheiro" value="850"></div>
+        <div><label>Perda %</label><input type="number" id="perdaTijolo" value="10"></div>
       </div>
-      <div class="resultado-tijolo"><div>Quantidade estimada<strong id="qtdTijolo">0 un</strong></div><div>Custo estimado<strong id="custoTijolo">R$ 0,00</strong></div><div>Argamassa de referência<strong id="argamassaEst">0 sacos</strong></div></div>
-      <p class="field-help">Coeficientes são aproximações. Considere dimensões reais das peças, juntas, vãos, paginação, consumo do fabricante e projeto executivo.</p>
+      <div class="resultado-tijolo"><div>Qtd<strong id="qtdTijolo">0 un</strong></div><div>Custo<strong id="custoTijolo">R$ 0,00</strong></div><div>Argamassa<strong id="argamassaEst">0 sacos</strong></div></div>
     </div>
-  </section>
+</section>
 
   <section id="fluxo" class="erp-section">
     <div class="section-heading"><div><div class="section-kicker">07 / TESOURARIA</div><h2>Fluxo de caixa</h2><p>Lance entradas e saídas por data. O saldo acumulado é recalculado automaticamente.</p></div></div>
@@ -2830,6 +2907,71 @@ async function init() {
 }
 
 init();
+
+// CALCULADORAS ESTENDIDAS - TERRA, AREIA E ARGAMASSA
+function calcTudo(){
+  // CONCRETO
+  const m3 = number($('#calcConcM3').value);
+  const traco = $('#calcConcTraco').value;
+  let cim=7, areia=0.6, brita=0.7;
+  if(traco==='1152'){ cim=8.5; areia=0.55; brita=0.65; }
+  if(traco==='134'){ cim=5.5; areia=0.7; brita=0.8; }
+  const qCim = m3*cim, qAreia = m3*areia, qBrita = m3*brita;
+  const vCim = qCim*number($('#precoCimento').value);
+  const vAreia = qAreia*number($('#precoAreia').value);
+  const vBrita = qBrita*number($('#precoBrita').value);
+  $('#resConcCimento').textContent = `Cimento: ${qCim.toFixed(1)} sacos`;
+  $('#resConcAreia').textContent = `Areia: ${qAreia.toFixed(2)} m³`;
+  $('#resConcBrita').textContent = `Brita: ${qBrita.toFixed(2)} m³`;
+  $('#resConcValor').textContent = `Custo: ${currency(vCim+vAreia+vBrita)}`;
+
+  // TERRA / ATERRO
+  const tComp = number($('#terraComp').value), tLarg=number($('#terraLarg').value), tAlt=number($('#terraAlt').value);
+  const volComp = tComp*tLarg*tAlt;
+  const empol = number($('#terraEmp').value)/100;
+  const volSolto = volComp*(1+empol);
+  const vTerra = volSolto*number($('#precoTerra').value);
+  $('#resTerraM3').textContent = `Compactado: ${volComp.toFixed(2)} m³`;
+  $('#resTerraSolto').textContent = `Solto p/ caminhão: ${volSolto.toFixed(2)} m³`;
+  $('#resTerraValor').textContent = `Custo: ${currency(vTerra)}`;
+
+  // AREIA CONTRAPISO
+  const aArea = number($('#areiaArea').value), aEsp = number($('#areiaEsp').value)/100;
+  const aVol = aArea*aEsp;
+  $('#resAreiaM3').textContent = `Areia: ${aVol.toFixed(2)} m³`;
+  $('#resAreiaCimento').textContent = `Cimento: ${(aVol*5).toFixed(1)} sacos (se contrapiso)`;
+  $('#resAreiaValor').textContent = `Custo areia: ${currency(aVol*number($('#precoAreia').value))}`;
+
+  // ARGAMASSA / REBOCO
+  const argArea = number($('#argArea').value), argEsp = number($('#argEsp').value)/100;
+  const argVol = argArea*argEsp;
+  const tracoArg = $('#argTraco').value;
+  let cArg=0, calArg=0, areiaArg=0;
+  if(tracoArg==='reboco'){ cArg=argVol*2.5; calArg=argVol*2.5; areiaArg=argVol*1.1; }
+  if(tracoArg==='assenta'){ cArg=argVol*2; calArg=argVol*2; areiaArg=argVol*1.2; }
+  if(tracoArg==='chapisco'){ cArg=argVol*4; areiaArg=argVol*1.1; }
+  $('#resArgAreia').textContent = `Areia: ${areiaArg.toFixed(2)} m³`;
+  $('#resArgCimento').textContent = `Cimento: ${cArg.toFixed(1)} sacos`;
+  $('#resArgCal').textContent = `Cal: ${calArg.toFixed(1)} sacos`;
+
+  // TOTAL GERAL
+  const totalCim = qCim + cArg + (aVol*5);
+  const totalAreia = qAreia + areiaArg + aVol;
+  const totalBrita = qBrita;
+  $('#resTotalCimento').textContent = `Total cimento: ${totalCim.toFixed(1)} sacos`;
+  $('#resTotalAreia').textContent = `Total areia: ${totalAreia.toFixed(2)} m³`;
+  $('#resTotalBrita').textContent = `Total brita: ${totalBrita.toFixed(2)} m³`;
+  $('#resTotalTerra').textContent = `Total terra: ${volSolto.toFixed(2)} m³`;
+  $('#resTotalGeral').textContent = `Custo geral: ${currency(vCim+vAreia+vBrita+vTerra)}`;
+}
+
+// liga todos os inputs
+['calcConcM3','calcConcTraco','precoCimento','precoAreia','precoBrita','terraComp','terraLarg','terraAlt','terraEmp','precoTerra','areiaArea','areiaEsp','argArea','argEsp','argTraco'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el) el.addEventListener('input', calcTudo);
+});
+setTimeout(calcTudo, 500);
+  
 </script>
 </body>
 </html>
