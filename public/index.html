@@ -458,6 +458,74 @@
         ========================================= */
 
         .auth-overlay {
+    background:
+        linear-gradient(
+            rgba(10,10,10,.75),
+            rgba(10,10,10,.83)
+        );
+}
+
+.construction-bg{
+    position:absolute;
+    inset:0;
+
+    background:
+        url('/assets/img/construcao-bg.jpg')
+        center center / cover no-repeat;
+
+    filter:
+        grayscale(.15)
+        contrast(1.05)
+        brightness(.55);
+
+    transform:scale(1.05);
+
+    animation:bgZoom 18s ease-in-out infinite alternate;
+
+    z-index:0;
+}
+
+.construction-grid{
+    position:absolute;
+    inset:0;
+
+    background:
+        linear-gradient(
+            rgba(184,148,94,.06) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(184,148,94,.06) 1px,
+            transparent 1px
+        );
+
+    background-size:50px 50px;
+
+    z-index:1;
+
+    animation:gridMove 25s linear infinite;
+}
+
+@keyframes gridMove{
+    from{
+        transform:translateY(0);
+    }
+    to{
+        transform:translateY(50px);
+    }
+}
+
+@keyframes bgZoom{
+    from{
+        transform:scale(1.05);
+    }
+    to{
+        transform:scale(1.12);
+    }
+}
+        
+        .auth-overlay {
             position: fixed;
             inset: 0;
             z-index: 1000;
@@ -478,17 +546,30 @@
             pointer-events: none;
         }
 
-        .auth-card {
-            position: relative;
-            width: 100%;
-            max-width: 440px;
-            margin: auto;
-            padding: 34px 32px 28px;
-            border: 1px solid rgba(184,148,94,.35);
-            border-radius: 18px;
-            background: #fff;
-            box-shadow: 0 25px 80px rgba(0,0,0,.3);
-            animation: authEnter .35s ease both;
+        .auth-card{
+            position:relative;
+            z-index:5;
+        
+            width:100%;
+            max-width:460px;
+        
+            background:
+                rgba(255,255,255,.96);
+        
+            backdrop-filter:
+                blur(18px);
+        
+            border:
+                1px solid rgba(184,148,94,.35);
+        
+            border-radius:22px;
+        
+            box-shadow:
+                0 30px 100px rgba(0,0,0,.45),
+                0 0 0 1px rgba(184,148,94,.15);
+        
+            animation:
+                authEnter .55s cubic-bezier(.2,.9,.2,1);
         }
 
         @keyframes authEnter {
@@ -548,19 +629,49 @@
             margin-top: 27px;
         }
 
-        .auth-lock {
-            width: 48px;
-            height: 48px;
-            display: grid;
-            place-items: center;
-            margin: 0 auto 15px;
-            border-radius: 14px;
-            color: #a17d4a;
-            background: #f6f1e9;
-            border: 1px solid #eee3d3;
-            font-size: 18px;
+        .auth-lock{
+            width:64px;
+            height:64px;
+        
+            border-radius:18px;
+        
+            background:
+                linear-gradient(
+                    135deg,
+                    #caa875,
+                    #b8945e
+                );
+        
+            color:white;
+        
+            font-size:22px;
+        
+            border:none;
+        
+            box-shadow:
+                0 15px 35px rgba(184,148,94,.4);
+        
+            animation:pulseGold 3s infinite;
         }
 
+@keyframes pulseGold{
+
+    0%{
+        box-shadow:
+           0 0 0 0 rgba(184,148,94,.4);
+    }
+
+    70%{
+        box-shadow:
+           0 0 0 12px rgba(184,148,94,0);
+    }
+
+    100%{
+        box-shadow:
+           0 0 0 0 rgba(184,148,94,0);
+    }
+}
+        
         .auth-heading h2 {
             font-family: var(--font-display);
             font-size: 23px;
@@ -659,25 +770,71 @@
             display: block;
         }
 
-        .btn-primary {
-            width: 100%;
-            min-height: 49px;
-            margin-top: 19px;
-            padding: 0 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 11px;
-            border: 1px solid #171a1d;
-            border-radius: 10px;
-            background: #171a1d;
-            color: #fff;
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: .02em;
-            cursor: pointer;
-            transition: background .2s, transform .2s, border-color .2s;
-        }
+.btn-primary{
+
+    width:100%;
+    height:52px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #171a1d,
+            #2a2f33
+        );
+
+    color:white;
+
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition:.25s;
+
+    box-shadow:
+        0 12px 25px rgba(0,0,0,.25);
+}
+
+.btn-primary:hover{
+
+    transform:
+        translateY(-2px);
+
+    box-shadow:
+        0 15px 35px rgba(184,148,94,.25);
+}
+
+.btn-primary::before{
+    content:"";
+    position:absolute;
+    inset:0;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(255,255,255,.15),
+            transparent
+        );
+
+    transform:translateX(-100%);
+}
+
+.btn-primary:hover::before{
+    animation:shine .8s linear;
+}
+
+@keyframes shine{
+    to{
+        transform:translateX(100%);
+    }
+}
+
+        position:relative;
+        overflow:hidden;
 
         .btn-primary:hover:not(:disabled) {
             background: #30363a;
@@ -1051,6 +1208,8 @@
         </div>
     </header>
 
+sessionStorage.clear();
+    
     <!-- CONTEÚDO PRINCIPAL -->
     <main class="main">
 
@@ -1150,23 +1309,16 @@
 
 <div class="auth-overlay" id="authOverlay">
 
+    <div class="construction-bg"></div>
+    <div class="construction-grid"></div>
+
     <form class="auth-card" id="authForm" autocomplete="on">
 
-        <div class="auth-brand">
+        <!-- mantém tudo exatamente igual -->
 
-            <img
-                src="/assets/img/logo-engenheiro.png"
-                alt="PH Engenharia"
-            >
+    </form>
 
-            <span class="tag-muted">ÁREA RESTRITA</span>
-
-            <img
-                src="/assets/img/logo-desenvolvimento.png"
-                alt="Desenvolvimento"
-            >
-
-        </div>
+</div>
 
         <div class="auth-heading">
 
@@ -1394,6 +1546,11 @@ authForm.addEventListener('submit', async function(event) {
         }
 
         liberarAcesso();
+        sessionStorage.setItem(
+            'loginTimestamp',
+            Date.now()
+        );
+        
 
     } catch (erro) {
         mostrarErro(
@@ -1448,8 +1605,14 @@ adminPassword.addEventListener('input', limparErro);
 // INICIALIZAÇÃO
 // --------------------------------------------------
 
-verificarSessao();
+authOverlay.classList.remove('is-hidden');
 
+authOverlay.style.display = 'flex';
+
+adminPassword.value = '';
+
+adminPassword.focus();
+    
 </script>
 </body>
 </html>
