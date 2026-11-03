@@ -198,6 +198,56 @@ module.exports = function registerErpApi(app) {
     };
   }
 
+  // Sessão: senha administrativa armazenada somente no Render.
+  app.get('/api/erp/session', (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    res.json({
+      authenticated: isAuthenticated(req),
+      configured: Boolean(process.env.ERP_ADMIN_PASSWORD && sessionSecret() && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY)
+    });
+  });
+
+  app.post('/api/erp/login', sameOrigin, (req, res) => {
+    const configuredPassword = process.env.ERP_ADMIN_PASSWORD;
+    if (!configuredPassword || !process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      return res.status(503).json({
+        error: 'Configure ERP_ADMIN_PASSWORD, SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY nas variáveis de ambiente do Render.'
+      });
+    }
+
+    const ip = String(req.ip || req.socket?.remoteAddress || 'unknown');
+    const now = Date.now();
+    const record = loginAttempts.get(ip) || { count: 0, resetAt: now + 15 * 60 * 1000 };
+    if (record.resetAt < now) {
+      record.count = 0;
+      record.resetAt = now + 15 * 60 * 1000;
+    }
+    if (record.count >= 8) {
+      return res.status(429).json({ error: 'Muitas tentativas. Aguarde 15 minutos e tente novamente.' });
+    }
+
+    const password = String(req.body?.password || '');
+    if (!safeEqual(password, configuredPassword)) {
+      record.count += 1;
+      loginAttempts.set(ip, record);
+      return res.status(401).json({ error: 'Senha administrativa incorreta.' });
+    }
+
+    loginAttempts.delete(ip);
+    const expiry = Math.floor(Date.now() / 1000) + SESSION_SECONDS;
+    const token = `${expiry}.${signature(expiry)}`;
+    setSessionCookie(req, res, token);
+    res.set('Cache-Control', 'no-store');
+    return res.json({ success: true, expires_in: SESSION_SECONDS });
+  });
+
+  app.post('/api/erp/logout', sameOrigin, (req, res) => {
+    clearSessionCookie(req, res);
+    res.json({ success: true });
+  });
+
+  app.use('/api/erp', requireAdmin, sameOrigin);
+
   // Lista resumida para o seletor de obras.
   app.get('/api/erp/obras', async (_req, res) => {
     try {
