@@ -1229,11 +1229,12 @@
 </div>
 
 <script>
-/* =========================================
-   AUTENTICAÇÃO COM O SERVIDOR / RENDER
 
-   A senha NÃO fica neste HTML.
-   O servidor compara com process.env.ADMIN_PASSWORD.
+/* =========================================
+   AUTENTICAÇÃO PH ENGENHARIA
+   API: /api/erp/login
+   Sessão: /api/erp/session
+   Cookie: ph_erp_admin (HttpOnly)
 ========================================= */
 
 const authForm = document.getElementById('authForm');
@@ -1245,19 +1246,24 @@ const togglePassword = document.getElementById('togglePassword');
 
 const botaoOriginal = btnEntrar.innerHTML;
 
-/* Mostra mensagem de erro */
+// --------------------------------------------------
+// MENSAGENS
+// --------------------------------------------------
+
 function mostrarErro(mensagem) {
     authError.textContent = mensagem;
     authError.classList.add('show');
 }
 
-/* Limpa mensagem de erro */
 function limparErro() {
     authError.textContent = '';
     authError.classList.remove('show');
 }
 
-/* Libera a tela depois da autenticação confirmada */
+// --------------------------------------------------
+// LIBERAR ACESSO
+// --------------------------------------------------
+
 function liberarAcesso() {
     authOverlay.classList.add('is-hidden');
 
@@ -1266,38 +1272,59 @@ function liberarAcesso() {
     }, 260);
 }
 
-/* Verifica se já existe uma sessão válida no servidor */
+// --------------------------------------------------
+// VERIFICAR SESSÃO EXISTENTE
+// --------------------------------------------------
+
 async function verificarSessao() {
     try {
-        const resposta = await fetch('/api/auth/status', {
+        const resposta = await fetch('/api/erp/session', {
             method: 'GET',
             credentials: 'same-origin',
             cache: 'no-store',
             headers: {
-                'Accept': 'application/json'
+                Accept: 'application/json'
             }
         });
 
+        const dados = await resposta.json().catch(() => ({}));
+
         if (!resposta.ok) {
-            return;
+            throw new Error(
+                dados.error ||
+                dados.message ||
+                'Não foi possível verificar a sessão.'
+            );
         }
 
-        const dados = await resposta.json();
+        if (!dados.configured) {
+            mostrarErro(
+                'A autenticação administrativa não está configurada. Confira ERP_ADMIN_PASSWORD, ERP_SESSION_SECRET e as variáveis do Supabase no Render.'
+            );
+            return false;
+        }
 
         if (dados.authenticated === true) {
             liberarAcesso();
+            return true;
         }
 
+        return false;
+
     } catch (erro) {
-        /*
-         * Se a verificação falhar, mantém a tela de login.
-         * O usuário ainda poderá tentar entrar normalmente.
-         */
-        console.error('Não foi possível verificar a sessão:', erro);
+        console.error(
+            'Não foi possível verificar a sessão:',
+            erro
+        );
+
+        return false;
     }
 }
 
-/* Envia a senha para o servidor validar com a variável do Render */
+// --------------------------------------------------
+// LOGIN ADMINISTRATIVO
+// --------------------------------------------------
+
 authForm.addEventListener('submit', async function(event) {
     event.preventDefault();
 
@@ -1312,15 +1339,17 @@ authForm.addEventListener('submit', async function(event) {
     }
 
     btnEntrar.disabled = true;
+
     btnEntrar.innerHTML = `
         <span>Validando acesso...</span>
         <i class="fa-solid fa-spinner fa-spin"></i>
     `;
 
     try {
-        const resposta = await fetch('/api/login', {
+        const resposta = await fetch('/api/erp/login', {
             method: 'POST',
             credentials: 'same-origin',
+            cache: 'no-store',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
@@ -1332,13 +1361,38 @@ authForm.addEventListener('submit', async function(event) {
 
         const dados = await resposta.json().catch(() => ({}));
 
-        if (!resposta.ok || dados.ok !== true) {
+        // O novo ERP retorna success: true,
+        // não ok: true.
+
+        if (!resposta.ok || dados.success !== true) {
             throw new Error(
-                dados.message || 'Senha incorreta. Verifique e tente novamente.'
+                dados.error ||
+                dados.message ||
+                'Não foi possível validar a senha.'
             );
         }
 
+        // Limpa a senha da tela após autenticar.
         adminPassword.value = '';
+
+        // Confirma que o servidor gravou o cookie.
+        const sessao = await fetch('/api/erp/session', {
+            method: 'GET',
+            credentials: 'same-origin',
+            cache: 'no-store',
+            headers: {
+                Accept: 'application/json'
+            }
+        });
+
+        const estado = await sessao.json().catch(() => ({}));
+
+        if (!sessao.ok || estado.authenticated !== true) {
+            throw new Error(
+                'A senha foi aceita, mas a sessão não foi reconhecida. Verifique as configurações de cookie e domínio.'
+            );
+        }
+
         liberarAcesso();
 
     } catch (erro) {
@@ -1356,11 +1410,16 @@ authForm.addEventListener('submit', async function(event) {
     }
 });
 
-/* Mostrar e ocultar senha */
+// --------------------------------------------------
+// MOSTRAR / OCULTAR SENHA
+// --------------------------------------------------
+
 togglePassword.addEventListener('click', function() {
     const senhaVisivel = adminPassword.type === 'text';
 
-    adminPassword.type = senhaVisivel ? 'password' : 'text';
+    adminPassword.type = senhaVisivel
+        ? 'password'
+        : 'text';
 
     togglePassword.innerHTML = senhaVisivel
         ? '<i class="fa-regular fa-eye"></i>'
@@ -1379,12 +1438,18 @@ togglePassword.addEventListener('click', function() {
     adminPassword.focus();
 });
 
-/* Remove erro assim que o usuário começar a corrigir */
+// --------------------------------------------------
+// LIMPAR ERRO AO DIGITAR
+// --------------------------------------------------
+
 adminPassword.addEventListener('input', limparErro);
 
-/* Confere a sessão quando a página abre */
-verificarSessao();
-</script>
+// --------------------------------------------------
+// INICIALIZAÇÃO
+// --------------------------------------------------
 
+verificarSessao();
+
+</script>
 </body>
 </html>
