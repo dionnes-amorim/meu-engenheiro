@@ -56,21 +56,14 @@
 .modal-content .modal-top{display:flex;justify-content:space-between;gap:15px;align-items:flex-start;margin-bottom:18px}
 .modal-close{width:34px;height:34px;border:1px solid var(--border);border-radius:8px;background:#f8f7f3;color:#6b675f}
 .field-help{display:block;color:#969186;font-size:10px;line-height:1.5;margin-top:5px}
+.auth-error{display:none;padding:10px 12px;border-radius:8px;background:#fbefed;color:#a75f58;font-size:11px;margin:12px 0}
+.auth-error.show{display:block}
 .checkbox-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px 14px}
 .checkbox-grid label{display:flex;align-items:center;gap:7px;padding:7px 0;margin:0;font:10px var(--font-main);letter-spacing:0;text-transform:none;color:#64645e}
 .checkbox-grid input{width:15px;height:15px;margin:0;accent-color:var(--gold)}
 .toast-container{position:fixed;right:18px;bottom:18px;z-index:20000;display:grid;gap:8px;max-width:min(390px,calc(100vw - 36px))}
 .erp-toast{padding:13px 15px;border-radius:10px;background:#202428;color:#fff;box-shadow:0 12px 35px #0002;font-size:12px;animation:entradaSuave .25s ease;border-left:3px solid var(--gold)}
 .erp-toast.error{border-left-color:#bd7770}.erp-toast.success{border-left-color:#91a989}
-.auth-overlay{position:fixed;inset:0;z-index:15000;background:rgba(20,22,23,.82);backdrop-filter:blur(13px);display:flex;align-items:center;justify-content:center;padding:18px}
-.auth-overlay[hidden]{display:none}
-.auth-card{width:min(440px,100%);background:#fff;border-radius:17px;padding:28px;border:1px solid #e4d8c4;box-shadow:0 25px 90px #0004;animation:entradaSuave .35s ease}
-.auth-brand{display:flex;align-items:center;gap:12px;margin-bottom:24px}
-.auth-brand img{width:130px;height:44px;object-fit:contain;background:#f7f5ef;padding:5px 8px;border-radius:6px}
-.auth-card h2{font:800 23px var(--font-display);letter-spacing:-.04em;color:#292a29;margin:6px 0}
-.auth-card p{font-size:12px;color:var(--text-muted);line-height:1.6;margin-bottom:16px}
-.auth-error{display:none;padding:10px 12px;border-radius:8px;background:#fbefed;color:#a75f58;font-size:11px;margin:12px 0}
-.auth-error.show{display:block}
 .save-state{font:9px var(--font-mono);color:#8b887e;display:inline-flex;align-items:center;gap:6px}
 .save-state i{color:#91a989}
 .save-state.pending i{color:#b8945e;animation:pulsoGold 1.3s infinite}
@@ -178,7 +171,6 @@
       </select>
       <button type="button" class="btn-secondary" id="btnNovaObra"><i class="fa-solid fa-plus"></i> Nova obra</button>
       <button type="button" class="btn-primary" id="btnSalvar"><i class="fa-solid fa-cloud-arrow-up"></i> Salvar</button>
-      <button type="button" class="btn-secondary" id="btnSair" title="Encerrar sessão" aria-label="Sair"><i class="fa-solid fa-right-from-bracket"></i></button>
     </div>
   </header>
 
@@ -474,21 +466,6 @@
   </footer>
 </div>
 
-<!-- MODAL DE LOGIN ADMINISTRATIVO -->
-<div class="auth-overlay" id="authOverlay">
-  <form class="auth-card" id="authForm">
-    <div class="auth-brand"><img src="/assets/img/logo-engenheiro.png" alt="PH Engenharia"><span class="tag-muted">ÁREA RESTRITA</span></div>
-    <div class="eyebrow">ACESSO ADMINISTRATIVO</div>
-    <h2>Gestão de obras</h2>
-    <p>Informe a senha administrativa configurada nas variáveis de ambiente do servidor para acessar os dados financeiros e operacionais.</p>
-    <div id="authError" class="auth-error" role="alert"></div>
-    <label for="adminPassword">Senha administrativa</label>
-    <input type="password" id="adminPassword" autocomplete="current-password" required placeholder="Digite sua senha">
-    <button type="submit" class="btn-primary" id="btnEntrar" style="width:100%;margin-top:16px">Entrar no sistema <i class="fa-solid fa-arrow-right"></i></button>
-    <span class="field-help">A sessão é protegida por cookie HttpOnly e expira automaticamente.</span>
-  </form>
-</div>
-
 <!-- MODAL NOVA / EDITAR OBRA -->
 <div id="modalObra" class="modal" aria-hidden="true">
   <form class="modal-content" id="obraForm">
@@ -543,7 +520,8 @@
 
 // ========================================================
 // PH ENGENHARIA — ERP FRONTEND
-// Persistência via API protegida em /api/erp/*
+// Persistência via API em /api/erp/*
+// A autenticação é realizada pela tela externa.
 // ========================================================
 
 const $ = (selector, root = document) => root.querySelector(selector);
@@ -608,7 +586,6 @@ function mergeData(raw, meta = {}) {
 }
 
 const appState = {
-  authenticated: false,
   records: [],
   portalClients: [],
   current: null,
@@ -641,61 +618,30 @@ async function api(path, options = {}) {
       ...(options.headers || {})
     }
   });
+
   const raw = await response.text();
   let data = null;
+
   if (raw) {
-    try { data = JSON.parse(raw); } catch { data = raw; }
+    try {
+      data = JSON.parse(raw);
+    } catch {
+      data = raw;
+    }
   }
+
   if (!response.ok) {
-    const error = new Error(data && typeof data === 'object' ? data.error || data.message || 'Falha na solicitação.' : String(data || 'Falha na solicitação.'));
+    const error = new Error(
+      data && typeof data === 'object'
+        ? data.error || data.message || 'Falha na solicitação.'
+        : String(data || 'Falha na solicitação.')
+    );
+
     error.status = response.status;
-    if (response.status === 401 && !path.endsWith('/login')) showAuth('Sua sessão expirou. Entre novamente.');
     throw error;
   }
+
   return data;
-}
-
-function showAuth(message = '') {
-  appState.authenticated = false;
-  $('#authOverlay').hidden = false;
-  $('#authError').textContent = message;
-  $('#authError').classList.toggle('show', Boolean(message));
-  $('#adminPassword').value = '';
-  window.setTimeout(() => $('#adminPassword').focus(), 80);
-}
-
-function hideAuth() {
-  $('#authOverlay').hidden = true;
-  $('#authError').classList.remove('show');
-}
-
-async function login(event) {
-  event.preventDefault();
-  const button = $('#btnEntrar');
-  button.disabled = true;
-  button.textContent = 'Validando acesso...';
-  try {
-    await api('/api/erp/login', { method:'POST', body:JSON.stringify({ password:$('#adminPassword').value }) });
-    appState.authenticated = true;
-    hideAuth();
-    await loadInitialData();
-    toast('Acesso administrativo autorizado.', 'success');
-  } catch (error) {
-    $('#authError').textContent = error.message;
-    $('#authError').classList.add('show');
-  } finally {
-    button.disabled = false;
-    button.innerHTML = 'Entrar no sistema <i class="fa-solid fa-arrow-right"></i>';
-  }
-}
-
-async function logout() {
-  try { await api('/api/erp/logout', { method:'POST', body:'{}' }); } catch (_) {}
-  appState.records = [];
-  appState.current = null;
-  appState.data = null;
-  renderNoRecord();
-  showAuth('Sessão encerrada.');
 }
 
 function setConnection(online, text) {
@@ -723,25 +669,38 @@ function setRecordButtons(enabled) {
 async function loadInitialData() {
   try {
     setConnection(true, 'Conectando ao Supabase');
+
     const [records, clients] = await Promise.all([
       api('/api/erp/obras'),
       api('/api/erp/clientes').catch(() => [])
     ]);
+
     appState.records = Array.isArray(records) ? records : [];
     appState.portalClients = Array.isArray(clients) ? clients : [];
+
     renderPortalClientOptions();
     renderRecordOptions();
+
     setConnection(true, 'Banco conectado');
-    if (appState.records.length) await openRecord(appState.records[0].id);
-    else renderNoRecord();
+
+    if (appState.records.length) {
+      await openRecord(appState.records[0].id);
+    } else {
+      renderNoRecord();
+    }
   } catch (error) {
     setConnection(false, 'Falha no banco');
     toast(error.message, 'error');
+
+    if (error.status === 401 || error.status === 403) {
+      toast('Acesso não autorizado. Verifique se a sessão foi iniciada na tela de login.', 'error');
+    }
   }
 }
 
 function renderPortalClientOptions(selected = '') {
   const select = $('#clienteVinculado');
+
   select.innerHTML = '<option value="">Sem vínculo com portal</option>' + appState.portalClients.map(client =>
     `<option value="${escapeHtml(client.id)}" ${String(selected) === String(client.id) ? 'selected' : ''}>${escapeHtml(client.nome)} — ${escapeHtml(client.email || 'sem e-mail')}</option>`
   ).join('');
@@ -750,6 +709,7 @@ function renderPortalClientOptions(selected = '') {
 function renderRecordOptions() {
   const select = $('#obraSelecionada');
   const selected = appState.current?.id || '';
+
   select.innerHTML = '<option value="">Selecione uma obra</option>' + appState.records.map(record =>
     `<option value="${escapeHtml(record.id)}" ${String(record.id) === String(selected) ? 'selected' : ''}>${escapeHtml(record.id_obra)} · ${escapeHtml(record.cliente_nome)}</option>`
   ).join('');
@@ -760,17 +720,25 @@ function renderNoRecord() {
   appState.data = null;
   appState.dirty = false;
   appState.revision += 1;
+
   $('#displayObraId').textContent = 'NENHUMA';
   $('#displayCPF').textContent = '—';
   $('#obraStatus').textContent = 'Aguardando seleção';
+
   $('#tbodyComparativo').innerHTML = '<tr><td colspan="6" class="empty-row">Cadastre uma obra para iniciar o controle financeiro.</td></tr>';
   $('#tbodyFornecedores').innerHTML = '<tr><td colspan="8" class="empty-row">Nenhum fornecedor cadastrado.</td></tr>';
   $('#tbodyEstoque').innerHTML = '<tr><td colspan="8" class="empty-row">Nenhum material cadastrado.</td></tr>';
   $('#tbodyFluxo').innerHTML = '<tr><td colspan="6" class="empty-row">Nenhuma movimentação registrada.</td></tr>';
   $('#tbodyCronograma').innerHTML = '';
   $('#checklistCaixa').innerHTML = '';
+
   $('#listaDocumentos').innerHTML = '<div class="record-empty"><i class="fa-regular fa-folder-open"></i><strong>Selecione uma obra</strong><span>Os documentos serão listados aqui.</span></div>';
-  ['kpiContrato','kpiGasto','kpiSaldo','kpiLucro','kpiOrcado','kpiDesvio','kpiFluxo','resumoContrato','resumoOrcado','resumoGasto','resumoTaxas','resumoSaldo','resumoLucro','caixaJaLiberado','caixaAReceber','totalEntradas','totalSaidas','saldoFluxo'].forEach(id => { const el=$('#'+id); if(el) el.textContent='R$ 0,00'; });
+
+  ['kpiContrato','kpiGasto','kpiSaldo','kpiLucro','kpiOrcado','kpiDesvio','kpiFluxo','resumoContrato','resumoOrcado','resumoGasto','resumoTaxas','resumoSaldo','resumoLucro','caixaJaLiberado','caixaAReceber','totalEntradas','totalSaidas','saldoFluxo'].forEach(id => {
+    const el = $('#' + id);
+    if (el) el.textContent = 'R$ 0,00';
+  });
+
   $('#progressGasto').style.width = '0%';
   $('#kpiIdObra').textContent = 'Nenhuma obra selecionada';
   $('#kpiPctGasto').textContent = '0% do contrato consumido';
@@ -783,6 +751,7 @@ function renderNoRecord() {
   $('#resumoMateriais').textContent = '0';
   $('#resumoMovimentos').textContent = '0';
   $('#alertaEstouro').style.display = 'none';
+
   setRecordButtons(false);
   setSaveState('', 'Nenhuma alteração pendente');
   updateCaixaVisibility();
@@ -791,17 +760,24 @@ function renderNoRecord() {
 
 async function openRecord(id) {
   if (!id) return renderNoRecord();
+
   try {
     setSaveState('pending', 'Carregando obra...');
+
     const record = await api('/api/erp/obras/' + encodeURIComponent(id));
+
     appState.current = record;
     appState.data = mergeData(record.dados, {});
+
     renderRecordOptions();
     hydrateMeta();
     renderAll();
+
     await loadLinkedPortalData();
+
     appState.dirty = false;
     appState.revision += 1;
+
     setRecordButtons(true);
     setSaveState('', 'Dados sincronizados');
   } catch (error) {
@@ -816,6 +792,7 @@ function getMeta() {
 
 function hydrateMeta() {
   const record = getMeta();
+
   $('#displayObraId').textContent = record.id_obra || '—';
   $('#displayCPF').textContent = formatCPF(record.cpf || '');
   $('#obraStatus').textContent = record.status || 'Em andamento';
@@ -826,15 +803,23 @@ function hydrateMeta() {
 
 function openNewModal(record = null) {
   appState.editId = record?.id || null;
+
   const form = $('#obraForm');
   form.reset();
+
   $('#obraFormError').classList.remove('show');
   $('#modalObraTitulo').textContent = record ? 'Editar cadastro da obra' : 'Cadastrar nova obra';
-  $('#btnCriarObra').innerHTML = record ? '<i class="fa-solid fa-floppy-disk"></i> Salvar cadastro' : '<i class="fa-solid fa-check"></i> Criar obra';
+
+  $('#btnCriarObra').innerHTML = record
+    ? '<i class="fa-solid fa-floppy-disk"></i> Salvar cadastro'
+    : '<i class="fa-solid fa-check"></i> Criar obra';
+
   renderPortalClientOptions(record?.cliente_id || '');
+
   if (record) {
     const d = record.dados || {};
     const meta = d.meta || {};
+
     $('#nomeCliente').value = record.cliente_nome || '';
     $('#cpfCliente').value = formatCPF(record.cpf || '');
     $('#telCliente').value = record.telefone || '';
@@ -859,7 +844,9 @@ function openNewModal(record = null) {
     $('#margemLucro').value = 20;
     $('#dataInicio').value = todayISO();
   }
+
   updateCaixaFormVisibility();
+
   $('#modalObra').classList.add('active');
   $('#modalObra').setAttribute('aria-hidden', 'false');
 }
@@ -886,8 +873,10 @@ function updateCaixaVisibility() {
   const section = $('#caixa');
 
   if (menuButton) menuButton.hidden = !enabled;
+
   if (section) {
     section.hidden = !enabled;
+
     if (!enabled) {
       section.classList.remove('active');
       section.setAttribute('aria-hidden', 'true');
@@ -899,61 +888,87 @@ function updateCaixaVisibility() {
   $('#painelCaixa').querySelectorAll('input').forEach(input => input.disabled = !enabled);
   $('#btnPdfCaixa').disabled = !enabled;
 
-  // Se trocar para uma obra particular estando no CAIXA, retorna ao resumo.
   if (!enabled && getViewFromUrl() === 'caixa') {
     navigateToView('visao-geral', { scroll:false });
   }
 }
 
-function onlyDigits(value) { return String(value || '').replace(/\D/g, ''); }
+function onlyDigits(value) {
+  return String(value || '').replace(/\D/g, '');
+}
 
 function validCPF(value) {
   const cpf = onlyDigits(value);
+
   if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+
   let sum = 0;
-  for (let i=0;i<9;i++) sum += Number(cpf[i]) * (10-i);
-  let digit = (sum * 10) % 11; if (digit === 10) digit = 0;
+
+  for (let i = 0; i < 9; i++) {
+    sum += Number(cpf[i]) * (10 - i);
+  }
+
+  let digit = (sum * 10) % 11;
+  if (digit === 10) digit = 0;
+
   if (digit !== Number(cpf[9])) return false;
+
   sum = 0;
-  for (let i=0;i<10;i++) sum += Number(cpf[i]) * (11-i);
-  digit = (sum * 10) % 11; if (digit === 10) digit = 0;
+
+  for (let i = 0; i < 10; i++) {
+    sum += Number(cpf[i]) * (11 - i);
+  }
+
+  digit = (sum * 10) % 11;
+  if (digit === 10) digit = 0;
+
   return digit === Number(cpf[10]);
 }
 
 function formatCPF(value) {
   const cpf = onlyDigits(value);
+
   if (cpf.length !== 11) return value || '';
+
   return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
 }
 
 function generateWorkCode(cpf) {
   const digits = onlyDigits(cpf);
   const suffix = Math.floor(1000 + Math.random() * 9000);
+
   return `PH-${new Date().getFullYear()}-${digits.slice(-4)}-${suffix}`;
 }
 
 async function submitWorkForm(event) {
   event.preventDefault();
+
   const errorBox = $('#obraFormError');
   errorBox.classList.remove('show');
+
   const cpf = onlyDigits($('#cpfCliente').value);
+
   if (!validCPF(cpf)) {
     errorBox.textContent = 'CPF inválido. Confira os 11 dígitos informados.';
     errorBox.classList.add('show');
     return;
   }
+
   const name = $('#nomeCliente').value.trim();
+
   if (!name) {
     errorBox.textContent = 'Informe o nome do cliente.';
     errorBox.classList.add('show');
     return;
   }
+
   const button = $('#btnCriarObra');
   button.disabled = true;
   button.textContent = 'Salvando cadastro...';
 
   const previous = appState.editId ? appState.current : null;
   const workData = previous ? mergeData(appState.data, {}) : emptyData();
+
   workData.meta = {
     ...workData.meta,
     margem_lucro: number($('#margemLucro').value),
@@ -981,98 +996,162 @@ async function submitWorkForm(event) {
 
   try {
     let saved;
+
     if (previous) {
-      saved = await api('/api/erp/obras/' + encodeURIComponent(previous.id), { method:'PUT', body:JSON.stringify(payload) });
+      saved = await api('/api/erp/obras/' + encodeURIComponent(previous.id), {
+        method:'PUT',
+        body:JSON.stringify(payload)
+      });
+
       toast('Cadastro da obra atualizado.', 'success');
     } else {
-      saved = await api('/api/erp/obras', { method:'POST', body:JSON.stringify(payload) });
+      saved = await api('/api/erp/obras', {
+        method:'POST',
+        body:JSON.stringify(payload)
+      });
+
       toast('Obra cadastrada com sucesso.', 'success');
     }
+
     closeModal();
+
     await loadInitialData();
+
     if (saved?.id) await openRecord(saved.id);
   } catch (error) {
     errorBox.textContent = error.message;
     errorBox.classList.add('show');
+
     if (/ID de obra|já cadastrado/i.test(error.message)) {
       // Ao editar, preserva o identificador; ao criar, novo envio gera outro código.
     }
   } finally {
     button.disabled = false;
-    button.innerHTML = previous ? '<i class="fa-solid fa-floppy-disk"></i> Salvar cadastro' : '<i class="fa-solid fa-check"></i> Criar obra';
+
+    button.innerHTML = previous
+      ? '<i class="fa-solid fa-floppy-disk"></i> Salvar cadastro'
+      : '<i class="fa-solid fa-check"></i> Criar obra';
   }
 }
 
 async function loadLinkedPortalData() {
   appState.files = [];
   appState.updates = [];
+
   const clientId = appState.current?.cliente_id;
+
   if (!clientId) {
     $('#uploadHint').textContent = 'Vincule esta obra a um cadastro do portal para enviar arquivos e publicar atualizações ao cliente.';
+
     $('#listaArquivos').innerHTML = '<div class="record-empty"><i class="fa-solid fa-link-slash"></i><strong>Obra sem vínculo com o portal</strong><span>Edite o cadastro e selecione um cliente existente para ativar estes recursos.</span></div>';
+
     $('#listaAtualizacoes').innerHTML = '';
+
     $('#uploadForm').querySelector('button[type="submit"]').disabled = true;
     $('#updateClientForm').querySelector('button[type="submit"]').disabled = true;
+
     return;
   }
+
   $('#uploadHint').textContent = 'Os arquivos enviados também ficarão disponíveis na área do cliente vinculada.';
+
   $('#uploadForm').querySelector('button[type="submit"]').disabled = false;
   $('#updateClientForm').querySelector('button[type="submit"]').disabled = false;
+
   const encoded = encodeURIComponent(clientId);
+
   const [files, updates] = await Promise.allSettled([
     api('/api/arquivos?cliente_id=' + encoded),
     api('/api/atualizacoes?cliente_id=' + encoded)
   ]);
+
   appState.files = files.status === 'fulfilled' && Array.isArray(files.value) ? files.value : [];
   appState.updates = updates.status === 'fulfilled' && Array.isArray(updates.value) ? updates.value : [];
+
   renderLinkedFiles();
   renderLinkedUpdates();
 }
 
 function renderLinkedFiles() {
   const files = appState.files || [];
+
   if (!files.length) {
     $('#listaArquivos').innerHTML = '<div class="field-help">Nenhum arquivo compartilhado nesta obra ainda.</div>';
     return;
   }
+
   $('#listaArquivos').innerHTML = files.map(file => `
     <div class="record-chip" style="width:100%;justify-content:space-between">
-      <span style="min-width:0;overflow-wrap:anywhere"><i class="fa-regular fa-file-lines" style="color:var(--gold)"></i> <strong>${escapeHtml(file.nome || 'Arquivo')}</strong><br><small>${escapeHtml(file.categoria || 'Documento')} · ${escapeHtml(formatDate(file.created_at))}</small></span>
-      <span class="inline-actions"><a href="${escapeHtml(file.url)}" target="_blank" rel="noopener" class="btn-quiet btn-small">Abrir</a><button type="button" class="btn-danger btn-small" data-delete-file="${escapeHtml(file.id)}" title="Excluir arquivo"><i class="fa-solid fa-trash"></i></button></span>
+      <span style="min-width:0;overflow-wrap:anywhere">
+        <i class="fa-regular fa-file-lines" style="color:var(--gold)"></i>
+        <strong>${escapeHtml(file.nome || 'Arquivo')}</strong><br>
+        <small>${escapeHtml(file.categoria || 'Documento')} · ${escapeHtml(formatDate(file.created_at))}</small>
+      </span>
+      <span class="inline-actions">
+        <a href="${escapeHtml(file.url)}" target="_blank" rel="noopener" class="btn-quiet btn-small">Abrir</a>
+        <button type="button" class="btn-danger btn-small" data-delete-file="${escapeHtml(file.id)}" title="Excluir arquivo"><i class="fa-solid fa-trash"></i></button>
+      </span>
     </div>`).join('');
 }
 
 function renderLinkedUpdates() {
   const updates = appState.updates || [];
-  $('#listaAtualizacoes').innerHTML = updates.length ? updates.slice(0,5).map(item => `
-    <div class="record-chip" style="display:block;width:100%;margin-bottom:7px">
-      <strong>${escapeHtml(item.titulo || 'Atualização')}</strong>
-      <small style="display:block;margin-top:4px">${escapeHtml(formatDate(item.created_at))}</small>
-      <div style="font-size:10px;color:#777;line-height:1.5;margin-top:5px">${escapeHtml(item.descricao || '')}</div>
-    </div>`).join('') : '<div class="field-help">Nenhuma atualização publicada.</div>';
+
+  $('#listaAtualizacoes').innerHTML = updates.length
+    ? updates.slice(0,5).map(item => `
+      <div class="record-chip" style="display:block;width:100%;margin-bottom:7px">
+        <strong>${escapeHtml(item.titulo || 'Atualização')}</strong>
+        <small style="display:block;margin-top:4px">${escapeHtml(formatDate(item.created_at))}</small>
+        <div style="font-size:10px;color:#777;line-height:1.5;margin-top:5px">${escapeHtml(item.descricao || '')}</div>
+      </div>`).join('')
+    : '<div class="field-help">Nenhuma atualização publicada.</div>';
 }
 
 async function uploadLinkedFile(event) {
   event.preventDefault();
+
   const clientId = appState.current?.cliente_id;
   const file = $('#arquivoObra').files?.[0];
+
   if (!clientId) return toast('Vincule um cadastro do portal antes de enviar arquivos.', 'error');
   if (!file) return toast('Selecione um arquivo.', 'error');
   if (file.size > 15 * 1024 * 1024) return toast('O arquivo excede o limite de 15 MB.', 'error');
+
   const button = $('#uploadForm').querySelector('button[type="submit"]');
   button.disabled = true;
   button.textContent = 'Enviando arquivo...';
+
   try {
     const configResponse = await fetch('/api/config', { cache:'no-store' });
-    if (!configResponse.ok) throw new Error('Não foi possível carregar a configuração de arquivos.');
+
+    if (!configResponse.ok) {
+      throw new Error('Não foi possível carregar a configuração de arquivos.');
+    }
+
     const config = await configResponse.json();
-    if (!config.cloudinaryName || !config.cloudinaryPreset) throw new Error('Configure CLOUDINARY_CLOUD_NAME e CLOUDINARY_PRESET no Render.');
+
+    if (!config.cloudinaryName || !config.cloudinaryPreset) {
+      throw new Error('Configure CLOUDINARY_CLOUD_NAME e CLOUDINARY_PRESET no Render.');
+    }
+
     const form = new FormData();
     form.append('file', file);
     form.append('upload_preset', config.cloudinaryPreset);
-    const uploadResponse = await fetch(`https://api.cloudinary.com/v1_1/${encodeURIComponent(config.cloudinaryName)}/auto/upload`, { method:'POST', body:form });
+
+    const uploadResponse = await fetch(
+      `https://api.cloudinary.com/v1_1/${encodeURIComponent(config.cloudinaryName)}/auto/upload`,
+      {
+        method:'POST',
+        body:form
+      }
+    );
+
     const uploaded = await uploadResponse.json();
-    if (!uploadResponse.ok || !uploaded.secure_url) throw new Error(uploaded.error?.message || 'O serviço de arquivos recusou o envio.');
+
+    if (!uploadResponse.ok || !uploaded.secure_url) {
+      throw new Error(uploaded.error?.message || 'O serviço de arquivos recusou o envio.');
+    }
+
     const metadata = {
       cliente_id: clientId,
       nome: file.name,
@@ -1082,9 +1161,16 @@ async function uploadLinkedFile(event) {
       etapa: $('#arquivoEtapa').value,
       descricao: $('#arquivoDescricao').value.trim()
     };
-    await api('/api/arquivos', { method:'POST', body:JSON.stringify(metadata) });
+
+    await api('/api/arquivos', {
+      method:'POST',
+      body:JSON.stringify(metadata)
+    });
+
     $('#uploadForm').reset();
+
     await loadLinkedPortalData();
+
     toast('Arquivo enviado e compartilhado com o portal do cliente.', 'success');
   } catch (error) {
     toast(error.message, 'error');
@@ -1096,10 +1182,16 @@ async function uploadLinkedFile(event) {
 
 async function deleteLinkedFile(id) {
   const file = appState.files.find(item => String(item.id) === String(id));
+
   if (!file || !confirm(`Excluir o arquivo "${file.nome}" do portal do cliente?`)) return;
+
   try {
-    await api('/api/arquivos?id=' + encodeURIComponent(id), { method:'DELETE' });
+    await api('/api/arquivos?id=' + encodeURIComponent(id), {
+      method:'DELETE'
+    });
+
     await loadLinkedPortalData();
+
     toast('Arquivo removido.', 'success');
   } catch (error) {
     toast(error.message, 'error');
@@ -1108,18 +1200,39 @@ async function deleteLinkedFile(id) {
 
 async function publishClientUpdate(event) {
   event.preventDefault();
+
   const clientId = appState.current?.cliente_id;
-  if (!clientId) return toast('Vincule um cadastro do portal antes de publicar atualizações.', 'error');
+
+  if (!clientId) {
+    return toast('Vincule um cadastro do portal antes de publicar atualizações.', 'error');
+  }
+
   const title = $('#updateTitulo').value.trim();
   const description = $('#updateDescricao').value.trim();
-  if (!title || !description) return toast('Preencha o título e a descrição.', 'error');
+
+  if (!title || !description) {
+    return toast('Preencha o título e a descrição.', 'error');
+  }
+
   const button = $('#updateClientForm').querySelector('button[type="submit"]');
+
   button.disabled = true;
   button.textContent = 'Publicando...';
+
   try {
-    await api('/api/atualizacoes', { method:'POST', body:JSON.stringify({ cliente_id:clientId, titulo:title, descricao:description }) });
+    await api('/api/atualizacoes', {
+      method:'POST',
+      body:JSON.stringify({
+        cliente_id:clientId,
+        titulo:title,
+        descricao:description
+      })
+    });
+
     $('#updateClientForm').reset();
+
     await loadLinkedPortalData();
+
     toast('Atualização publicada na área do cliente.', 'success');
   } catch (error) {
     toast(error.message, 'error');
@@ -1131,6 +1244,7 @@ async function publishClientUpdate(event) {
 
 function renderAll() {
   if (!appState.current || !appState.data) return renderNoRecord();
+
   hydrateMeta();
   renderComparativo();
   renderCaixa();
@@ -1144,10 +1258,14 @@ function renderAll() {
 
 function renderComparativo() {
   const rows = appState.data.financeiro.etapas;
+
   $('#tbodyComparativo').innerHTML = rows.length ? rows.map((row,index) => {
-    const budget = number(row.orcado), real = number(row.realizado), diff = budget - real;
+    const budget = number(row.orcado);
+    const real = number(row.realizado);
+    const diff = budget - real;
     const pct = budget > 0 ? Math.min(100, real / budget * 100) : 0;
     const over = budget > 0 && real > budget;
+
     return `<tr>
       <td class="col-name"><input aria-label="Nome da etapa" data-collection="financeiro.etapas" data-index="${index}" data-key="nome" value="${escapeHtml(row.nome)}"></td>
       <td><input type="number" min="0" step="0.01" aria-label="Orçado" data-collection="financeiro.etapas" data-index="${index}" data-key="orcado" value="${budget || ''}"></td>
@@ -1157,31 +1275,44 @@ function renderComparativo() {
       <td><button type="button" class="btn-danger btn-small" data-remove="financeiro.etapas" data-index="${index}" aria-label="Remover etapa"><i class="fa-solid fa-trash"></i></button></td>
     </tr>`;
   }).join('') : '<tr><td colspan="6" class="empty-row">Nenhuma etapa cadastrada.</td></tr>';
+
   $('#taxasObra').value = number(appState.data.financeiro.taxas) || 0;
   $('#observacaoFinanceira').value = appState.data.financeiro.observacao || '';
+
   updateBudgetAlert();
 }
 
 function renderCaixa() {
   const caixa = appState.data.caixa;
+
   $('#caixaPercentLiberado').value = number(caixa.percentualLiberado);
   $('#caixaProximaMedicao').value = caixa.proximaMedicao || '';
+
   $('#checklistCaixa').innerHTML = caixaChecklistItems.map((item,index) => `
-    <label><input type="checkbox" data-scope="caixa.checklist" data-key="${index}" ${caixa.checklist[index] ? 'checked' : ''}> ${escapeHtml(item)}</label>
+    <label>
+      <input type="checkbox" data-scope="caixa.checklist" data-key="${index}" ${caixa.checklist[index] ? 'checked' : ''}>
+      ${escapeHtml(item)}
+    </label>
   `).join('');
+
   $('#tbodyCronograma').innerHTML = caixa.cronograma.map((item,index) => `
-    <tr><td>${escapeHtml(item.etapa)}</td>
-    <td><input type="number" min="0" max="100" step="0.1" data-collection="caixa.cronograma" data-index="${index}" data-key="percentual" value="${number(item.percentual)}"></td>
-    <td style="font-family:var(--font-mono)">${currency(number(getMeta().valor_contrato) * number(item.percentual) / 100)}</td>
-    <td><input type="date" data-collection="caixa.cronograma" data-index="${index}" data-key="data" value="${escapeHtml(item.data || '')}"></td></tr>
+    <tr>
+      <td>${escapeHtml(item.etapa)}</td>
+      <td><input type="number" min="0" max="100" step="0.1" data-collection="caixa.cronograma" data-index="${index}" data-key="percentual" value="${number(item.percentual)}"></td>
+      <td style="font-family:var(--font-mono)">${currency(number(getMeta().valor_contrato) * number(item.percentual) / 100)}</td>
+      <td><input type="date" data-collection="caixa.cronograma" data-index="${index}" data-key="data" value="${escapeHtml(item.data || '')}"></td>
+    </tr>
   `).join('');
+
   calculateCaixa();
 }
 
 function renderFornecedores() {
   const list = appState.data.fornecedores;
+
   $('#tbodyFornecedores').innerHTML = list.length ? list.map((item,index) => {
     const score = supplierScore(item);
+
     return `<tr>
       <td><input data-collection="fornecedores" data-index="${index}" data-key="empresa" value="${escapeHtml(item.empresa || '')}" placeholder="Empresa"></td>
       <td><input data-collection="fornecedores" data-index="${index}" data-key="cnpj" value="${escapeHtml(item.cnpj || '')}" placeholder="CNPJ"></td>
@@ -1193,33 +1324,55 @@ function renderFornecedores() {
       <td><button type="button" class="btn-danger btn-small" data-remove="fornecedores" data-index="${index}" aria-label="Remover fornecedor"><i class="fa-solid fa-trash"></i></button></td>
     </tr>`;
   }).join('') : '<tr><td colspan="8" class="empty-row">Nenhum fornecedor cadastrado. Use “Adicionar fornecedor” para começar.</td></tr>';
+
   const low = list.filter(item => supplierScore(item).className === 'low');
-  $('#alertasFornecedor').innerHTML = low.length ? `<div class="pill-alert">Atenção: ${low.length} fornecedor(es) com avaliação baixa ou atraso superior a 5 dias. Revise o histórico antes de novas contratações.</div>` : '';
+
+  $('#alertasFornecedor').innerHTML = low.length
+    ? `<div class="pill-alert">Atenção: ${low.length} fornecedor(es) com avaliação baixa ou atraso superior a 5 dias. Revise o histórico antes de novas contratações.</div>`
+    : '';
 }
 
 function supplierScore(item) {
   const hasNote = item.nota !== '' && item.nota !== null && item.nota !== undefined && Number.isFinite(Number(item.nota));
   const note = hasNote ? number(item.nota) : null;
   const delay = number(item.atraso);
+
   if (!hasNote && !delay) return { className:'none', label:'Sem avaliação' };
   if ((note !== null && note < 6) || delay > 5) return { className:'low', label:'Baixo' };
   if ((note !== null && note < 8) || delay > 2) return { className:'mid', label:'Médio' };
+
   return { className:'high', label:'Alto' };
 }
 
 function renderEstoque() {
   const list = appState.data.estoque;
+
   $('#tbodyEstoque').innerHTML = list.length ? list.map((item,index) => {
     const balance = number(item.comprado) - number(item.utilizado);
     const percent = number(item.comprado) > 0 ? number(item.utilizado) / number(item.comprado) * 100 : 0;
-    const alert = balance < 0 ? ['out','Estoque negativo'] : balance <= number(item.comprado) * .2 ? ['low','Reposição'] : ['','Normal'];
+    const alert = balance < 0
+      ? ['out','Estoque negativo']
+      : balance <= number(item.comprado) * .2
+        ? ['low','Reposição']
+        : ['','Normal'];
+
     return `<tr>
       <td><input data-collection="estoque" data-index="${index}" data-key="material" value="${escapeHtml(item.material || '')}" placeholder="Material"></td>
-      <td><select data-collection="estoque" data-index="${index}" data-key="unidade"><option ${item.unidade==='un'?'selected':''}>un</option><option ${item.unidade==='saco'?'selected':''}>saco</option><option ${item.unidade==='kg'?'selected':''}>kg</option><option ${item.unidade==='m³'?'selected':''}>m³</option><option ${item.unidade==='m²'?'selected':''}>m²</option><option ${item.unidade==='l'?'selected':''}>l</option></select></td>
+      <td>
+        <select data-collection="estoque" data-index="${index}" data-key="unidade">
+          <option ${item.unidade==='un'?'selected':''}>un</option>
+          <option ${item.unidade==='saco'?'selected':''}>saco</option>
+          <option ${item.unidade==='kg'?'selected':''}>kg</option>
+          <option ${item.unidade==='m³'?'selected':''}>m³</option>
+          <option ${item.unidade==='m²'?'selected':''}>m²</option>
+          <option ${item.unidade==='l'?'selected':''}>l</option>
+        </select>
+      </td>
       <td><input type="number" min="0" step="0.01" data-collection="estoque" data-index="${index}" data-key="comprado" value="${number(item.comprado) || ''}"></td>
       <td><input type="number" min="0" step="0.01" data-collection="estoque" data-index="${index}" data-key="utilizado" value="${number(item.utilizado) || ''}"></td>
       <td style="font-family:var(--font-mono)">${balance.toLocaleString('pt-BR')} ${escapeHtml(item.unidade || 'un')}</td>
-      <td>${percent.toFixed(1)}%</td><td><span class="stock-alert ${alert[0]}">${alert[1]}</span></td>
+      <td>${percent.toFixed(1)}%</td>
+      <td><span class="stock-alert ${alert[0]}">${alert[1]}</span></td>
       <td><button type="button" class="btn-danger btn-small" data-remove="estoque" data-index="${index}"><i class="fa-solid fa-trash"></i></button></td>
     </tr>`;
   }).join('') : '<tr><td colspan="8" class="empty-row">Nenhum material cadastrado no estoque.</td></tr>';
@@ -1227,23 +1380,37 @@ function renderEstoque() {
 
 function renderFluxo() {
   const list = [...appState.data.fluxo].sort((a,b) => String(a.data || '').localeCompare(String(b.data || '')));
-  let balance = 0, entries = 0, outputs = 0;
+
+  let balance = 0;
+  let entries = 0;
+  let outputs = 0;
+
   $('#tbodyFluxo').innerHTML = list.length ? list.map(item => {
     const value = number(item.valor);
-    if (item.tipo === 'entrada') { balance += value; entries += value; }
-    else { balance -= value; outputs += value; }
+
+    if (item.tipo === 'entrada') {
+      balance += value;
+      entries += value;
+    } else {
+      balance -= value;
+      outputs += value;
+    }
+
     return `<tr>
-      <td>${formatDate(item.data)}</td><td><span class="tag-muted">${item.tipo === 'entrada' ? 'Entrada' : 'Saída'}</span></td>
+      <td>${formatDate(item.data)}</td>
+      <td><span class="tag-muted">${item.tipo === 'entrada' ? 'Entrada' : 'Saída'}</span></td>
       <td>${escapeHtml(item.descricao)}</td>
       <td style="font-family:var(--font-mono);color:${item.tipo === 'entrada' ? '#718a69' : '#b66e67'}">${item.tipo === 'entrada' ? '+' : '−'} ${currency(value)}</td>
       <td style="font-family:var(--font-mono)">${currency(balance)}</td>
       <td><button type="button" class="btn-danger btn-small" data-remove="fluxo" data-id="${escapeHtml(item.id)}"><i class="fa-solid fa-trash"></i></button></td>
     </tr>`;
   }).join('') : '<tr><td colspan="6" class="empty-row">Nenhuma entrada ou saída registrada.</td></tr>';
+
   $('#totalEntradas').textContent = currency(entries);
   $('#totalSaidas').textContent = currency(outputs);
   $('#saldoFluxo').textContent = currency(balance);
   $('#kpiFluxo').textContent = currency(balance);
+
   appState._flowTotals = { entries, outputs, balance };
 }
 
@@ -1253,9 +1420,22 @@ function renderDocuments() {
     ...appState.data.recibos.map(item => ({ ...item, kind:'Recibo' })),
     ...appState.data.extras.map(item => ({ ...item, kind:'Orçamento extra' }))
   ].sort((a,b) => String(b.created_at || '').localeCompare(String(a.created_at || '')));
-  $('#listaDocumentos').innerHTML = docs.length ? `<div class="record-list">${docs.map(item => `
-    <div class="record-chip"><i class="fa-regular fa-file-pdf" style="color:var(--gold)"></i><span><strong>${escapeHtml(item.kind)}</strong> · ${escapeHtml(item.titulo || item.nome || item.descricao || '')}<br><small>${escapeHtml(formatDate(item.created_at?.slice(0,10) || item.data || ''))} · ${currency(item.valor)}</small></span><button type="button" data-doc-pdf="${escapeHtml(item.id)}" data-doc-kind="${item.kind}" title="Gerar novamente"><i class="fa-solid fa-download"></i></button></div>
-  `).join('')}</div>` : '<div class="record-empty"><i class="fa-regular fa-folder-open"></i><strong>Nenhum documento registrado</strong><span>Use os formulários acima para criar contratos, recibos ou extras.</span></div>';
+
+  $('#listaDocumentos').innerHTML = docs.length
+    ? `<div class="record-list">${docs.map(item => `
+      <div class="record-chip">
+        <i class="fa-regular fa-file-pdf" style="color:var(--gold)"></i>
+        <span>
+          <strong>${escapeHtml(item.kind)}</strong> · ${escapeHtml(item.titulo || item.nome || item.descricao || '')}<br>
+          <small>${escapeHtml(formatDate(item.created_at?.slice(0,10) || item.data || ''))} · ${currency(item.valor)}</small>
+        </span>
+        <button type="button" data-doc-pdf="${escapeHtml(item.id)}" data-doc-kind="${item.kind}" title="Gerar novamente">
+          <i class="fa-solid fa-download"></i>
+        </button>
+      </div>
+    `).join('')}</div>`
+    : '<div class="record-empty"><i class="fa-regular fa-folder-open"></i><strong>Nenhum documento registrado</strong><span>Use os formulários acima para criar contratos, recibos ou extras.</span></div>';
+
   $('#resumoFornecedores').textContent = appState.data.fornecedores.length;
   $('#resumoMateriais').textContent = appState.data.estoque.length;
   $('#resumoMovimentos').textContent = appState.data.fluxo.length;
@@ -1264,6 +1444,7 @@ function renderDocuments() {
 function renderDashboardAlerts() {
   const list = $('#dashboardAlertsList');
   const count = $('#dashboardAlertCount');
+
   if (!list || !count) return;
 
   if (!appState.current || !appState.data) {
@@ -1280,16 +1461,29 @@ function renderDashboardAlerts() {
   const actualTotal = actualStages + number(data.financeiro.taxas);
 
   if (contract > 0 && actualTotal > contract) {
-    alerts.push({type:'danger',icon:'fa-triangle-exclamation',text:`O custo registrado ultrapassou o valor do contrato em ${currency(actualTotal-contract)}.`});
+    alerts.push({
+      type:'danger',
+      icon:'fa-triangle-exclamation',
+      text:`O custo registrado ultrapassou o valor do contrato em ${currency(actualTotal-contract)}.`
+    });
   }
 
   if (budget > 0 && actualStages > budget) {
-    alerts.push({type:'warning',icon:'fa-chart-line',text:`O realizado por etapa está ${currency(actualStages-budget)} acima do orçamento planejado.`});
+    alerts.push({
+      type:'warning',
+      icon:'fa-chart-line',
+      text:`O realizado por etapa está ${currency(actualStages-budget)} acima do orçamento planejado.`
+    });
   }
 
   const supplierIssues = data.fornecedores.filter(item => supplierScore(item).className === 'low').length;
+
   if (supplierIssues) {
-    alerts.push({type:'warning',icon:'fa-truck-field',text:`${supplierIssues} fornecedor(es) precisam de atenção por avaliação baixa ou atraso relevante.`});
+    alerts.push({
+      type:'warning',
+      icon:'fa-truck-field',
+      text:`${supplierIssues} fornecedor(es) precisam de atenção por avaliação baixa ou atraso relevante.`
+    });
   }
 
   const stockIssues = data.estoque.filter(item => {
@@ -1299,19 +1493,33 @@ function renderDashboardAlerts() {
   }).length;
 
   if (stockIssues) {
-    alerts.push({type:'warning',icon:'fa-boxes-stacked',text:`${stockIssues} material(is) com estoque crítico ou necessidade de reposição.`});
+    alerts.push({
+      type:'warning',
+      icon:'fa-boxes-stacked',
+      text:`${stockIssues} material(is) com estoque crítico ou necessidade de reposição.`
+    });
   }
 
   if (hasCaixaFinancing() && data.caixa?.proximaMedicao) {
     const medicao = new Date(`${data.caixa.proximaMedicao}T00:00:00`);
     const hoje = new Date();
+
     hoje.setHours(0,0,0,0);
+
     const dias = Math.round((medicao.getTime()-hoje.getTime())/86400000);
 
     if (dias < 0) {
-      alerts.push({type:'danger',icon:'fa-calendar-xmark',text:`A data prevista para a próxima medição (${formatDate(data.caixa.proximaMedicao)}) já passou. Atualize o cronograma.`});
+      alerts.push({
+        type:'danger',
+        icon:'fa-calendar-xmark',
+        text:`A data prevista para a próxima medição (${formatDate(data.caixa.proximaMedicao)}) já passou. Atualize o cronograma.`
+      });
     } else if (dias <= 7) {
-      alerts.push({type:'warning',icon:'fa-calendar-check',text:`Próxima medição prevista para ${formatDate(data.caixa.proximaMedicao)}${dias === 0 ? ' (hoje)' : ` (em ${dias} dia(s))`}.`});
+      alerts.push({
+        type:'warning',
+        icon:'fa-calendar-check',
+        text:`Próxima medição prevista para ${formatDate(data.caixa.proximaMedicao)}${dias === 0 ? ' (hoje)' : ` (em ${dias} dia(s))`}.`
+      });
     }
   }
 
@@ -1322,7 +1530,12 @@ function renderDashboardAlerts() {
     return;
   }
 
-  list.innerHTML = alerts.map(alert => `<div class="dashboard-alert-item ${alert.type}"><i class="fa-solid ${alert.icon}"></i><span>${escapeHtml(alert.text)}</span></div>`).join('');
+  list.innerHTML = alerts.map(alert => `
+    <div class="dashboard-alert-item ${alert.type}">
+      <i class="fa-solid ${alert.icon}"></i>
+      <span>${escapeHtml(alert.text)}</span>
+    </div>
+  `).join('');
 }
 
 function updateKpis() {
@@ -1370,6 +1583,7 @@ function updateKpis() {
 
 function updateBudgetAlert() {
   if (!appState.data) return;
+
   const budget = appState.data.financeiro.etapas.reduce((sum,item) => sum + number(item.orcado), 0);
   const actual = appState.data.financeiro.etapas.reduce((sum,item) => sum + number(item.realizado), 0);
   const delta = actual - budget;
@@ -1385,25 +1599,32 @@ function updateBudgetAlert() {
 
 function calculateCaixa() {
   if (!appState.data || !appState.current) return;
+
   const total = number(appState.data.meta.caixa_valor) || number(appState.current.valor_contrato);
   const pct = Math.min(100,Math.max(0,number(appState.data.caixa.percentualLiberado)));
   const released = total * pct / 100;
+
   $('#caixaJaLiberado').value = currency(released);
   $('#caixaAReceber').value = currency(total - released);
 }
 
 function markDirty(message = 'Alterações pendentes') {
   if (!appState.current || !appState.data) return;
+
   appState.revision += 1;
   appState.dirty = true;
+
   setSaveState('pending', message);
   updateKpis();
+
   window.clearTimeout(appState.saveTimer);
+
   appState.saveTimer = window.setTimeout(() => saveCurrent(false), 1100);
 }
 
 function currentPayload() {
   const record = appState.current;
+
   return {
     id_obra: record.id_obra,
     cpf: record.cpf,
@@ -1423,9 +1644,11 @@ async function saveCurrent(showMessage = true) {
   if (!appState.current || !appState.data || appState.saving || !appState.dirty) return;
 
   appState.saving = true;
+
   const savedRecordId = appState.current.id;
   const savedRevision = appState.revision;
   const payload = currentPayload();
+
   let requestSucceeded = false;
 
   setSaveState('pending', 'Sincronizando com o Supabase...');
@@ -1433,19 +1656,29 @@ async function saveCurrent(showMessage = true) {
 
   try {
     const result = await api('/api/erp/obras/' + encodeURIComponent(savedRecordId), {
-      method:'PUT', body:JSON.stringify(payload)
+      method:'PUT',
+      body:JSON.stringify(payload)
     });
+
     requestSucceeded = true;
 
     if (appState.current?.id === savedRecordId) {
       appState.current = result;
       appState.records = appState.records.map(row => row.id === result.id ? result : row);
+
       renderRecordOptions();
 
       if (appState.revision === savedRevision) {
         appState.dirty = false;
-        setSaveState('', 'Salvo na nuvem · ' + new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}));
-        if (showMessage) toast('Dados da obra salvos no Supabase.', 'success');
+
+        setSaveState(
+          '',
+          'Salvo na nuvem · ' + new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})
+        );
+
+        if (showMessage) {
+          toast('Dados da obra salvos no Supabase.', 'success');
+        }
       } else {
         appState.dirty = true;
         setSaveState('pending', 'Há novas alterações · sincronizando novamente...');
@@ -1467,9 +1700,15 @@ async function saveCurrent(showMessage = true) {
 
 function addCollectionItem(collection, item) {
   if (!appState.data) return;
+
   const list = collection.split('.').reduce((value, key) => value?.[key], appState.data);
-  if (!Array.isArray(list)) return toast('Não foi possível adicionar este registro.', 'error');
+
+  if (!Array.isArray(list)) {
+    return toast('Não foi possível adicionar este registro.', 'error');
+  }
+
   list.push(item);
+
   renderCollection(collection);
   markDirty('Novo registro adicionado');
 }
@@ -1481,45 +1720,69 @@ function renderCollection(collection) {
   if (collection === 'caixa.cronograma') renderCaixa();
   if (collection === 'fluxo') renderFluxo();
   if (['contratos','recibos','extras'].includes(collection)) renderDocuments();
+
   updateKpis();
 }
 
 function removeCollectionItem(collection, index, id) {
   if (!appState.data) return;
+
   if (collection === 'fluxo') {
     appState.data.fluxo = appState.data.fluxo.filter(item => item.id !== id);
   } else {
     const list = collection.split('.').reduce((value,key) => value?.[key], appState.data);
+
     if (!Array.isArray(list)) return;
+
     list.splice(Number(index),1);
   }
+
   renderCollection(collection);
   markDirty('Registro removido');
 }
 
 function onFieldEdit(event) {
   const el = event.target;
+
   if (!appState.data) return;
+
   if (el.dataset.collection) {
     const path = el.dataset.collection.split('.');
     const list = path.reduce((value,key) => value?.[key], appState.data);
     const item = Array.isArray(list) ? list[Number(el.dataset.index)] : null;
+
     if (!item) return;
+
     const value = el.type === 'number' ? number(el.value) : el.value;
+
     item[el.dataset.key] = value;
+
     if (el.dataset.collection === 'fornecedores') renderFornecedoresRow(el);
     if (el.dataset.collection === 'estoque') renderEstoqueRow(el);
     if (el.dataset.collection === 'caixa.cronograma') renderCronogramaValue(el);
+
     markDirty();
     return;
   }
+
   if (el.dataset.scope) {
     const scope = el.dataset.scope.split('.');
     let target = appState.data;
-    for (let i=0;i<scope.length;i++) target = target[scope[i]];
-    const value = el.type === 'checkbox' ? el.checked : el.type === 'number' ? number(el.value) : el.value;
+
+    for (let i = 0; i < scope.length; i++) {
+      target = target[scope[i]];
+    }
+
+    const value = el.type === 'checkbox'
+      ? el.checked
+      : el.type === 'number'
+        ? number(el.value)
+        : el.value;
+
     target[el.dataset.key] = value;
+
     if (el.dataset.scope === 'caixa') calculateCaixa();
+
     markDirty();
   }
 }
@@ -1529,16 +1792,28 @@ function renderFornecedoresRow(el) {
   const item = appState.data.fornecedores[Number(el.dataset.index)];
   const score = supplierScore(item);
   const scoreEl = tr?.querySelector('.score');
-  if (scoreEl) { scoreEl.className = 'score ' + score.className; scoreEl.textContent = score.label; }
+
+  if (scoreEl) {
+    scoreEl.className = 'score ' + score.className;
+    scoreEl.textContent = score.label;
+  }
 }
 
 function renderEstoqueRow(el) {
   const tr = el.closest('tr');
   const item = appState.data.estoque[Number(el.dataset.index)];
+
   if (!tr || !item) return;
+
   const balance = number(item.comprado) - number(item.utilizado);
   const percent = number(item.comprado) > 0 ? number(item.utilizado) / number(item.comprado) * 100 : 0;
-  const alert = balance < 0 ? ['out','Estoque negativo'] : balance <= number(item.comprado) * .2 ? ['low','Reposição'] : ['','Normal'];
+
+  const alert = balance < 0
+    ? ['out','Estoque negativo']
+    : balance <= number(item.comprado) * .2
+      ? ['low','Reposição']
+      : ['','Normal'];
+
   tr.children[4].textContent = `${balance.toLocaleString('pt-BR')} ${item.unidade || 'un'}`;
   tr.children[5].textContent = `${percent.toFixed(1)}%`;
   tr.children[6].innerHTML = `<span class="stock-alert ${alert[0]}">${alert[1]}</span>`;
@@ -1547,31 +1822,72 @@ function renderEstoqueRow(el) {
 function renderCronogramaValue(el) {
   const index = Number(el.dataset.index);
   const item = appState.data.caixa.cronograma[index];
+
   if (!item) return;
+
   const valueCell = el.closest('tr')?.children[2];
-  if (valueCell) valueCell.textContent = currency(number(appState.current.valor_contrato) * number(item.percentual) / 100);
+
+  if (valueCell) {
+    valueCell.textContent = currency(
+      number(appState.current.valor_contrato) * number(item.percentual) / 100
+    );
+  }
 }
 
 function addFornecedor() {
-  addCollectionItem('fornecedores', { id:makeId(), empresa:'', cnpj:'', servico:'', valor:0, atraso:0, nota:'' });
+  addCollectionItem('fornecedores', {
+    id:makeId(),
+    empresa:'',
+    cnpj:'',
+    servico:'',
+    valor:0,
+    atraso:0,
+    nota:''
+  });
 }
 
 function addStock() {
-  addCollectionItem('estoque', { id:makeId(), material:'', unidade:'un', comprado:0, utilizado:0 });
+  addCollectionItem('estoque', {
+    id:makeId(),
+    material:'',
+    unidade:'un',
+    comprado:0,
+    utilizado:0
+  });
 }
 
 function addStage() {
-  addCollectionItem('financeiro.etapas', { id:makeId(), nome:'Nova etapa', orcado:0, realizado:0 });
+  addCollectionItem('financeiro.etapas', {
+    id:makeId(),
+    nome:'Nova etapa',
+    orcado:0,
+    realizado:0
+  });
 }
 
 function addCashflow(event) {
   event.preventDefault();
-  if (!appState.current) return toast('Selecione uma obra primeiro.', 'error');
+
+  if (!appState.current) {
+    return toast('Selecione uma obra primeiro.', 'error');
+  }
+
   const value = number($('#fluxoValor').value);
   const date = $('#fluxoData').value;
   const desc = $('#fluxoDescricao').value.trim();
-  if (!value || !date || !desc) return toast('Preencha data, valor e descrição.', 'error');
-  addCollectionItem('fluxo', { id:makeId(), tipo:$('#fluxoTipo').value, data:date, valor:value, descricao:desc });
+
+  if (!value || !date || !desc) {
+    return toast('Preencha data, valor e descrição.', 'error');
+  }
+
+  addCollectionItem('fluxo', {
+    id:makeId(),
+    tipo:$('#fluxoTipo').value,
+    data:date,
+    valor:value,
+    descricao:desc
+  });
+
   $('#fluxoForm').reset();
   $('#fluxoData').value = todayISO();
 }
@@ -1579,51 +1895,90 @@ function addCashflow(event) {
 function addDocument(collection, item, pdfKind) {
   item.id = makeId();
   item.created_at = new Date().toISOString();
+
   addCollectionItem(collection, item);
   generateDocumentPdf(pdfKind, item);
 }
 
 function onContractSubmit(event) {
   event.preventDefault();
-  if (!appState.current) return toast('Selecione uma obra primeiro.', 'error');
+
+  if (!appState.current) {
+    return toast('Selecione uma obra primeiro.', 'error');
+  }
+
   const item = {
-    nome:$('#contratoNome').value.trim(), documento:$('#contratoDoc').value.trim(),
-    titulo:$('#contratoObjeto').value.trim(), valor:number($('#contratoValor').value),
-    prazo:$('#contratoPrazo').value.trim(), data:todayISO()
+    nome:$('#contratoNome').value.trim(),
+    documento:$('#contratoDoc').value.trim(),
+    titulo:$('#contratoObjeto').value.trim(),
+    valor:number($('#contratoValor').value),
+    prazo:$('#contratoPrazo').value.trim(),
+    data:todayISO()
   };
-  if (!item.nome || !item.titulo || !item.valor) return toast('Preencha nome, objeto e valor do contrato.', 'error');
+
+  if (!item.nome || !item.titulo || !item.valor) {
+    return toast('Preencha nome, objeto e valor do contrato.', 'error');
+  }
+
   addDocument('contratos', item, 'Contrato');
   $('#contratoForm').reset();
 }
 
 function onReceiptSubmit(event) {
   event.preventDefault();
-  if (!appState.current) return toast('Selecione uma obra primeiro.', 'error');
+
+  if (!appState.current) {
+    return toast('Selecione uma obra primeiro.', 'error');
+  }
+
   const item = {
-    nome:$('#reciboNome').value.trim(), documento:$('#reciboDoc').value.trim(),
-    valor:number($('#reciboValor').value), descricao:$('#reciboRef').value.trim(), data:$('#reciboData').value
+    nome:$('#reciboNome').value.trim(),
+    documento:$('#reciboDoc').value.trim(),
+    valor:number($('#reciboValor').value),
+    descricao:$('#reciboRef').value.trim(),
+    data:$('#reciboData').value
   };
-  if (!item.nome || !item.valor || !item.descricao || !item.data) return toast('Preencha os campos obrigatórios do recibo.', 'error');
+
+  if (!item.nome || !item.valor || !item.descricao || !item.data) {
+    return toast('Preencha os campos obrigatórios do recibo.', 'error');
+  }
+
   addDocument('recibos', item, 'Recibo');
+
   $('#reciboForm').reset();
   $('#reciboData').value = todayISO();
 }
 
 function onExtraSubmit(event) {
   event.preventDefault();
-  if (!appState.current) return toast('Selecione uma obra primeiro.', 'error');
+
+  if (!appState.current) {
+    return toast('Selecione uma obra primeiro.', 'error');
+  }
+
   const item = {
-    descricao:$('#extraDesc').value.trim(), valor:number($('#extraValor').value), status:$('#extraStatus').value, data:todayISO()
+    descricao:$('#extraDesc').value.trim(),
+    valor:number($('#extraValor').value),
+    status:$('#extraStatus').value,
+    data:todayISO()
   };
-  if (!item.descricao || !item.valor) return toast('Informe a descrição e o valor do extra.', 'error');
+
+  if (!item.descricao || !item.valor) {
+    return toast('Informe a descrição e o valor do extra.', 'error');
+  }
+
   addDocument('extras', item, 'Orçamento extra');
   $('#extraForm').reset();
 }
 
 function formatDate(value) {
   if (!value) return '—';
+
   const parts = String(value).slice(0,10).split('-');
-  return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : value;
+
+  return parts.length === 3
+    ? `${parts[2]}/${parts[1]}/${parts[0]}`
+    : value;
 }
 
 function pdfAvailable() {
@@ -1631,163 +1986,393 @@ function pdfAvailable() {
     toast('Não foi possível carregar a biblioteca de PDF. Verifique sua conexão e recarregue a página.', 'error');
     return false;
   }
+
   return true;
 }
 
 function pdfBase(title, subtitle) {
   const doc = new window.jspdf.jsPDF({ unit:'mm', format:'a4' });
   const pageWidth = doc.internal.pageSize.getWidth();
-  doc.setFillColor(23,26,29); doc.rect(0,0,pageWidth,31,'F');
-  doc.setFillColor(184,148,94); doc.rect(0,31,pageWidth,1.2,'F');
-  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(15); doc.text('PH ENGENHARIA',15,13);
-  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(220,211,195); doc.text('GESTÃO INTEGRADA DE OBRAS',15,20);
-  doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(255,255,255); doc.text(title, pageWidth-15,13,{align:'right'});
-  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.text(subtitle || '',pageWidth-15,20,{align:'right'});
-  doc.setTextColor(45,45,43); doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.text(getMeta().id_obra || 'Obra',15,43);
-  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(105,103,96);
+
+  doc.setFillColor(23,26,29);
+  doc.rect(0,0,pageWidth,31,'F');
+
+  doc.setFillColor(184,148,94);
+  doc.rect(0,31,pageWidth,1.2,'F');
+
+  doc.setTextColor(255,255,255);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(15);
+  doc.text('PH ENGENHARIA',15,13);
+
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(8);
+  doc.setTextColor(220,211,195);
+  doc.text('GESTÃO INTEGRADA DE OBRAS',15,20);
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(13);
+  doc.setTextColor(255,255,255);
+  doc.text(title, pageWidth-15,13,{align:'right'});
+
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(8);
+  doc.text(subtitle || '',pageWidth-15,20,{align:'right'});
+
+  doc.setTextColor(45,45,43);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(14);
+  doc.text(getMeta().id_obra || 'Obra',15,43);
+
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(9);
+  doc.setTextColor(105,103,96);
+
   doc.text(`Cliente: ${getMeta().cliente_nome || ''}`,15,50);
   doc.text(`Endereço: ${getMeta().endereco || 'Não informado'}`,15,56);
   doc.text(`Emitido em: ${new Date().toLocaleString('pt-BR')}`,15,62);
+
   return doc;
 }
 
 function pdfLine(doc, label, value, y, bold = false) {
   doc.setFont('helvetica', bold ? 'bold' : 'normal');
-  doc.setFontSize(9); doc.setTextColor(75,74,70); doc.text(String(label),15,y);
-  doc.setFont('helvetica', bold ? 'bold' : 'normal'); doc.setTextColor(55,55,52);
+  doc.setFontSize(9);
+  doc.setTextColor(75,74,70);
+  doc.text(String(label),15,y);
+
+  doc.setFont('helvetica', bold ? 'bold' : 'normal');
+  doc.setTextColor(55,55,52);
   doc.text(String(value),195,y,{align:'right'});
 }
 
 function pdfFooter(doc) {
   const pages = doc.internal.getNumberOfPages();
-  for (let i=1;i<=pages;i++) {
+
+  for (let i = 1; i <= pages; i++) {
     doc.setPage(i);
+
     const h = doc.internal.pageSize.getHeight();
-    doc.setDrawColor(224,218,207); doc.line(15,h-15,195,h-15);
-    doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(135,130,119);
+
+    doc.setDrawColor(224,218,207);
+    doc.line(15,h-15,195,h-15);
+
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(7);
+    doc.setTextColor(135,130,119);
+
     doc.text('PH ENGENHARIA · Documento gerado pelo sistema de gestão de obras',15,h-9);
     doc.text(`${i}/${pages}`,195,h-9,{align:'right'});
   }
 }
 
 function safeFileName(value) {
-  return String(value || 'obra').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9_-]+/g,'-').replace(/^-|-$/g,'').toLowerCase();
+  return String(value || 'obra')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-zA-Z0-9_-]+/g,'-')
+    .replace(/^-|-$/g,'')
+    .toLowerCase();
 }
 
 function generateDocumentPdf(kind, item) {
   if (!pdfAvailable()) return;
+
   const doc = pdfBase(kind, 'DOCUMENTO DE OBRA');
+
   let y = 77;
-  doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(145,116,72);
-  doc.text(kind.toUpperCase(),15,y); y += 12;
-  const details = kind === 'Contrato' ? [
-    ['Contratado',item.nome],['Documento',item.documento || 'Não informado'],['Objeto',item.titulo],['Valor contratado',currency(item.valor)],['Prazo / condição',item.prazo || 'A definir']
-  ] : kind === 'Recibo' ? [
-    ['Recebedor',item.nome],['Documento',item.documento || 'Não informado'],['Valor recebido',currency(item.valor)],['Referente a',item.descricao],['Data',formatDate(item.data)]
-  ] : [
-    ['Descrição do serviço extra',item.descricao],['Valor proposto',currency(item.valor)],['Situação',item.status],['Data de emissão',formatDate(item.data)]
-  ];
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(12);
+  doc.setTextColor(145,116,72);
+  doc.text(kind.toUpperCase(),15,y);
+
+  y += 12;
+
+  const details = kind === 'Contrato'
+    ? [
+      ['Contratado',item.nome],
+      ['Documento',item.documento || 'Não informado'],
+      ['Objeto',item.titulo],
+      ['Valor contratado',currency(item.valor)],
+      ['Prazo / condição',item.prazo || 'A definir']
+    ]
+    : kind === 'Recibo'
+      ? [
+        ['Recebedor',item.nome],
+        ['Documento',item.documento || 'Não informado'],
+        ['Valor recebido',currency(item.valor)],
+        ['Referente a',item.descricao],
+        ['Data',formatDate(item.data)]
+      ]
+      : [
+        ['Descrição do serviço extra',item.descricao],
+        ['Valor proposto',currency(item.valor)],
+        ['Situação',item.status],
+        ['Data de emissão',formatDate(item.data)]
+      ];
+
   details.forEach(([label,value]) => {
-    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(120,115,105); doc.text(label,15,y);
-    doc.setFont('helvetica','normal'); doc.setTextColor(45,45,43);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(9);
+    doc.setTextColor(120,115,105);
+    doc.text(label,15,y);
+
+    doc.setFont('helvetica','normal');
+    doc.setTextColor(45,45,43);
+
     const lines = doc.splitTextToSize(String(value || '—'),125);
-    doc.text(lines,70,y); y += Math.max(9,lines.length*5+3);
+
+    doc.text(lines,70,y);
+    y += Math.max(9,lines.length*5+3);
   });
+
   y += 13;
+
   if (kind === 'Contrato') {
-    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(65,64,60);
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(9);
+    doc.setTextColor(65,64,60);
+
     const paragraph = 'As partes identificadas neste documento declaram que os serviços descritos serão executados conforme escopo, prazo, condições e valores registrados, observando os projetos, especificações técnicas, normas aplicáveis e demais condições formalmente acordadas.';
-    doc.text(doc.splitTextToSize(paragraph,180),15,y); y += 35;
+
+    doc.text(doc.splitTextToSize(paragraph,180),15,y);
+    y += 35;
   }
+
   doc.setDrawColor(190,174,146);
-  doc.line(20,245,90,245); doc.line(120,245,190,245);
-  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(105,101,92);
+  doc.line(20,245,90,245);
+  doc.line(120,245,190,245);
+
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(8);
+  doc.setTextColor(105,101,92);
+
   doc.text('PH Engenharia / Responsável',55,251,{align:'center'});
   doc.text(kind === 'Recibo' ? 'Recebedor' : 'Contratado / Cliente',155,251,{align:'center'});
+
   pdfFooter(doc);
+
   doc.save(`${safeFileName(getMeta().id_obra)}-${safeFileName(kind)}.pdf`);
 }
 
 function findDocument(id, kind) {
-  const key = kind === 'Contrato' ? 'contratos' : kind === 'Recibo' ? 'recibos' : 'extras';
+  const key = kind === 'Contrato'
+    ? 'contratos'
+    : kind === 'Recibo'
+      ? 'recibos'
+      : 'extras';
+
   return appState.data?.[key]?.find(item => item.id === id);
 }
 
 function generateCajaPdf() {
-  if (!appState.current) return toast('Selecione uma obra primeiro.', 'error');
+  if (!appState.current) {
+    return toast('Selecione uma obra primeiro.', 'error');
+  }
+
   if (!pdfAvailable()) return;
+
   const doc = pdfBase('MEDIÇÃO / CAIXA', 'RESUMO FÍSICO-FINANCEIRO');
+
   const total = number(appState.data.meta.caixa_valor) || number(appState.current.valor_contrato);
   const pct = number(appState.data.caixa.percentualLiberado);
+
   let y = 80;
-  pdfLine(doc,'Valor-base considerado',currency(total),y); y+=9;
-  pdfLine(doc,'Percentual informado como liberado',`${pct.toFixed(2)}%`,y); y+=9;
-  pdfLine(doc,'Valor liberado estimado',currency(total*pct/100),y,true); y+=9;
-  pdfLine(doc,'Saldo a receber estimado',currency(total*(1-pct/100)),y,true); y+=17;
-  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(145,116,72); doc.text('CHECKLIST DOCUMENTAL',15,y); y+=8;
+
+  pdfLine(doc,'Valor-base considerado',currency(total),y);
+  y += 9;
+
+  pdfLine(doc,'Percentual informado como liberado',`${pct.toFixed(2)}%`,y);
+  y += 9;
+
+  pdfLine(doc,'Valor liberado estimado',currency(total*pct/100),y,true);
+  y += 9;
+
+  pdfLine(doc,'Saldo a receber estimado',currency(total*(1-pct/100)),y,true);
+  y += 17;
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(10);
+  doc.setTextColor(145,116,72);
+  doc.text('CHECKLIST DOCUMENTAL',15,y);
+
+  y += 8;
+
   caixaChecklistItems.forEach((item,index) => {
-    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(60,60,56);
-    doc.text(`${appState.data.caixa.checklist[index] ? '[X]' : '[ ]'} ${item}`,17,y); y+=7;
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(9);
+    doc.setTextColor(60,60,56);
+    doc.text(`${appState.data.caixa.checklist[index] ? '[X]' : '[ ]'} ${item}`,17,y);
+    y += 7;
   });
-  y+=8;
-  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(145,116,72); doc.text('CRONOGRAMA DE REFERÊNCIA',15,y); y+=8;
+
+  y += 8;
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(10);
+  doc.setTextColor(145,116,72);
+  doc.text('CRONOGRAMA DE REFERÊNCIA',15,y);
+
+  y += 8;
+
   appState.data.caixa.cronograma.forEach(item => {
-    if (y>270) { doc.addPage(); y=22; }
-    pdfLine(doc,item.etapa,`${number(item.percentual).toFixed(1)}% · ${currency(total*number(item.percentual)/100)} · ${formatDate(item.data)}`,y); y+=8;
+    if (y > 270) {
+      doc.addPage();
+      y = 22;
+    }
+
+    pdfLine(
+      doc,
+      item.etapa,
+      `${number(item.percentual).toFixed(1)}% · ${currency(total*number(item.percentual)/100)} · ${formatDate(item.data)}`,
+      y
+    );
+
+    y += 8;
   });
+
   pdfFooter(doc);
+
   doc.save(`${safeFileName(getMeta().id_obra)}-medicao-caixa.pdf`);
 }
 
 function generateFinalReport() {
-  if (!appState.current) return toast('Selecione uma obra primeiro.', 'error');
+  if (!appState.current) {
+    return toast('Selecione uma obra primeiro.', 'error');
+  }
+
   if (!pdfAvailable()) return;
+
   const doc = pdfBase('RELATÓRIO GERENCIAL', 'CONSOLIDADO DA OBRA');
+
   const data = appState.data;
   const contract = number(appState.current.valor_contrato);
   const budget = data.financeiro.etapas.reduce((s,x)=>s+number(x.orcado),0);
   const actual = data.financeiro.etapas.reduce((s,x)=>s+number(x.realizado),0);
   const totalCost = actual + number(data.financeiro.taxas);
   const profit = contract-totalCost;
-  let y=80;
-  [['Valor do contrato',currency(contract)],['Orçamento por etapa',currency(budget)],['Realizado por etapa',currency(actual)],['Taxas e despesas',currency(data.financeiro.taxas)],['Custo total registrado',currency(totalCost)],['Saldo do contrato',currency(contract-totalCost)],['Resultado projetado',currency(profit)],['Margem projetada',contract ? `${(profit/contract*100).toFixed(1)}%` : '0%']].forEach(([a,b],i)=>{pdfLine(doc,a,b,y,i===6);y+=8;});
-  y+=8; doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(145,116,72);doc.text('ORÇADO X REALIZADO',15,y);y+=8;
-  data.financeiro.etapas.forEach(item=>{
-    if(y>270){doc.addPage();y=22;}
-    pdfLine(doc,item.nome,`Orçado ${currency(item.orcado)} · Realizado ${currency(item.realizado)} · Saldo ${currency(number(item.orcado)-number(item.realizado))}`,y);y+=7;
+
+  let y = 80;
+
+  [
+    ['Valor do contrato',currency(contract)],
+    ['Orçamento por etapa',currency(budget)],
+    ['Realizado por etapa',currency(actual)],
+    ['Taxas e despesas',currency(data.financeiro.taxas)],
+    ['Custo total registrado',currency(totalCost)],
+    ['Saldo do contrato',currency(contract-totalCost)],
+    ['Resultado projetado',currency(profit)],
+    ['Margem projetada',contract ? `${(profit/contract*100).toFixed(1)}%` : '0%']
+  ].forEach(([a,b],i) => {
+    pdfLine(doc,a,b,y,i===6);
+    y += 8;
   });
-  y+=8;
-  if(y>265){doc.addPage();y=22;}
-  doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(145,116,72);doc.text('RESUMO OPERACIONAL',15,y);y+=8;
-  pdfLine(doc,'Fornecedores cadastrados',String(data.fornecedores.length),y);y+=7;
-  pdfLine(doc,'Materiais no estoque',String(data.estoque.length),y);y+=7;
-  pdfLine(doc,'Movimentações no fluxo',String(data.fluxo.length),y);y+=7;
-  pdfLine(doc,'Contratos / recibos / extras',String(data.contratos.length+data.recibos.length+data.extras.length),y);y+=11;
+
+  y += 8;
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(10);
+  doc.setTextColor(145,116,72);
+  doc.text('ORÇADO X REALIZADO',15,y);
+
+  y += 8;
+
+  data.financeiro.etapas.forEach(item => {
+    if (y > 270) {
+      doc.addPage();
+      y = 22;
+    }
+
+    pdfLine(
+      doc,
+      item.nome,
+      `Orçado ${currency(item.orcado)} · Realizado ${currency(item.realizado)} · Saldo ${currency(number(item.orcado)-number(item.realizado))}`,
+      y
+    );
+
+    y += 7;
+  });
+
+  y += 8;
+
+  if (y > 265) {
+    doc.addPage();
+    y = 22;
+  }
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(10);
+  doc.setTextColor(145,116,72);
+  doc.text('RESUMO OPERACIONAL',15,y);
+
+  y += 8;
+
+  pdfLine(doc,'Fornecedores cadastrados',String(data.fornecedores.length),y);
+  y += 7;
+
+  pdfLine(doc,'Materiais no estoque',String(data.estoque.length),y);
+  y += 7;
+
+  pdfLine(doc,'Movimentações no fluxo',String(data.fluxo.length),y);
+  y += 7;
+
+  pdfLine(doc,'Contratos / recibos / extras',String(data.contratos.length+data.recibos.length+data.extras.length),y);
+  y += 11;
+
   const note = 'Relatório gerencial baseado nos dados lançados no sistema. Valores, medições, coeficientes e projeções devem ser conferidos com documentos fiscais, contratos, projetos aprovados e registros oficiais da obra.';
-  doc.setFont('helvetica','italic');doc.setFontSize(8);doc.setTextColor(110,106,98);doc.text(doc.splitTextToSize(note,180),15,y);
+
+  doc.setFont('helvetica','italic');
+  doc.setFontSize(8);
+  doc.setTextColor(110,106,98);
+  doc.text(doc.splitTextToSize(note,180),15,y);
+
   pdfFooter(doc);
+
   doc.save(`${safeFileName(getMeta().id_obra)}-relatorio-gerencial.pdf`);
-  $('#relatorioPreview').textContent = `Gerado em ${new Date().toLocaleString('pt-BR')} · Contrato ${currency(contract)} · Realizado ${currency(totalCost)} · Resultado ${currency(profit)}`;
+
+  $('#relatorioPreview').textContent =
+    `Gerado em ${new Date().toLocaleString('pt-BR')} · Contrato ${currency(contract)} · Realizado ${currency(totalCost)} · Resultado ${currency(profit)}`;
 }
 
 function shareWhatsApp() {
-  if (!appState.current) return toast('Selecione uma obra primeiro.', 'error');
+  if (!appState.current) {
+    return toast('Selecione uma obra primeiro.', 'error');
+  }
+
   const contract = number(appState.current.valor_contrato);
   const budget = appState.data.financeiro.etapas.reduce((s,x)=>s+number(x.orcado),0);
   const realized = appState.data.financeiro.etapas.reduce((s,x)=>s+number(x.realizado),0)+number(appState.data.financeiro.taxas);
   const profit = contract-realized;
+
   const message = `*PH ENGENHARIA | RESUMO DA OBRA*\nObra: ${appState.current.id_obra}\nCliente: ${appState.current.cliente_nome}\nContrato: ${currency(contract)}\nOrçado: ${currency(budget)}\nRealizado: ${currency(realized)}\nSaldo: ${currency(contract-realized)}\nResultado projetado: ${currency(profit)}\nAtualizado em: ${new Date().toLocaleString('pt-BR')}`;
-  window.open('https://wa.me/?text='+encodeURIComponent(message),'_blank','noopener');
+
+  window.open(
+    'https://wa.me/?text='+encodeURIComponent(message),
+    '_blank',
+    'noopener'
+  );
 }
 
 function calculateConcrete() {
   const m3 = Math.max(0,number($('#calcConcM3').value));
   const traco = $('#calcConcTraco').value;
-  const coefficients = traco === '1152' ? {cement:9,sand:.5,gravel:.6} : traco === '134' ? {cement:5,sand:.8,gravel:.9} : {cement:7,sand:.6,gravel:.7};
+
+  const coefficients = traco === '1152'
+    ? {cement:9,sand:.5,gravel:.6}
+    : traco === '134'
+      ? {cement:5,sand:.8,gravel:.9}
+      : {cement:7,sand:.6,gravel:.7};
+
   const cement = Math.ceil(coefficients.cement*m3);
   const sand = coefficients.sand*m3;
   const gravel = coefficients.gravel*m3;
-  const cost = cement*number($('#precoCimento').value)+sand*number($('#precoAreia').value)+gravel*number($('#precoBrita').value);
+
+  const cost =
+    cement*number($('#precoCimento').value) +
+    sand*number($('#precoAreia').value) +
+    gravel*number($('#precoBrita').value);
+
   $('#resConcCimento').textContent = `Cimento: ${cement} sacos`;
   $('#resConcAreia').textContent = `Areia: ${sand.toFixed(2)} m³`;
   $('#resConcBrita').textContent = `Brita: ${gravel.toFixed(2)} m³`;
@@ -1798,7 +2383,9 @@ function calculateFloor() {
   const area = Math.max(0,number($('#calcPisoM2').value));
   const price = Math.max(0,number($('#calcPisoValor').value));
   const loss = Math.max(0,number($('#calcPisoPerda').value));
+
   const total = area*(1+loss/100);
+
   $('#resPisoQtd').textContent = `Área com perda: ${total.toFixed(2)} m²`;
   $('#resPisoArg').textContent = `Argamassa estimada: ${Math.ceil(total/4)} sacos (ref. 1 saco/4 m²)`;
   $('#resPisoRej').textContent = `Rejunte estimado: ${Math.ceil(total*.3)} kg (coeficiente indicativo)`;
@@ -1810,9 +2397,11 @@ function calculateRoof() {
   const rate = Math.max(.01,number($('#calcTelhaTipo').value));
   const price = Math.max(0,number($('#calcTelhaValor').value));
   const loss = Math.max(0,number($('#calcTelhaPerda').value));
+
   const perM2 = rate > 10 ? rate : 1/rate;
   const quantity = Math.ceil(area*perM2*(1+loss/100));
   const cost = quantity*price;
+
   $('#resTelhaQtd').textContent = `Quantidade: ${quantity} un / chapas`;
   $('#resTelhaMad').textContent = `Madeiramento de referência: ${currency(area*65)}`;
   $('#resTelhaValor').textContent = `Custo de telhas estimado: ${currency(cost)}`;
@@ -1823,7 +2412,9 @@ function calculateMasonry() {
   const rate = Math.max(0,number($('#tipoTijolo').value));
   const price = Math.max(0,number($('#valorMilheiro').value));
   const loss = Math.max(0,number($('#perdaTijolo').value));
+
   const quantity = Math.ceil(area*rate*(1+loss/100));
+
   $('#qtdTijolo').textContent = `${quantity.toLocaleString('pt-BR')} un`;
   $('#custoTijolo').textContent = currency(quantity/1000*price);
   $('#argamassaEst').textContent = `${Math.ceil(area*.13)} sacos (referência)`;
@@ -1843,41 +2434,63 @@ const erpViewLabels = {
 
 function getViewFromUrl() {
   let view = '';
-  try { view = decodeURIComponent((window.location.hash || '').replace(/^#/, '')); } catch (_) {}
-  return Object.prototype.hasOwnProperty.call(erpViewLabels, view) ? view : 'visao-geral';
+
+  try {
+    view = decodeURIComponent((window.location.hash || '').replace(/^#/, ''));
+  } catch (_) {}
+
+  return Object.prototype.hasOwnProperty.call(erpViewLabels, view)
+    ? view
+    : 'visao-geral';
 }
 
 function navigateToView(viewId, options = {}) {
-  let view = Object.prototype.hasOwnProperty.call(erpViewLabels, viewId) ? viewId : 'visao-geral';
+  let view = Object.prototype.hasOwnProperty.call(erpViewLabels, viewId)
+    ? viewId
+    : 'visao-geral';
 
-  // Não permite abrir o módulo CAIXA em obras sem financiamento.
   if (view === 'caixa' && !hasCaixaFinancing()) {
     view = 'visao-geral';
   }
 
   const target = document.getElementById(view);
+
   if (!target) return;
 
   $$('.erp-section').forEach(section => {
     const active = section.id === view;
+
     section.classList.toggle('active', active);
     section.setAttribute('aria-hidden', active ? 'false' : 'true');
   });
 
   $$('#erpNavigation [data-view]').forEach(button => {
     const active = button.dataset.view === view;
+
     button.classList.toggle('active', active);
-    if (active) button.setAttribute('aria-current', 'page');
-    else button.removeAttribute('aria-current');
+
+    if (active) {
+      button.setAttribute('aria-current', 'page');
+    } else {
+      button.removeAttribute('aria-current');
+    }
   });
 
   const currentLabel = $('#activeViewLabel');
-  if (currentLabel) currentLabel.textContent = erpViewLabels[view];
+
+  if (currentLabel) {
+    currentLabel.textContent = erpViewLabels[view];
+  }
 
   if (options.updateHistory !== false) {
     const hash = '#' + view;
+
     if (window.location.hash !== hash) {
-      window.history.pushState({ erpView: view }, '', window.location.pathname + window.location.search + hash);
+      window.history.pushState(
+        { erpView: view },
+        '',
+        window.location.pathname + window.location.search + hash
+      );
     }
   }
 
@@ -1894,7 +2507,9 @@ function wireEvents() {
 
   $('#erpNavigation').addEventListener('click', event => {
     const button = event.target.closest('[data-view]');
+
     if (!button) return;
+
     event.preventDefault();
     navigateToView(button.dataset.view);
   });
@@ -1903,98 +2518,156 @@ function wireEvents() {
     navigateToView(getViewFromUrl(), { updateHistory: false });
   });
 
-  $('#authForm').addEventListener('submit', login);
-  $('#btnSair').addEventListener('click', logout);
   $('#btnNovaObra').addEventListener('click', () => openNewModal());
-  $('#btnEditarObra').addEventListener('click', () => appState.current && openNewModal(appState.current));
+
+  $('#btnEditarObra').addEventListener('click', () => {
+    if (appState.current) openNewModal(appState.current);
+  });
+
   $('#btnExcluirObra').addEventListener('click', deleteCurrentRecord);
   $('#btnSalvar').addEventListener('click', () => saveCurrent(true));
   $('#btnBackup').addEventListener('click', exportBackup);
   $('#btnCsv').addEventListener('click', exportCsv);
+
   $('#btnImportBackup').addEventListener('click', () => $('#backupFile').click());
   $('#backupFile').addEventListener('change', importBackup);
+
   $('#obraSelecionada').addEventListener('change', event => openRecord(event.target.value));
+
   $('#btnFecharModal').addEventListener('click', closeModal);
   $('#btnCancelarObra').addEventListener('click', closeModal);
+
   $('#modalObra').addEventListener('click', event => {
     if (event.target === $('#modalObra')) closeModal();
   });
+
   $('#tipoObraCadastro').addEventListener('change', updateCaixaFormVisibility);
 
   $('#obraForm').addEventListener('submit', submitWorkForm);
 
   $('#clienteVinculado').addEventListener('change', event => {
     const client = appState.portalClients.find(item => String(item.id) === event.target.value);
+
     if (client) {
-      if (!$('#nomeCliente').value.trim()) $('#nomeCliente').value = client.nome || '';
-      if (!$('#enderecoObra').value.trim()) $('#enderecoObra').value = client.endereco_obra || '';
+      if (!$('#nomeCliente').value.trim()) {
+        $('#nomeCliente').value = client.nome || '';
+      }
+
+      if (!$('#enderecoObra').value.trim()) {
+        $('#enderecoObra').value = client.endereco_obra || '';
+      }
     }
   });
 
   $('#btnAddEtapa').addEventListener('click', addStage);
   $('#btnAddFornecedor').addEventListener('click', addFornecedor);
   $('#btnAddEstoque').addEventListener('click', addStock);
+
   $('#fluxoForm').addEventListener('submit', addCashflow);
   $('#contratoForm').addEventListener('submit', onContractSubmit);
   $('#reciboForm').addEventListener('submit', onReceiptSubmit);
   $('#extraForm').addEventListener('submit', onExtraSubmit);
+
   $('#btnPdfCaixa').addEventListener('click', generateCajaPdf);
 
   $('#btnResetCronograma').addEventListener('click', () => {
     if (!appState.data) return;
+
     appState.data.caixa.cronograma = clone(cronogramaBase);
+
     renderCaixa();
     markDirty('Cronograma restaurado');
   });
 
   $('#btnRelatorio').addEventListener('click', generateFinalReport);
   $('#btnWhats').addEventListener('click', shareWhatsApp);
+
   $('#uploadForm').addEventListener('submit', uploadLinkedFile);
   $('#updateClientForm').addEventListener('submit', publishClientUpdate);
 
   document.addEventListener('input', event => {
     const el = event.target;
-    if (el.matches('[data-collection],[data-scope]')) onFieldEdit(event);
-    if (['calcConcM3','calcConcTraco','precoCimento','precoAreia','precoBrita'].includes(el.id)) calculateConcrete();
-    if (['calcPisoM2','calcPisoValor','calcPisoPerda'].includes(el.id)) calculateFloor();
-    if (['calcTelhaM2','calcTelhaTipo','calcTelhaValor','calcTelhaPerda'].includes(el.id)) calculateRoof();
-    if (['areaParede','tipoTijolo','valorMilheiro','perdaTijolo'].includes(el.id)) calculateMasonry();
+
+    if (el.matches('[data-collection],[data-scope]')) {
+      onFieldEdit(event);
+    }
+
+    if (['calcConcM3','calcConcTraco','precoCimento','precoAreia','precoBrita'].includes(el.id)) {
+      calculateConcrete();
+    }
+
+    if (['calcPisoM2','calcPisoValor','calcPisoPerda'].includes(el.id)) {
+      calculateFloor();
+    }
+
+    if (['calcTelhaM2','calcTelhaTipo','calcTelhaValor','calcTelhaPerda'].includes(el.id)) {
+      calculateRoof();
+    }
+
+    if (['areaParede','tipoTijolo','valorMilheiro','perdaTijolo'].includes(el.id)) {
+      calculateMasonry();
+    }
   });
 
   document.addEventListener('change', event => {
     const el = event.target;
-    if (el.matches('select[data-collection],input[type="checkbox"][data-scope]')) onFieldEdit(event);
+
+    if (el.matches('select[data-collection],input[type="checkbox"][data-scope]')) {
+      onFieldEdit(event);
+    }
   });
 
   document.addEventListener('click', event => {
     const remove = event.target.closest('[data-remove]');
-    if (remove) removeCollectionItem(remove.dataset.remove, remove.dataset.index, remove.dataset.id);
+
+    if (remove) {
+      removeCollectionItem(
+        remove.dataset.remove,
+        remove.dataset.index,
+        remove.dataset.id
+      );
+    }
 
     const docButton = event.target.closest('[data-doc-pdf]');
+
     if (docButton && appState.data) {
-      const item = findDocument(docButton.dataset.docPdf, docButton.dataset.docKind);
-      if (item) generateDocumentPdf(docButton.dataset.docKind, item);
+      const item = findDocument(
+        docButton.dataset.docPdf,
+        docButton.dataset.docKind
+      );
+
+      if (item) {
+        generateDocumentPdf(docButton.dataset.docKind, item);
+      }
     }
 
     const fileButton = event.target.closest('[data-delete-file]');
-    if (fileButton) deleteLinkedFile(fileButton.dataset.deleteFile);
+
+    if (fileButton) {
+      deleteLinkedFile(fileButton.dataset.deleteFile);
+    }
   });
 }
 
 function downloadBlob(content, filename, type) {
   const blob = new Blob([content], { type });
   const url = URL.createObjectURL(blob);
+
   const anchor = document.createElement('a');
+
   anchor.href = url;
   anchor.download = filename;
+
   document.body.appendChild(anchor);
   anchor.click();
   anchor.remove();
+
   window.setTimeout(() => URL.revokeObjectURL(url), 1500);
 }
 
 function exportBackup() {
   if (!appState.current) return;
+
   const backup = {
     sistema: 'PH Engenharia ERP',
     versao: 1,
@@ -2002,45 +2675,122 @@ function exportBackup() {
     obra: appState.current,
     dados: appState.data
   };
-  downloadBlob(JSON.stringify(backup, null, 2), `${safeFileName(appState.current.id_obra)}-backup.json`, 'application/json;charset=utf-8');
+
+  downloadBlob(
+    JSON.stringify(backup, null, 2),
+    `${safeFileName(appState.current.id_obra)}-backup.json`,
+    'application/json;charset=utf-8'
+  );
+
   toast('Backup JSON exportado.', 'success');
 }
 
 function csvEscape(value) {
   const text = String(value ?? '');
+
   return '"' + text.replace(/"/g, '""') + '"';
 }
 
 function exportCsv() {
   if (!appState.current || !appState.data) return;
-  const rows = [['Grupo','Descrição','Orçado (R$)','Realizado (R$)','Detalhe']];
-  appState.data.financeiro.etapas.forEach(item => rows.push(['Financeiro',item.nome,number(item.orcado),number(item.realizado),'Etapa']));
-  rows.push(['Financeiro','Taxas e despesas',0,number(appState.data.financeiro.taxas),'Despesas gerais']);
-  appState.data.fornecedores.forEach(item => rows.push(['Fornecedor',item.empresa,0,number(item.valor),`Serviço: ${item.servico || ''}; Nota: ${item.nota ?? ''}; Atraso: ${item.atraso || 0} dias`]));
-  appState.data.estoque.forEach(item => rows.push(['Estoque',item.material,number(item.comprado),number(item.utilizado),`Unidade: ${item.unidade || 'un'}; Saldo: ${number(item.comprado)-number(item.utilizado)}`]));
-  appState.data.fluxo.forEach(item => rows.push(['Fluxo de caixa',item.descricao,item.tipo === 'entrada' ? number(item.valor) : 0,item.tipo === 'saida' ? number(item.valor) : 0,formatDate(item.data)]));
+
+  const rows = [
+    ['Grupo','Descrição','Orçado (R$)','Realizado (R$)','Detalhe']
+  ];
+
+  appState.data.financeiro.etapas.forEach(item => {
+    rows.push([
+      'Financeiro',
+      item.nome,
+      number(item.orcado),
+      number(item.realizado),
+      'Etapa'
+    ]);
+  });
+
+  rows.push([
+    'Financeiro',
+    'Taxas e despesas',
+    0,
+    number(appState.data.financeiro.taxas),
+    'Despesas gerais'
+  ]);
+
+  appState.data.fornecedores.forEach(item => {
+    rows.push([
+      'Fornecedor',
+      item.empresa,
+      0,
+      number(item.valor),
+      `Serviço: ${item.servico || ''}; Nota: ${item.nota ?? ''}; Atraso: ${item.atraso || 0} dias`
+    ]);
+  });
+
+  appState.data.estoque.forEach(item => {
+    rows.push([
+      'Estoque',
+      item.material,
+      number(item.comprado),
+      number(item.utilizado),
+      `Unidade: ${item.unidade || 'un'}; Saldo: ${number(item.comprado)-number(item.utilizado)}`
+    ]);
+  });
+
+  appState.data.fluxo.forEach(item => {
+    rows.push([
+      'Fluxo de caixa',
+      item.descricao,
+      item.tipo === 'entrada' ? number(item.valor) : 0,
+      item.tipo === 'saida' ? number(item.valor) : 0,
+      formatDate(item.data)
+    ]);
+  });
+
   const csv = '\uFEFF' + rows.map(row => row.map(csvEscape).join(';')).join('\r\n');
-  downloadBlob(csv, `${safeFileName(appState.current.id_obra)}-gestao.csv`, 'text/csv;charset=utf-8');
+
+  downloadBlob(
+    csv,
+    `${safeFileName(appState.current.id_obra)}-gestao.csv`,
+    'text/csv;charset=utf-8'
+  );
+
   toast('Planilha CSV exportada.', 'success');
 }
 
 async function importBackup(event) {
   const file = event.target.files?.[0];
+
   event.target.value = '';
+
   if (!file || !appState.current) return;
+
   try {
     const parsed = JSON.parse(await file.text());
     const backupRecord = parsed.obra || {};
-    if (!parsed.dados || typeof parsed.dados !== 'object') throw new Error('O arquivo não contém os dados esperados do ERP.');
+
+    if (!parsed.dados || typeof parsed.dados !== 'object') {
+      throw new Error('O arquivo não contém os dados esperados do ERP.');
+    }
+
     if (backupRecord.id_obra && backupRecord.id_obra !== appState.current.id_obra) {
       throw new Error('Este backup pertence a outra obra. Selecione a obra correta antes de restaurar.');
     }
-    if (!confirm(`Restaurar o backup sobre a obra ${appState.current.id_obra}? Os dados atuais dos módulos serão substituídos.`)) return;
+
+    if (!confirm(`Restaurar o backup sobre a obra ${appState.current.id_obra}? Os dados atuais dos módulos serão substituídos.`)) {
+      return;
+    }
+
     appState.data = mergeData(parsed.dados, {});
     appState.dirty = true;
+
     await saveCurrent(false);
-    if (appState.dirty) throw new Error('O backup foi lido, mas não foi possível sincronizá-lo com o Supabase. Tente salvar novamente.');
+
+    if (appState.dirty) {
+      throw new Error('O backup foi lido, mas não foi possível sincronizá-lo com o Supabase. Tente salvar novamente.');
+    }
+
     renderAll();
+
     toast('Backup restaurado e sincronizado.', 'success');
   } catch (error) {
     toast(error.message || 'Não foi possível restaurar o backup.', 'error');
@@ -2049,13 +2799,23 @@ async function importBackup(event) {
 
 async function deleteCurrentRecord() {
   if (!appState.current) return;
+
   const name = appState.current.cliente_nome || appState.current.id_obra;
-  if (!confirm(`Excluir definitivamente a gestão da obra ${appState.current.id_obra} (${name})?\n\nOs registros financeiros, fornecedores, estoque e documentos do ERP desta obra serão removidos. O cadastro do cliente no portal não será excluído.`)) return;
+
+  if (!confirm(`Excluir definitivamente a gestão da obra ${appState.current.id_obra} (${name})?\n\nOs registros financeiros, fornecedores, estoque e documentos do ERP desta obra serão removidos. O cadastro do cliente no portal não será excluído.`)) {
+    return;
+  }
+
   try {
-    await api('/api/erp/obras/' + encodeURIComponent(appState.current.id), { method:'DELETE' });
+    await api('/api/erp/obras/' + encodeURIComponent(appState.current.id), {
+      method:'DELETE'
+    });
+
     toast('Gestão da obra excluída.', 'success');
+
     appState.current = null;
     appState.data = null;
+
     await loadInitialData();
   } catch (error) {
     toast(error.message, 'error');
@@ -2063,39 +2823,35 @@ async function deleteCurrentRecord() {
 }
 
 async function init() {
-  $('#currentDate').textContent = new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+  $('#currentDate').textContent = new Date().toLocaleDateString(
+    'pt-BR',
+    { day:'2-digit', month:'long', year:'numeric' }
+  );
+
   $('#fluxoData').value = todayISO();
   $('#reciboData').value = todayISO();
-  $('#arquivoEtapa').innerHTML = '<option value="">Sem etapa específica</option>' + stageNames.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
+
+  $('#arquivoEtapa').innerHTML =
+    '<option value="">Sem etapa específica</option>' +
+    stageNames.map(name =>
+      `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`
+    ).join('');
 
   wireEvents();
-  navigateToView(getViewFromUrl(), { updateHistory: false, scroll: false });
+
+  navigateToView(
+    getViewFromUrl(),
+    { updateHistory:false, scroll:false }
+  );
 
   calculateConcrete();
   calculateFloor();
   calculateRoof();
   calculateMasonry();
 
-  try {
-    const session = await api('/api/erp/session');
-    setConnection(Boolean(session.configured), session.configured ? 'Servidor disponível' : 'Configuração pendente');
-
-    if (!session.configured) {
-      showAuth('O acesso ainda não está configurado. Defina ERP_ADMIN_PASSWORD e ERP_SESSION_SECRET no Render.');
-      return;
-    }
-
-    if (session.authenticated) {
-      appState.authenticated = true;
-      hideAuth();
-      await loadInitialData();
-    } else {
-      showAuth('Entre com a senha administrativa para abrir o ERP.');
-    }
-  } catch (error) {
-    setConnection(false, 'API indisponível');
-    showAuth('Não foi possível verificar a sessão. Confira se as rotas /api/erp foram integradas ao server.js.');
-  }
+  // A autenticação acontece na outra tela.
+  // Esta página aproveita a sessão já existente e carrega diretamente o ERP.
+  await loadInitialData();
 }
 
 init();
