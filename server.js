@@ -100,54 +100,12 @@ try {
 //
 // Isso mantém uma única fonte de autenticação.
 
-async function exigirErpAdmin(req, res, next) {
-    try {
-        const cookie = req.headers.cookie || '';
+const exigirErpAdmin = app.locals.requireErpAdmin;
 
-        const response = await fetch(
-            `http://127.0.0.1:${PORT}/api/erp/session`,
-            {
-                method: 'GET',
-                headers: {
-                    Cookie: cookie,
-                    Accept: 'application/json'
-                },
-                cache: 'no-store'
-            }
-        );
-
-        let session = null;
-
-        try {
-            session = await response.json();
-        } catch {
-            session = null;
-        }
-
-        if (
-            response.ok &&
-            session?.authenticated === true
-        ) {
-            return next();
-        }
-
-        return res.status(401).json({
-            ok: false,
-            authenticated: false,
-            message: 'Sessão administrativa necessária.'
-        });
-
-    } catch (error) {
-        console.error(
-            '[AUTH] Falha ao verificar sessão:',
-            error.message
-        );
-
-        return res.status(503).json({
-            ok: false,
-            message: 'Não foi possível verificar a sessão administrativa.'
-        });
-    }
+if (typeof exigirErpAdmin !== 'function') {
+    throw new Error(
+        'Middleware administrativo não foi registrado pelo erp-api.js.'
+    );
 }
 
 // ======================================================
