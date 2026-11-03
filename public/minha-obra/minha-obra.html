@@ -641,47 +641,9 @@ async function api(path, options = {}) {
   return data;
 }
 
-function showAuth(message = '') {
-  appState.authenticated = false;
-  $('#authOverlay').hidden = false;
-  $('#authError').textContent = message;
-  $('#authError').classList.toggle('show', Boolean(message));
-  $('#adminPassword').value = '';
-  window.setTimeout(() => $('#adminPassword').focus(), 80);
-}
-
 function hideAuth() {
   $('#authOverlay').hidden = true;
   $('#authError').classList.remove('show');
-}
-
-async function login(event) {
-  event.preventDefault();
-  const button = $('#btnEntrar');
-  button.disabled = true;
-  button.textContent = 'Validando acesso...';
-  try {
-    await api('/api/erp/login', { method:'POST', body:JSON.stringify({ password:$('#adminPassword').value }) });
-    appState.authenticated = true;
-    hideAuth();
-    await loadInitialData();
-    toast('Acesso administrativo autorizado.', 'success');
-  } catch (error) {
-    $('#authError').textContent = error.message;
-    $('#authError').classList.add('show');
-  } finally {
-    button.disabled = false;
-    button.innerHTML = 'Entrar no sistema <i class="fa-solid fa-arrow-right"></i>';
-  }
-}
-
-async function logout() {
-  try { await api('/api/erp/logout', { method:'POST', body:'{}' }); } catch (_) {}
-  appState.records = [];
-  appState.current = null;
-  appState.data = null;
-  renderNoRecord();
-  showAuth('Sessão encerrada.');
 }
 
 function setConnection(online, text) {
@@ -2062,26 +2024,6 @@ async function init() {
   calculateRoof();
   calculateMasonry();
 
-  try {
-    const session = await api('/api/erp/session');
-    setConnection(Boolean(session.configured), session.configured ? 'Servidor disponível' : 'Configuração pendente');
-
-    if (!session.configured) {
-      showAuth('O acesso ainda não está configurado. Defina ERP_ADMIN_PASSWORD e ERP_SESSION_SECRET no Render.');
-      return;
-    }
-
-    if (session.authenticated) {
-      appState.authenticated = true;
-      hideAuth();
-      await loadInitialData();
-    } else {
-      showAuth('Entre com a senha administrativa para abrir o ERP.');
-    }
-  } catch (error) {
-    setConnection(false, 'API indisponível');
-    showAuth('Não foi possível verificar a sessão. Confira se as rotas /api/erp foram integradas ao server.js.');
-  }
 }
 
 init();
