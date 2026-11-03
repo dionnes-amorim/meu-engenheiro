@@ -1,1 +1,2835 @@
-.
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#171a1d">
+<meta name="description" content="PH Engenharia — gestão integrada de obras, custos, fornecedores, estoque e fluxo financeiro.">
+<base href="/">
+<title>PH Engenharia | Gestão Integrada de Obras</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/minha-obra/obra-gestao.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+
+<style>
+/* Complementos do ERP: a identidade principal vem de obra-gestao.css */
+.page-intro{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;margin:24px 0 18px;animation:entradaSuave .55s ease both}
+.page-intro .eyebrow{color:#92764d;font-family:var(--font-mono);letter-spacing:.16em}
+.page-intro h1{font:700 clamp(25px,3vw,38px)/1.12 var(--font-display);letter-spacing:-.055em;color:#292a29;margin:8px 0}
+.page-intro p{font-size:12px;color:var(--text-muted);line-height:1.65;max-width:680px}
+.intro-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.system-pill{display:inline-flex;align-items:center;gap:7px;background:#fff;border:1px solid var(--border);border-radius:99px;padding:8px 11px;font:10px var(--font-mono);color:#77766e;white-space:nowrap}
+.system-pill i{color:var(--gold)}
+.system-pill.online i{color:#77956e}.system-pill.offline i{color:#b66e67}
+.erp-nav{position:sticky;top:88px;z-index:50;display:flex;gap:6px;overflow-x:auto;padding:8px;margin:0 0 20px;background:rgba(248,247,243,.94);border:1px solid #e2ddd3;border-radius:12px;backdrop-filter:blur(12px);scrollbar-width:thin}
+.erp-nav a{flex:0 0 auto;padding:9px 12px;border-radius:7px;color:#77766e;font:10px var(--font-mono);text-decoration:none;transition:var(--transition)}
+.erp-nav a:hover{background:#f0e8da;color:#80643d}
+.erp-section{scroll-margin-top:155px}
+.section-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin:8px 0 13px}
+.section-heading h2{font:800 15px var(--font-display);color:#303234;letter-spacing:-.025em}
+.section-heading p{font-size:11px;color:var(--text-muted);margin-top:4px}
+.section-kicker{font:9px var(--font-mono);letter-spacing:.12em;text-transform:uppercase;color:#9a8058}
+.content-panel{background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px;box-shadow:var(--shadow);margin-bottom:17px}
+.toolbar{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.toolbar select,.toolbar input{max-width:280px}
+.btn-danger{background:#fbefed;color:#ae655f;border:1px solid #ecd3cf;border-radius:8px;padding:10px 13px;font-size:10px;font-weight:800}
+.btn-danger:hover{background:#f8e3df;transform:translateY(-1px)}
+.btn-quiet{background:#f5f2ec;color:#75684f;border:1px solid #e5ddce;border-radius:8px;padding:10px 13px;font-size:10px;font-weight:700}
+.btn-quiet:hover{background:#eee6d8;border-color:#cbb58e}
+.btn-small{padding:7px 9px;border-radius:6px;font-size:9px}
+.table-wrap{width:100%;overflow-x:auto;border-radius:10px}
+.table-wrap .tabela-controle{min-width:690px;margin-top:0}
+.table-wrap input{min-width:88px}
+.table-wrap .col-name input{min-width:150px}
+.inline-actions{display:flex;gap:6px;align-items:center}
+.empty-row{text-align:center!important;padding:25px!important;color:#999!important;font-size:11px!important}
+.metric-note{font-size:10px;color:var(--text-muted);margin-top:5px}
+.kpi-negative{color:#b66e67!important}.kpi-positive{color:#718a69!important}
+.calc-result{display:grid;gap:7px;background:#fff;border:1px solid #e9e2d7;border-radius:9px;padding:13px;margin-top:13px;font-size:11px;color:var(--text-muted)}
+.calc-result strong{font:600 14px var(--font-mono);color:#8d7148}
+.calc-prices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.form-actions{display:flex;gap:9px;justify-content:flex-end;flex-wrap:wrap;margin-top:18px}
+.modal-content .modal-top{display:flex;justify-content:space-between;gap:15px;align-items:flex-start;margin-bottom:18px}
+.modal-close{width:34px;height:34px;border:1px solid var(--border);border-radius:8px;background:#f8f7f3;color:#6b675f}
+.field-help{display:block;color:#969186;font-size:10px;line-height:1.5;margin-top:5px}
+.checkbox-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px 14px}
+.checkbox-grid label{display:flex;align-items:center;gap:7px;padding:7px 0;margin:0;font:10px var(--font-main);letter-spacing:0;text-transform:none;color:#64645e}
+.checkbox-grid input{width:15px;height:15px;margin:0;accent-color:var(--gold)}
+.toast-container{position:fixed;right:18px;bottom:18px;z-index:20000;display:grid;gap:8px;max-width:min(390px,calc(100vw - 36px))}
+.erp-toast{padding:13px 15px;border-radius:10px;background:#202428;color:#fff;box-shadow:0 12px 35px #0002;font-size:12px;animation:entradaSuave .25s ease;border-left:3px solid var(--gold)}
+.erp-toast.error{border-left-color:#bd7770}.erp-toast.success{border-left-color:#91a989}
+
+/* Mensagens de validação do formulário de cadastro */
+.form-error{display:none;padding:10px 12px;border-radius:8px;background:#fbefed;color:#a75f58;font-size:11px;margin:12px 0}
+.form-error.show{display:block}
+
+.save-state{font:9px var(--font-mono);color:#8b887e;display:inline-flex;align-items:center;gap:6px}
+.save-state i{color:#91a989}
+.save-state.pending i{color:#b8945e;animation:pulsoGold 1.3s infinite}
+.save-state.error i{color:#bd7770}
+.record-empty{background:#fff;border:1px dashed #d9d0c1;border-radius:13px;padding:35px 18px;text-align:center;color:#85847d}
+.record-empty i{font-size:25px;color:#b8945e;margin-bottom:10px}
+.record-empty strong{display:block;color:#444;margin:6px 0}
+.score{display:inline-flex;padding:5px 8px;border-radius:5px;font:9px var(--font-mono)}
+.score.high{background:#edf3ea;color:#6c865f}.score.mid{background:#f5efe3;color:#987747}.score.low{background:#f8ecea;color:#ad6962}.score.none{background:#f1f0ec;color:#949087}
+.stock-alert{font-size:9px;font-family:var(--font-mono);padding:5px 7px;border-radius:5px;background:#edf3ea;color:#6c865f}.stock-alert.low{background:#f5efe3;color:#987747}.stock-alert.out{background:#f8ecea;color:#ad6962}
+.record-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.record-chip{display:flex;align-items:center;gap:9px;padding:9px 11px;border:1px solid #e8e2d7;background:#fbfaf7;border-radius:8px;font-size:10px;color:#666;max-width:100%}
+.record-chip strong{color:#3d3d39}.record-chip button{border:0;background:transparent;color:#ae7069;padding:2px 4px}
+.cash-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0}
+.cash-summary>div{background:#fbfaf7;border:1px solid #ece7de;border-radius:9px;padding:12px}
+.cash-summary span{font:9px var(--font-mono);color:var(--text-muted);text-transform:uppercase}
+.cash-summary strong{display:block;font:600 15px var(--font-mono);margin-top:6px;color:#343532}
+.progress-track{height:7px;background:#eeeae2;border-radius:99px;overflow:hidden;margin-top:8px}
+.progress-fill{height:100%;background:linear-gradient(90deg,#a98754,#d5b783);border-radius:99px;transition:width .5s ease}
+.tag-muted{font:9px var(--font-mono);color:#888;border:1px solid #e8e2d7;padding:5px 8px;border-radius:5px}
+.status-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0 18px}
+.hero-line{height:1px;background:linear-gradient(90deg,var(--gold),transparent);margin:18px 0;opacity:.55}
+
+/* Central de alertas da visão geral */
+.dashboard-alerts{background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-top:17px;box-shadow:var(--shadow)}
+.dashboard-alerts-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:12px}
+.dashboard-alerts-head h3{font:800 14px var(--font-display);color:#303234;margin-top:5px}
+.dashboard-alerts-head p{font-size:10px;color:var(--text-muted);margin-top:4px;line-height:1.5}
+.dashboard-alert-count{white-space:nowrap;border:1px solid #e8e2d7;border-radius:99px;padding:6px 9px;font:9px var(--font-mono);color:#857657}
+.dashboard-alerts-list{display:grid;gap:7px}
+.dashboard-alert-item{display:flex;align-items:flex-start;gap:9px;padding:10px 11px;border-radius:8px;background:#f8f7f3;color:#68665f;font-size:10px;line-height:1.5}
+.dashboard-alert-item>i{width:14px;flex:0 0 14px;margin-top:1px;color:#a98754}
+.dashboard-alert-item.warning{background:#faf4e9;color:#80683f}
+.dashboard-alert-item.warning>i{color:#b58a4d}
+.dashboard-alert-item.danger{background:#fbefed;color:#9d5f59}
+.dashboard-alert-item.danger>i{color:#b66e67}
+.dashboard-alert-item.success{background:#eef4eb;color:#617a58}
+.dashboard-alert-item.success>i{color:#77956e}
+
+@media(max-width:1000px){.erp-nav{top:88px}.dashboard-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.calc-prices{grid-template-columns:1fr 1fr}}
+@media(max-width:700px){.app-container{padding:12px 12px 30px}.page-intro{align-items:flex-start;flex-direction:column}.erp-nav{top:4px}.section-heading{align-items:flex-start;flex-direction:column}.form-grid,.calc-prices{grid-template-columns:1fr}.checkbox-grid{grid-template-columns:1fr 1fr}.cash-summary{grid-template-columns:1fr}.content-panel{padding:14px}.modal-content{padding:18px}}
+@media(max-width:420px){.dashboard-cards{grid-template-columns:1fr 1fr}.system-pill{font-size:8px}.checkbox-grid{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
+/* Navegação por módulos: cada área funciona como uma tela independente. */
+.erp-layout{display:grid;grid-template-columns:238px minmax(0,1fr);gap:20px;align-items:start;min-width:0}
+.erp-sidebar{position:sticky;top:16px;align-self:start;max-height:calc(100vh - 32px);overflow-y:auto;background:rgba(248,247,243,.98);border:1px solid #e2ddd3;border-radius:14px;padding:14px;box-shadow:0 8px 28px rgba(35,32,26,.045);scrollbar-width:thin;scrollbar-color:#d8cbb5 transparent}
+.sidebar-heading{padding:7px 7px 13px;border-bottom:1px solid #e9e3d9}
+.sidebar-kicker{display:block;color:#9a8058;font:9px var(--font-mono);letter-spacing:.16em;margin-bottom:7px}
+.sidebar-heading>strong{display:block;color:#33332f;font:700 14px var(--font-display);letter-spacing:-.02em}
+.sidebar-current{display:flex;align-items:center;gap:7px;margin-top:11px;padding:7px 9px;border-radius:7px;background:#efe9de;color:#806b49;font:10px var(--font-mono)}
+.sidebar-current>i{font-size:8px;color:#a98754}
+.erp-nav{position:static;display:grid;gap:5px;overflow:visible;padding:12px 0 0;margin:0;background:transparent;border:0;border-radius:0;backdrop-filter:none;scrollbar-width:auto}
+.erp-nav-btn{width:100%;display:flex;align-items:center;gap:11px;padding:11px 10px;border:1px solid transparent;border-radius:8px;background:transparent;color:#706e66;text-align:left;font:600 11px var(--font-main);cursor:pointer;transition:background .18s ease,color .18s ease,border-color .18s ease,transform .18s ease}
+.erp-nav-btn>i:first-child{width:17px;text-align:center;color:#9a8058;font-size:13px;flex:0 0 17px}
+.erp-nav-btn span{flex:1;min-width:0}
+.erp-nav-btn .nav-arrow{font-size:9px;color:#b2aa9a;opacity:0;transition:opacity .18s ease,transform .18s ease}
+.erp-nav-btn:hover{background:#f0e8da;color:#80643d;border-color:#e7dcc8;transform:translateX(2px)}
+.erp-nav-btn:hover .nav-arrow{opacity:1}
+.erp-nav-btn.active{background:#262a2d;color:#fff;border-color:#262a2d;box-shadow:0 5px 14px rgba(28,30,31,.12)}
+.erp-nav-btn.active>i:first-child{color:#d5b783}
+.erp-nav-btn.active .nav-arrow{opacity:1;color:#d5b783}
+.sidebar-foot{display:flex;align-items:center;gap:9px;margin:15px 5px 2px;padding:12px 7px 3px;border-top:1px solid #e9e3d9;color:#77746c;font:10px var(--font-main);line-height:1.5}
+.sidebar-foot>i{color:#9a8058;font-size:14px}
+.sidebar-foot small{color:#9b978d;font-size:9px}
+.erp-main{min-width:0;min-height:420px}
+.erp-section{display:none;scroll-margin-top:20px}
+.erp-section.active{display:block;animation:entradaSuave .22s ease both}
+.erp-section[hidden],.erp-nav-btn[hidden]{display:none!important}
+@media(max-width:1000px){.erp-layout{grid-template-columns:205px minmax(0,1fr);gap:14px}.erp-sidebar{padding:11px}.erp-nav-btn{padding:10px 8px;gap:8px}}
+@media(max-width:700px){
+  .erp-layout{grid-template-columns:minmax(0,1fr);gap:14px}
+  .erp-sidebar{position:static;top:auto;z-index:auto;max-height:none;overflow:visible;padding:10px}
+  .sidebar-heading{padding:5px 5px 10px}
+  .sidebar-foot{display:none}
+  .erp-nav{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding-top:10px}
+  .erp-nav-btn{min-height:42px;padding:9px 8px;font-size:10px}
+  .erp-nav-btn .nav-arrow{display:none}
+  .erp-main{min-height:0}
+}
+@media(max-width:420px){
+  .erp-nav{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .erp-nav-btn{gap:6px;padding:9px 7px;font-size:9px}
+  .erp-nav-btn>i:first-child{font-size:12px;width:15px;flex-basis:15px}
+}
+</style>
+</head>
+<body>
+
+<div class="app-container">
+  <header class="top-header">
+    <div class="logos">
+      <img src="/assets/img/logo-engenheiro.png" alt="PH Engenharia" onerror="this.style.display='none'">
+      <div class="divisor"></div>
+      <img src="/assets/img/logo-desenvolvimento.png" alt="Desenvolvimento" onerror="this.style.display='none'">
+      <div class="obra-id-display">
+        <span>ID OBRA:</span> <strong id="displayObraId">NENHUMA</strong>
+        <span style="opacity:.45">|</span>
+        <span>CPF:</span> <strong id="displayCPF">—</strong>
+      </div>
+    </div>
+    <div class="header-actions">
+      <select id="obraSelecionada" aria-label="Selecionar obra" style="max-width:250px;min-width:190px">
+        <option value="">Selecione uma obra</option>
+      </select>
+      <button type="button" class="btn-secondary" id="btnNovaObra"><i class="fa-solid fa-plus"></i> Nova obra</button>
+      <button type="button" class="btn-primary" id="btnSalvar"><i class="fa-solid fa-cloud-arrow-up"></i> Salvar</button>
+    </div>
+  </header>
+
+  <div class="page-intro">
+    <div>
+      <div class="eyebrow">PH ENGENHARIA · CENTRAL DE GESTÃO</div>
+      <h1>Gestão de obras <span style="color:var(--gold)">inteligente.</span></h1>
+      <p>Controle técnico, financeiro e operacional da obra em um único ambiente. Cadastre, acompanhe indicadores, registre movimentações e gere documentos profissionais.</p>
+    </div>
+    <div class="intro-meta">
+      <span class="system-pill" id="connectionPill"><i class="fa-solid fa-circle-notch fa-spin"></i> Verificando conexão</span>
+      <span class="system-pill"><i class="fa-regular fa-calendar"></i> <span id="currentDate"></span></span>
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <span class="save-state" id="saveState"><i class="fa-solid fa-circle-check"></i> Nenhuma alteração pendente</span>
+    <div class="toolbar">
+      <button type="button" class="btn-quiet" id="btnBackup" disabled><i class="fa-solid fa-download"></i> Backup JSON</button>
+      <button type="button" class="btn-quiet" id="btnCsv" disabled><i class="fa-solid fa-file-csv"></i> Exportar CSV</button>
+      <button type="button" class="btn-quiet" id="btnImportBackup" disabled><i class="fa-solid fa-upload"></i> Restaurar backup</button>
+      <input type="file" id="backupFile" accept="application/json,.json" hidden>
+      <button type="button" class="btn-quiet" id="btnEditarObra" disabled><i class="fa-solid fa-pen"></i> Editar cadastro</button>
+      <button type="button" class="btn-danger" id="btnExcluirObra" disabled><i class="fa-solid fa-trash"></i> Excluir obra</button>
+    </div>
+  </div>
+
+  <div class="erp-layout">
+    <aside class="erp-sidebar" aria-label="Navegação principal dos módulos">
+      <div class="sidebar-heading">
+        <span class="sidebar-kicker">NAVEGAÇÃO</span>
+        <strong>Central de módulos</strong>
+        <span class="sidebar-current"><i class="fa-solid fa-circle-dot"></i> <span id="activeViewLabel">Visão geral</span></span>
+      </div>
+
+      <nav class="erp-nav" id="erpNavigation" aria-label="Navegação da gestão">
+        <button type="button" class="erp-nav-btn active" data-view="visao-geral" aria-controls="visao-geral" aria-current="page">
+          <i class="fa-solid fa-chart-pie"></i><span>Visão geral</span><i class="fa-solid fa-chevron-right nav-arrow"></i>
+        </button>
+        <button type="button" class="erp-nav-btn" data-view="financeiro" aria-controls="financeiro">
+          <i class="fa-solid fa-scale-balanced"></i><span>Orçamento</span><i class="fa-solid fa-chevron-right nav-arrow"></i>
+        </button>
+        <button type="button" class="erp-nav-btn" data-view="caixa" aria-controls="caixa">
+          <i class="fa-solid fa-building-columns"></i><span>CAIXA / MCMV</span><i class="fa-solid fa-chevron-right nav-arrow"></i>
+        </button>
+        <button type="button" class="erp-nav-btn" data-view="fornecedores" aria-controls="fornecedores">
+          <i class="fa-solid fa-truck-field"></i><span>Fornecedores</span><i class="fa-solid fa-chevron-right nav-arrow"></i>
+        </button>
+        <button type="button" class="erp-nav-btn" data-view="estoque" aria-controls="estoque">
+          <i class="fa-solid fa-boxes-stacked"></i><span>Estoque</span><i class="fa-solid fa-chevron-right nav-arrow"></i>
+        </button>
+        <button type="button" class="erp-nav-btn" data-view="calculadoras" aria-controls="calculadoras">
+          <i class="fa-solid fa-calculator"></i><span>Calculadoras</span><i class="fa-solid fa-chevron-right nav-arrow"></i>
+        </button>
+        <button type="button" class="erp-nav-btn" data-view="fluxo" aria-controls="fluxo">
+          <i class="fa-solid fa-arrow-right-arrow-left"></i><span>Fluxo de caixa</span><i class="fa-solid fa-chevron-right nav-arrow"></i>
+        </button>
+        <button type="button" class="erp-nav-btn" data-view="documentos" aria-controls="documentos">
+          <i class="fa-solid fa-file-contract"></i><span>Documentos</span><i class="fa-solid fa-chevron-right nav-arrow"></i>
+        </button>
+        <button type="button" class="erp-nav-btn" data-view="relatorios" aria-controls="relatorios">
+          <i class="fa-solid fa-file-pdf"></i><span>Relatórios</span><i class="fa-solid fa-chevron-right nav-arrow"></i>
+        </button>
+      </nav>
+
+      <div class="sidebar-foot">
+        <i class="fa-solid fa-shield-halved"></i>
+        <span>Ambiente administrativo<br><small>Navegação interna sem recarregar</small></span>
+      </div>
+    </aside>
+
+    <main class="erp-main" id="erpMain">
+
+  <section id="visao-geral" class="erp-section active" aria-hidden="false">
+    <div class="section-heading">
+      <div><div class="section-kicker">01 / INDICADORES</div><h2>Visão geral da obra</h2><p>Indicadores atualizados conforme os lançamentos realizados.</p></div>
+      <span class="tag-muted" id="obraStatus">Aguardando seleção</span>
+    </div>
+    <section class="dashboard-cards">
+      <article class="card kpi"><span>Valor do contrato</span><strong id="kpiContrato">R$ 0,00</strong><small id="kpiIdObra">Nenhuma obra selecionada</small></article>
+      <article class="card kpi"><span>Total realizado</span><strong id="kpiGasto">R$ 0,00</strong><div class="progress-bar"><div class="progress" id="progressGasto" style="width:0%"></div></div><small id="kpiPctGasto">0% do contrato consumido</small></article>
+      <article class="card kpi"><span>Saldo do contrato</span><strong id="kpiSaldo">R$ 0,00</strong><small id="kpiPctRestante">0% disponível</small></article>
+      <article class="card kpi"><span>Resultado projetado</span><strong id="kpiLucro">R$ 0,00</strong><small id="kpiMargem">Margem planejada 0%</small></article>
+    </section>
+    <div class="cash-summary">
+      <div><span>Orçamento planejado</span><strong id="kpiOrcado">R$ 0,00</strong><div class="metric-note">Soma do orçamento por etapa</div></div>
+      <div><span>Desvio do orçamento</span><strong id="kpiDesvio">R$ 0,00</strong><div class="metric-note" id="kpiDesvioNota">Sem lançamentos</div></div>
+      <div><span>Saldo de caixa projetado</span><strong id="kpiFluxo">R$ 0,00</strong><div class="metric-note">Entradas menos saídas cadastradas</div></div>
+    </div>
+
+    <div class="dashboard-alerts" id="dashboardAlerts">
+      <div class="dashboard-alerts-head">
+        <div>
+          <span class="section-kicker">ACOMPANHAMENTO</span>
+          <h3>Alertas da obra</h3>
+          <p>Pontos que merecem atenção com base nos dados cadastrados.</p>
+        </div>
+        <span class="dashboard-alert-count" id="dashboardAlertCount">0 alertas</span>
+      </div>
+      <div class="dashboard-alerts-list" id="dashboardAlertsList">
+        <div class="dashboard-alert-item neutral"><i class="fa-solid fa-circle-info"></i><span>Selecione uma obra para visualizar os alertas.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="financeiro" class="erp-section">
+    <div class="section-heading">
+      <div><div class="section-kicker">02 / CONTROLE FINANCEIRO</div><h2>Orçado x realizado por etapa</h2><p>Registre o orçamento e o custo efetivo de cada fase para identificar desvios.</p></div>
+      <button type="button" class="btn-add" id="btnAddEtapa"><i class="fa-solid fa-plus"></i> Nova etapa</button>
+    </div>
+    <div class="content-panel">
+      <div class="table-wrap"><table class="tabela-controle"><thead><tr><th>Etapa</th><th>Orçado (R$)</th><th>Realizado (R$)</th><th>Saldo (R$)</th><th>Execução</th><th>Ação</th></tr></thead><tbody id="tbodyComparativo"><tr><td colspan="6" class="empty-row">Cadastre ou selecione uma obra.</td></tr></tbody></table></div>
+      <div id="alertaEstouro" class="pill-alert" style="display:none"></div>
+      <div class="hero-line"></div>
+      <div class="form-grid">
+        <div><label for="taxasObra">Taxas, cartório e despesas gerais (R$)</label><input type="number" id="taxasObra" min="0" step="0.01" value="0" data-scope="financeiro" data-key="taxas"></div>
+        <div><label for="observacaoFinanceira">Observação financeira</label><input type="text" id="observacaoFinanceira" maxlength="500" placeholder="Ex.: reajuste de material, aditivo..." data-scope="financeiro" data-key="observacao"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="caixa" class="erp-section">
+    <div class="section-heading"><div><div class="section-kicker">03 / FINANCIAMENTO</div><h2>Controle CAIXA / MCMV</h2><p>Medições, liberações previstas e documentação de acompanhamento.</p></div><span class="tag-muted">Ativado conforme tipo de obra</span></div>
+    <div class="content-panel" id="painelCaixa">
+      <div class="grid-4">
+        <div><label for="caixaPercentLiberado">Percentual já liberado (%)</label><input type="number" id="caixaPercentLiberado" min="0" max="100" step="0.01" value="0" data-scope="caixa" data-key="percentualLiberado"></div>
+        <div><label>Valor já liberado</label><input type="text" id="caixaJaLiberado" readonly value="R$ 0,00"></div>
+        <div><label>Saldo a receber</label><input type="text" id="caixaAReceber" readonly value="R$ 0,00"></div>
+        <div><label for="caixaProximaMedicao">Próxima medição</label><input type="date" id="caixaProximaMedicao" data-scope="caixa" data-key="proximaMedicao"></div>
+      </div>
+      <div class="hero-line"></div>
+      <div class="section-heading"><div><h2 style="font-size:13px">Checklist documental</h2><p>Marque os documentos recebidos e conferidos.</p></div><button type="button" class="btn-quiet btn-small" id="btnPdfCaixa"><i class="fa-solid fa-file-pdf"></i> PDF de medição</button></div>
+      <div class="checkbox-grid" id="checklistCaixa"></div>
+      <div class="hero-line"></div>
+      <div class="section-heading"><div><h2 style="font-size:13px">Cronograma físico-financeiro de referência</h2><p>Distribuição inicial editável. Ajuste os percentuais e as datas conforme o contrato e o cronograma aprovado.</p></div><button type="button" class="btn-quiet btn-small" id="btnResetCronograma">Restaurar percentuais-base</button></div>
+      <div class="table-wrap"><table class="tabela-controle"><thead><tr><th>Etapa</th><th>% previsto</th><th>Valor de referência</th><th>Data prevista</th></tr></thead><tbody id="tbodyCronograma"></tbody></table></div>
+      <p class="field-help">A distribuição exibida é uma referência editável, não substitui o cronograma físico-financeiro aprovado pela instituição financeira.</p>
+    </div>
+  </section>
+
+  <section id="fornecedores" class="erp-section">
+    <div class="section-heading"><div><div class="section-kicker">04 / SUPRIMENTOS</div><h2>Cadastro e desempenho de fornecedores</h2><p>Acompanhe empresa, serviço contratado, valor, prazo e avaliação.</p></div><button type="button" class="btn-add" id="btnAddFornecedor"><i class="fa-solid fa-plus"></i> Adicionar fornecedor</button></div>
+    <div class="content-panel">
+      <div class="table-wrap"><table class="tabela-controle"><thead><tr><th>Empresa</th><th>CNPJ</th><th>Serviço</th><th>Valor (R$)</th><th>Atraso (dias)</th><th>Nota</th><th>Classificação</th><th>Ação</th></tr></thead><tbody id="tbodyFornecedores"></tbody></table></div>
+      <div id="alertasFornecedor"></div>
+    </div>
+  </section>
+
+  <section id="estoque" class="erp-section">
+    <div class="section-heading"><div><div class="section-kicker">05 / MATERIAIS</div><h2>Almoxarifado e controle de estoque</h2><p>Registre entradas e consumo para acompanhar saldo e alertas de reposição.</p></div><button type="button" class="btn-add" id="btnAddEstoque"><i class="fa-solid fa-plus"></i> Adicionar material</button></div>
+    <div class="content-panel">
+      <div class="table-wrap"><table class="tabela-controle"><thead><tr><th>Material</th><th>Unidade</th><th>Comprado</th><th>Utilizado</th><th>Saldo</th><th>% consumo</th><th>Alerta</th><th>Ação</th></tr></thead><tbody id="tbodyEstoque"></tbody></table></div>
+    </div>
+  </section>
+
+  <section id="calculadoras" class="erp-section">
+    <div class="section-heading"><div><div class="section-kicker">06 / PLANEJAMENTO TÉCNICO</div><h2>Calculadoras de materiais</h2><p>Estimativas rápidas para apoiar o levantamento quantitativo. Confirme os parâmetros com projeto e especificação técnica.</p></div></div>
+    <div class="grid-3">
+      <article class="controle-tijolo-box">
+        <h4><i class="fa-solid fa-cube"></i> Concreto</h4>
+        <label for="calcConcM3">Volume de concreto (m³)</label><input type="number" id="calcConcM3" min="0" step="0.01" value="1">
+        <label for="calcConcTraco">Traço de referência</label><select id="calcConcTraco"><option value="123">1:2:3 — referência</option><option value="1152">1:1,5:2 — referência</option><option value="134">1:3:4 — referência</option></select>
+        <div class="calc-prices"><div><label for="precoCimento">Cimento / saco</label><input type="number" id="precoCimento" min="0" value="42"></div><div><label for="precoAreia">Areia / m³</label><input type="number" id="precoAreia" min="0" value="180"></div><div><label for="precoBrita">Brita / m³</label><input type="number" id="precoBrita" min="0" value="220"></div></div>
+        <div class="calc-result"><span id="resConcCimento">Cimento: —</span><span id="resConcAreia">Areia: —</span><span id="resConcBrita">Brita: —</span><strong id="resConcValor">Custo estimado: R$ 0,00</strong></div>
+      </article>
+      <article class="controle-tijolo-box">
+        <h4><i class="fa-solid fa-border-all"></i> Piso / porcelanato</h4>
+        <label for="calcPisoM2">Área (m²)</label><input type="number" id="calcPisoM2" min="0" value="10">
+        <label for="calcPisoValor">Preço por m² (R$)</label><input type="number" id="calcPisoValor" min="0" value="60">
+        <label for="calcPisoPerda">Perda estimada (%)</label><input type="number" id="calcPisoPerda" min="0" max="100" value="10">
+        <div class="calc-result"><span id="resPisoQtd">Área com perda: —</span><span id="resPisoArg">Argamassa estimada: —</span><span id="resPisoRej">Rejunte estimado: —</span><strong id="resPisoValor">Custo estimado: R$ 0,00</strong></div>
+      </article>
+      <article class="controle-tijolo-box">
+        <h4><i class="fa-solid fa-house-chimney"></i> Cobertura</h4>
+        <label for="calcTelhaM2">Área de cobertura (m²)</label><input type="number" id="calcTelhaM2" min="0" value="50">
+        <label for="calcTelhaTipo">Tipo de cobertura</label><select id="calcTelhaTipo"><option value="16">Telha colonial — 16 un/m²</option><option value="36">Telha fibrocimento — 36 un/m²</option><option value="2.5">Painel sanduíche — 2,5 m²/chapa</option></select>
+        <label for="calcTelhaValor">Preço por unidade/chapa (R$)</label><input type="number" id="calcTelhaValor" min="0" value="3.5">
+        <label for="calcTelhaPerda">Perda (%)</label><input type="number" id="calcTelhaPerda" min="0" max="100" value="7">
+        <div class="calc-result"><span id="resTelhaQtd">Quantidade: —</span><span id="resTelhaMad">Madeiramento estimado: —</span><strong id="resTelhaValor">Custo estimado: R$ 0,00</strong></div>
+      </article>
+    </div>
+    <div class="controle-tijolo-box" style="margin-top:15px">
+      <h3><i class="fa-solid fa-calculator"></i> Alvenaria — blocos e tijolos</h3>
+      <div class="grid-4">
+        <div><label for="areaParede">Área de parede (m²)</label><input type="number" id="areaParede" min="0" placeholder="320"></div>
+        <div><label for="tipoTijolo">Tipo de bloco</label><select id="tipoTijolo"><option value="19">Bloco cerâmico — 19 un/m²</option><option value="32">Tijolinho — 32 un/m²</option><option value="12.5">Bloco de concreto — 12,5 un/m²</option></select></div>
+        <div><label for="valorMilheiro">Preço por milheiro (R$)</label><input type="number" id="valorMilheiro" min="0" placeholder="850"></div>
+        <div><label for="perdaTijolo">Perda (%)</label><input type="number" id="perdaTijolo" min="0" max="100" value="10"></div>
+      </div>
+      <div class="resultado-tijolo"><div>Quantidade estimada<strong id="qtdTijolo">0 un</strong></div><div>Custo estimado<strong id="custoTijolo">R$ 0,00</strong></div><div>Argamassa de referência<strong id="argamassaEst">0 sacos</strong></div></div>
+      <p class="field-help">Coeficientes são aproximações. Considere dimensões reais das peças, juntas, vãos, paginação, consumo do fabricante e projeto executivo.</p>
+    </div>
+  </section>
+
+  <section id="fluxo" class="erp-section">
+    <div class="section-heading"><div><div class="section-kicker">07 / TESOURARIA</div><h2>Fluxo de caixa</h2><p>Lance entradas e saídas por data. O saldo acumulado é recalculado automaticamente.</p></div></div>
+    <div class="content-panel">
+      <form id="fluxoForm" class="form-grid">
+        <div><label for="fluxoTipo">Movimentação</label><select id="fluxoTipo"><option value="entrada">Entrada</option><option value="saida">Saída</option></select></div>
+        <div><label for="fluxoData">Data</label><input type="date" id="fluxoData" required></div>
+        <div><label for="fluxoValor">Valor (R$)</label><input type="number" id="fluxoValor" min="0.01" step="0.01" required></div>
+        <div><label for="fluxoDescricao">Descrição</label><input type="text" id="fluxoDescricao" maxlength="180" required placeholder="Ex.: Pagamento de material"></div>
+        <div class="form-actions" style="grid-column:1/-1;margin-top:0"><button class="btn-primary" type="submit"><i class="fa-solid fa-plus"></i> Lançar movimentação</button></div>
+      </form>
+      <div class="cash-summary"><div><span>Total de entradas</span><strong id="totalEntradas">R$ 0,00</strong></div><div><span>Total de saídas</span><strong id="totalSaidas">R$ 0,00</strong></div><div><span>Saldo acumulado</span><strong id="saldoFluxo">R$ 0,00</strong></div></div>
+      <div class="table-wrap"><table class="tabela-controle"><thead><tr><th>Data</th><th>Tipo</th><th>Descrição</th><th>Valor</th><th>Saldo após lançamento</th><th>Ação</th></tr></thead><tbody id="tbodyFluxo"></tbody></table></div>
+    </div>
+  </section>
+
+  <section id="documentos" class="erp-section">
+    <div class="section-heading"><div><div class="section-kicker">08 / DOCUMENTAÇÃO</div><h2>Contratos, recibos e aditivos</h2><p>Cadastre os dados dos documentos e gere PDFs para conferência e assinatura.</p></div></div>
+    <div class="grid-3">
+      <form class="controle-tijolo-box" id="contratoForm">
+        <h4><i class="fa-solid fa-file-signature"></i> Contrato de empreitada</h4>
+        <label for="contratoNome">Nome do contratado</label><input id="contratoNome" required maxlength="160" placeholder="Nome completo">
+        <label for="contratoDoc">CPF/CNPJ</label><input id="contratoDoc" maxlength="24" placeholder="Documento do contratado">
+        <label for="contratoObjeto">Objeto / serviço contratado</label><input id="contratoObjeto" required maxlength="300" placeholder="Ex.: Execução de alvenaria">
+        <label for="contratoValor">Valor contratado (R$)</label><input id="contratoValor" required type="number" min="0.01" step="0.01">
+        <label for="contratoPrazo">Prazo / condição</label><input id="contratoPrazo" maxlength="200" placeholder="Ex.: 30 dias, pagamento por etapa">
+        <button class="btn-primary" type="submit" style="width:100%;margin-top:14px"><i class="fa-solid fa-file-pdf"></i> Cadastrar e gerar PDF</button>
+      </form>
+      <form class="controle-tijolo-box" id="reciboForm">
+        <h4><i class="fa-solid fa-receipt"></i> Recibo de pagamento</h4>
+        <label for="reciboNome">Nome de quem recebeu</label><input id="reciboNome" required maxlength="160">
+        <label for="reciboDoc">CPF/CNPJ</label><input id="reciboDoc" maxlength="24">
+        <label for="reciboValor">Valor recebido (R$)</label><input id="reciboValor" required type="number" min="0.01" step="0.01">
+        <label for="reciboRef">Referente a</label><input id="reciboRef" required maxlength="250" placeholder="Ex.: Mão de obra — etapa fundação">
+        <label for="reciboData">Data do pagamento</label><input id="reciboData" type="date" required>
+        <button class="btn-primary" type="submit" style="width:100%;margin-top:14px"><i class="fa-solid fa-file-pdf"></i> Cadastrar e gerar PDF</button>
+      </form>
+      <form class="controle-tijolo-box" id="extraForm">
+        <h4><i class="fa-solid fa-file-circle-plus"></i> Serviço / orçamento extra</h4>
+        <label for="extraDesc">Descrição do extra</label><input id="extraDesc" required maxlength="250" placeholder="Ex.: Muro adicional">
+        <label for="extraValor">Valor (R$)</label><input id="extraValor" required type="number" min="0.01" step="0.01">
+        <label for="extraStatus">Status de aprovação</label><select id="extraStatus"><option value="Aguardando aprovação">Aguardando aprovação</option><option value="Aprovado">Aprovado</option><option value="Recusado">Recusado</option></select>
+        <button class="btn-primary" type="submit" style="width:100%;margin-top:14px"><i class="fa-solid fa-file-pdf"></i> Cadastrar e gerar PDF</button>
+      </form>
+    </div>
+    <div class="grid-2" style="margin-top:14px">
+      <div class="content-panel">
+        <div class="section-heading"><div><h2 style="font-size:13px">Arquivos e fotos da obra</h2><p>Envie fotos, plantas, notas e documentos para o portal do cliente vinculado.</p></div></div>
+        <form id="uploadForm">
+          <label for="arquivoObra">Selecionar arquivo (máx. 15 MB)</label><input type="file" id="arquivoObra" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv" required>
+          <div class="form-grid">
+            <div><label for="arquivoCategoria">Categoria</label><select id="arquivoCategoria"><option value="Documento">Documento</option><option value="Foto da obra">Foto da obra</option></select></div>
+            <div><label for="arquivoEtapa">Etapa relacionada</label><select id="arquivoEtapa"><option value="">Sem etapa específica</option></select></div>
+          </div>
+          <label for="arquivoDescricao">Descrição (opcional)</label><input type="text" id="arquivoDescricao" maxlength="1000" placeholder="Ex.: Fachada após execução do reboco">
+          <button class="btn-primary" type="submit" style="width:100%;margin-top:13px"><i class="fa-solid fa-cloud-arrow-up"></i> Enviar arquivo</button>
+          <span class="field-help" id="uploadHint">O envio para o portal exige vínculo com um cadastro de cliente.</span>
+        </form>
+        <div id="listaArquivos" style="margin-top:14px"></div>
+      </div>
+      <div class="content-panel" style="margin-bottom:0">
+        <div class="section-heading"><div><h2 style="font-size:13px">Diário e atualização do cliente</h2><p>Publique uma informação que ficará visível na área do cliente.</p></div></div>
+        <form id="updateClientForm">
+          <label for="updateTitulo">Título</label><input id="updateTitulo" maxlength="200" required placeholder="Ex.: Etapa de fundação concluída">
+          <label for="updateDescricao">Descrição</label><textarea id="updateDescricao" rows="5" maxlength="2000" required placeholder="Descreva o andamento, os próximos passos ou uma observação relevante."></textarea>
+          <button class="btn-primary" type="submit" style="width:100%;margin-top:13px"><i class="fa-solid fa-paper-plane"></i> Publicar no portal</button>
+          <span class="field-help">A publicação exige vínculo com o cliente cadastrado no portal.</span>
+        </form>
+        <div id="listaAtualizacoes" style="margin-top:14px"></div>
+      </div>
+    </div>
+    <div class="content-panel" style="margin-top:14px">
+      <div class="section-heading"><div><h2 style="font-size:13px">Documentos registrados nesta obra</h2><p>Os registros abaixo permanecem salvos no ERP.</p></div></div>
+      <div id="listaDocumentos"></div>
+    </div>
+  </section>
+
+  <section id="relatorios" class="erp-section">
+    <div class="section-heading"><div><div class="section-kicker">09 / INTELIGÊNCIA GERENCIAL</div><h2>Relatórios e encerramento</h2><p>Consolide os principais dados financeiros, operacionais e contratuais da obra.</p></div></div>
+    <div class="resumo-final">
+      <h2><i class="fa-solid fa-file-invoice-dollar"></i> RELATÓRIO GERENCIAL DA OBRA — <span id="resumoIdObra">—</span></h2>
+      <div class="grid-2">
+        <div><table class="tabela-resumo"><tr><td>Contrato</td><td id="resumoContrato">R$ 0,00</td></tr><tr><td>Orçamento planejado</td><td id="resumoOrcado">R$ 0,00</td></tr><tr><td>Realizado</td><td id="resumoGasto">R$ 0,00</td></tr><tr><td>Taxas e despesas gerais</td><td id="resumoTaxas">R$ 0,00</td></tr><tr><td>Saldo de contrato</td><td id="resumoSaldo">R$ 0,00</td></tr><tr class="total"><td>RESULTADO PROJETADO</td><td id="resumoLucro">R$ 0,00</td></tr><tr><td>Margem projetada</td><td id="resumoMargem">0%</td></tr></table></div>
+        <div>
+          <div class="cash-summary"><div><span>Fornecedores</span><strong id="resumoFornecedores">0</strong></div><div><span>Materiais</span><strong id="resumoMateriais">0</strong></div><div><span>Movimentações</span><strong id="resumoMovimentos">0</strong></div></div>
+          <button type="button" class="btn-gerar-relatorio" id="btnRelatorio"><i class="fa-solid fa-file-pdf"></i> GERAR RELATÓRIO GERENCIAL PDF</button>
+          <button type="button" class="btn-gerar-relatorio secondary" id="btnWhats"><i class="fa-brands fa-whatsapp"></i> Compartilhar resumo no WhatsApp</button>
+          <div id="relatorioPreview" class="field-help" style="white-space:pre-wrap;margin-top:12px"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+    </main>
+  </div>
+
+  <footer style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:22px 4px;color:#89877e;font:9px var(--font-mono);letter-spacing:.08em">
+    <span>PH ENGENHARIA · SISTEMA INTEGRADO DE GESTÃO DE OBRAS</span>
+    <span>CONTROLE TÉCNICO · FINANCEIRO · OPERACIONAL</span>
+  </footer>
+</div>
+
+<!-- MODAL NOVA / EDITAR OBRA -->
+<div id="modalObra" class="modal" aria-hidden="true">
+  <form class="modal-content" id="obraForm">
+    <div class="modal-top">
+      <div><div class="eyebrow">CADASTRO DE PROJETO</div><h2 id="modalObraTitulo">Cadastrar nova obra</h2><p style="font-size:11px;color:var(--text-muted);margin-top:5px">Os dados serão vinculados a um identificador único.</p></div>
+      <button type="button" class="modal-close" id="btnFecharModal" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div id="obraFormError" class="form-error"></div>
+    <div class="grid-3">
+      <div><label for="nomeCliente">Nome do cliente *</label><input id="nomeCliente" required maxlength="160" placeholder="Nome completo"></div>
+      <div><label for="cpfCliente">CPF *</label><input id="cpfCliente" required maxlength="14" inputmode="numeric" placeholder="000.000.000-00"></div>
+      <div><label for="telCliente">WhatsApp / telefone</label><input id="telCliente" maxlength="40" placeholder="(14) 99999-9999"></div>
+    </div>
+    <div class="grid-2" style="margin-top:8px">
+      <div><label for="enderecoObra">Endereço da obra</label><input id="enderecoObra" maxlength="350" placeholder="Rua, número, bairro, cidade"></div>
+      <div><label for="clienteVinculado">Vincular a cadastro do portal (opcional)</label><select id="clienteVinculado"><option value="">Sem vínculo com portal</option></select><span class="field-help">Selecione um cliente já cadastrado no painel principal para relacionar esta gestão à área do cliente.</span></div>
+    </div>
+    <div class="grid-4" style="margin-top:8px">
+      <div><label for="tipoObraCadastro">Tipo de obra *</label><select id="tipoObraCadastro"><option value="particular">Particular</option><option value="caixa">Financiamento CAIXA</option><option value="mcmv">MCMV</option><option value="reforma">Reforma</option><option value="comercial">Comercial</option></select></div>
+      <div><label for="metragemTerreno">Terreno (m²)</label><input type="number" id="metragemTerreno" min="0" step="0.01"></div>
+      <div><label for="metragemConstrucao">Construção (m²)</label><input type="number" id="metragemConstrucao" min="0" step="0.01"></div>
+      <div><label for="dataInicio">Data de início</label><input type="date" id="dataInicio"></div>
+    </div>
+    <div class="grid-3" style="margin-top:8px">
+      <div><label for="valorContrato">Valor do contrato (R$) *</label><input type="number" id="valorContrato" required min="0" step="0.01"></div>
+      <div><label for="margemLucro">Margem planejada (%)</label><input type="number" id="margemLucro" min="0" max="100" step="0.1" value="20"></div>
+      <div><label for="prazoObra">Prazo previsto (meses)</label><input type="number" id="prazoObra" min="0" step="1"></div>
+    </div>
+    <div class="grid-2" style="margin-top:8px">
+      <div><label for="statusObra">Status da obra</label><select id="statusObra"><option value="Em andamento">Em andamento</option><option value="Pausada">Pausada</option><option value="Paralisada">Paralisada</option><option value="Concluída">Concluída</option></select></div>
+      <div><label for="idObraPreview">Identificador da obra</label><input id="idObraPreview" readonly value="Gerado automaticamente ao cadastrar" style="font-family:var(--font-mono);color:#92764d"></div>
+    </div>
+    <div id="boxCaixaCadastro" class="controle-tijolo-box" style="display:none;margin-top:15px">
+      <h4><i class="fa-solid fa-building-columns"></i> Dados do financiamento</h4>
+      <div class="grid-3">
+        <div><label for="caixaContrato">Número do contrato</label><input id="caixaContrato" maxlength="100"></div>
+        <div><label for="caixaValor">Valor financiado (R$)</label><input type="number" id="caixaValor" min="0" step="0.01"></div>
+        <div><label for="caixaEng">Engenheiro responsável</label><input id="caixaEng" maxlength="160"></div>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button type="button" class="btn-quiet" id="btnCancelarObra">Cancelar</button>
+      <button type="submit" class="btn-primary" id="btnCriarObra"><i class="fa-solid fa-check"></i> Criar obra</button>
+    </div>
+  </form>
+</div>
+
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<script>
+'use strict';
+
+// ========================================================
+// PH ENGENHARIA — ERP FRONTEND
+// Persistência via API em /api/erp/*
+// Interface sem tela de login.
+// ========================================================
+
+const $ = (selector, root = document) => root.querySelector(selector);
+const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
+const clone = value => JSON.parse(JSON.stringify(value));
+const currency = value => (Number(value) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+const number = value => Number.isFinite(Number(value)) ? Number(value) : 0;
+const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+
+// Data local: evita que o uso de UTC altere o dia no fuso brasileiro.
+const todayISO = () => {
+  const date = new Date();
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const stageNames = ['Viabilidade e documentação','Terraplanagem','Fundação','Alvenaria','Estrutura','Cobertura','Instalações','Reboco','Acabamento','Esquadrias','Pintura','Entrega'];
+const caixaChecklistItems = ['ART de execução','Matrícula atualizada','Alvará de construção','Projeto aprovado na prefeitura','Memorial descritivo','Cronograma físico-financeiro','Fotos da medição','Notas fiscais da etapa','CND / INSS'];
+const cronogramaBase = [
+  { etapa:'Fundação', percentual:15, data:'' },
+  { etapa:'Alvenaria e estrutura', percentual:25, data:'' },
+  { etapa:'Cobertura', percentual:15, data:'' },
+  { etapa:'Instalações e reboco', percentual:20, data:'' },
+  { etapa:'Acabamento', percentual:20, data:'' },
+  { etapa:'Entrega', percentual:5, data:'' }
+];
+
+function emptyData(meta = {}) {
+  return {
+    versao: 1,
+    meta: {
+      margem_lucro: number(meta.margem_lucro ?? 20),
+      prazo_meses: number(meta.prazo_meses ?? 0),
+      metragem_terreno: number(meta.metragem_terreno ?? 0),
+      metragem_construcao: number(meta.metragem_construcao ?? 0),
+      caixa_contrato: meta.caixa_contrato || '',
+      caixa_valor: number(meta.caixa_valor ?? 0),
+      caixa_engenheiro: meta.caixa_engenheiro || ''
+    },
+    financeiro: { etapas: stageNames.map(nome => ({ id: makeId(), nome, orcado:0, realizado:0 })), taxas:0, observacao:'' },
+    caixa: { percentualLiberado:0, proximaMedicao:'', checklist:{}, cronograma:clone(cronogramaBase) },
+    fornecedores: [],
+    estoque: [],
+    fluxo: [],
+    contratos: [],
+    recibos: [],
+    extras: []
+  };
+}
+
+function makeId() {
+  if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+  return 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 9);
+}
+
+function mergeData(raw, meta = {}) {
+  const base = emptyData(meta);
+  if (!raw || typeof raw !== 'object') return base;
+  const data = { ...base, ...raw };
+  data.meta = { ...base.meta, ...(raw.meta || {}) };
+  data.financeiro = { ...base.financeiro, ...(raw.financeiro || {}) };
+  data.financeiro.etapas = Array.isArray(raw.financeiro?.etapas) ? raw.financeiro.etapas : base.financeiro.etapas;
+  data.caixa = { ...base.caixa, ...(raw.caixa || {}) };
+  data.caixa.checklist = { ...(raw.caixa?.checklist || {}) };
+  data.caixa.cronograma = Array.isArray(raw.caixa?.cronograma) ? raw.caixa.cronograma : clone(cronogramaBase);
+  ['fornecedores','estoque','fluxo','contratos','recibos','extras'].forEach(key => { data[key] = Array.isArray(raw[key]) ? raw[key] : []; });
+  return data;
+}
+
+const appState = {
+  records: [],
+  portalClients: [],
+  current: null,
+  data: null,
+  editId: null,
+  saveTimer: null,
+  saving: false,
+  dirty: false,
+  revision: 0,
+  files: [],
+  updates: []
+};
+
+function toast(message, type = '') {
+  const node = document.createElement('div');
+  node.className = 'erp-toast ' + type;
+  node.textContent = message;
+  $('#toastContainer').appendChild(node);
+  window.setTimeout(() => node.remove(), 4200);
+}
+
+async function api(path, options = {}) {
+  const response = await fetch(path, {
+    credentials: 'same-origin',
+    cache: 'no-store',
+    ...options,
+    headers: {
+      Accept: 'application/json',
+      ...(options.body ? { 'Content-Type':'application/json' } : {}),
+      ...(options.headers || {})
+    }
+  });
+
+  const raw = await response.text();
+  let data = null;
+
+  if (raw) {
+    try {
+      data = JSON.parse(raw);
+    } catch {
+      data = raw;
+    }
+  }
+
+  if (!response.ok) {
+    const error = new Error(
+      data && typeof data === 'object'
+        ? data.error || data.message || 'Falha na solicitação.'
+        : String(data || 'Falha na solicitação.')
+    );
+    error.status = response.status;
+    throw error;
+  }
+
+  return data;
+}
+
+function setConnection(online, text) {
+  const pill = $('#connectionPill');
+  pill.className = 'system-pill ' + (online ? 'online' : 'offline');
+  pill.innerHTML = `<i class="fa-solid ${online ? 'fa-circle-check' : 'fa-triangle-exclamation'}"></i> ${escapeHtml(text)}`;
+}
+
+function setSaveState(state, text) {
+  const node = $('#saveState');
+  node.className = 'save-state ' + (state || '');
+  const icon = state === 'pending' ? 'fa-rotate fa-spin' : state === 'error' ? 'fa-circle-exclamation' : 'fa-circle-check';
+  node.innerHTML = `<i class="fa-solid ${icon}"></i> ${escapeHtml(text)}`;
+}
+
+function setRecordButtons(enabled) {
+  $('#btnEditarObra').disabled = !enabled;
+  $('#btnExcluirObra').disabled = !enabled;
+  $('#btnSalvar').disabled = !enabled;
+  $('#btnBackup').disabled = !enabled;
+  $('#btnCsv').disabled = !enabled;
+  $('#btnImportBackup').disabled = !enabled;
+}
+
+async function loadInitialData() {
+  try {
+    setConnection(true, 'Conectando ao banco');
+
+    const [records, clients] = await Promise.all([
+      api('/api/erp/obras'),
+      api('/api/erp/clientes').catch(() => [])
+    ]);
+
+    appState.records = Array.isArray(records) ? records : [];
+    appState.portalClients = Array.isArray(clients) ? clients : [];
+
+    renderPortalClientOptions();
+    renderRecordOptions();
+
+    setConnection(true, 'Banco conectado');
+
+    if (appState.records.length) {
+      await openRecord(appState.records[0].id);
+    } else {
+      renderNoRecord();
+    }
+  } catch (error) {
+    setConnection(false, 'Falha no banco');
+    toast(error.message, 'error');
+    renderNoRecord();
+  }
+}
+
+function renderPortalClientOptions(selected = '') {
+  const select = $('#clienteVinculado');
+  select.innerHTML = '<option value="">Sem vínculo com portal</option>' + appState.portalClients.map(client =>
+    `<option value="${escapeHtml(client.id)}" ${String(selected) === String(client.id) ? 'selected' : ''}>${escapeHtml(client.nome)} — ${escapeHtml(client.email || 'sem e-mail')}</option>`
+  ).join('');
+}
+
+function renderRecordOptions() {
+  const select = $('#obraSelecionada');
+  const selected = appState.current?.id || '';
+
+  select.innerHTML = '<option value="">Selecione uma obra</option>' + appState.records.map(record =>
+    `<option value="${escapeHtml(record.id)}" ${String(record.id) === String(selected) ? 'selected' : ''}>${escapeHtml(record.id_obra)} · ${escapeHtml(record.cliente_nome)}</option>`
+  ).join('');
+}
+
+function renderNoRecord() {
+  appState.current = null;
+  appState.data = null;
+  appState.dirty = false;
+  appState.revision += 1;
+
+  $('#displayObraId').textContent = 'NENHUMA';
+  $('#displayCPF').textContent = '—';
+  $('#obraStatus').textContent = 'Aguardando seleção';
+
+  $('#tbodyComparativo').innerHTML = '<tr><td colspan="6" class="empty-row">Cadastre uma obra para iniciar o controle financeiro.</td></tr>';
+  $('#tbodyFornecedores').innerHTML = '<tr><td colspan="8" class="empty-row">Nenhum fornecedor cadastrado.</td></tr>';
+  $('#tbodyEstoque').innerHTML = '<tr><td colspan="8" class="empty-row">Nenhum material cadastrado.</td></tr>';
+  $('#tbodyFluxo').innerHTML = '<tr><td colspan="6" class="empty-row">Nenhuma movimentação registrada.</td></tr>';
+  $('#tbodyCronograma').innerHTML = '';
+  $('#checklistCaixa').innerHTML = '';
+
+  $('#listaDocumentos').innerHTML = '<div class="record-empty"><i class="fa-regular fa-folder-open"></i><strong>Selecione uma obra</strong><span>Os documentos serão listados aqui.</span></div>';
+
+  [
+    'kpiContrato','kpiGasto','kpiSaldo','kpiLucro','kpiOrcado','kpiDesvio',
+    'kpiFluxo','resumoContrato','resumoOrcado','resumoGasto','resumoTaxas',
+    'resumoSaldo','resumoLucro','caixaJaLiberado','caixaAReceber',
+    'totalEntradas','totalSaidas','saldoFluxo'
+  ].forEach(id => {
+    const el = $('#' + id);
+    if (el) el.textContent = 'R$ 0,00';
+  });
+
+  $('#progressGasto').style.width = '0%';
+  $('#kpiIdObra').textContent = 'Nenhuma obra selecionada';
+  $('#kpiPctGasto').textContent = '0% do contrato consumido';
+  $('#kpiPctRestante').textContent = '0% disponível';
+  $('#kpiMargem').textContent = 'Margem planejada 0%';
+  $('#kpiDesvioNota').textContent = 'Sem lançamentos';
+  $('#obraSelecionada').value = '';
+  $('#resumoIdObra').textContent = '—';
+  $('#resumoFornecedores').textContent = '0';
+  $('#resumoMateriais').textContent = '0';
+  $('#resumoMovimentos').textContent = '0';
+  $('#alertaEstouro').style.display = 'none';
+
+  setRecordButtons(false);
+  setSaveState('', 'Nenhuma alteração pendente');
+  updateCaixaVisibility();
+  renderDashboardAlerts();
+}
+
+async function openRecord(id) {
+  if (!id) return renderNoRecord();
+
+  try {
+    setSaveState('pending', 'Carregando obra...');
+
+    const record = await api('/api/erp/obras/' + encodeURIComponent(id));
+
+    appState.current = record;
+    appState.data = mergeData(record.dados, {});
+
+    renderRecordOptions();
+    hydrateMeta();
+    renderAll();
+
+    await loadLinkedPortalData();
+
+    appState.dirty = false;
+    appState.revision += 1;
+
+    setRecordButtons(true);
+    setSaveState('', 'Dados sincronizados');
+  } catch (error) {
+    toast(error.message, 'error');
+    setSaveState('error', 'Falha ao carregar');
+  }
+}
+
+function getMeta() {
+  return appState.current || {};
+}
+
+function hydrateMeta() {
+  const record = getMeta();
+
+  $('#displayObraId').textContent = record.id_obra || '—';
+  $('#displayCPF').textContent = formatCPF(record.cpf || '');
+  $('#obraStatus').textContent = record.status || 'Em andamento';
+  $('#resumoIdObra').textContent = record.id_obra || '—';
+  $('#kpiIdObra').textContent = record.id_obra || '—';
+  $('#obraSelecionada').value = record.id || '';
+}
+
+function openNewModal(record = null) {
+  appState.editId = record?.id || null;
+
+  const form = $('#obraForm');
+  form.reset();
+
+  $('#obraFormError').classList.remove('show');
+  $('#obraFormError').textContent = '';
+
+  $('#modalObraTitulo').textContent = record ? 'Editar cadastro da obra' : 'Cadastrar nova obra';
+  $('#btnCriarObra').innerHTML = record
+    ? '<i class="fa-solid fa-floppy-disk"></i> Salvar cadastro'
+    : '<i class="fa-solid fa-check"></i> Criar obra';
+
+  renderPortalClientOptions(record?.cliente_id || '');
+
+  if (record) {
+    const d = record.dados || {};
+    const meta = d.meta || {};
+
+    $('#nomeCliente').value = record.cliente_nome || '';
+    $('#cpfCliente').value = formatCPF(record.cpf || '');
+    $('#telCliente').value = record.telefone || '';
+    $('#enderecoObra').value = record.endereco || '';
+    $('#clienteVinculado').value = record.cliente_id || '';
+    $('#tipoObraCadastro').value = record.tipo || 'particular';
+    $('#statusObra').value = record.status || 'Em andamento';
+    $('#idObraPreview').value = record.id_obra || '—';
+    $('#metragemTerreno').value = meta.metragem_terreno || '';
+    $('#metragemConstrucao').value = meta.metragem_construcao || '';
+    $('#dataInicio').value = record.data_inicio || '';
+    $('#valorContrato').value = record.valor_contrato || 0;
+    $('#margemLucro').value = meta.margem_lucro ?? 20;
+    $('#prazoObra').value = meta.prazo_meses || '';
+    $('#caixaContrato').value = meta.caixa_contrato || '';
+    $('#caixaValor').value = meta.caixa_valor || '';
+    $('#caixaEng').value = meta.caixa_engenheiro || '';
+  } else {
+    $('#tipoObraCadastro').value = 'particular';
+    $('#statusObra').value = 'Em andamento';
+    $('#idObraPreview').value = 'Gerado automaticamente ao cadastrar';
+    $('#margemLucro').value = 20;
+    $('#dataInicio').value = todayISO();
+  }
+
+  updateCaixaFormVisibility();
+  $('#modalObra').classList.add('active');
+  $('#modalObra').setAttribute('aria-hidden', 'false');
+}
+
+function closeModal() {
+  $('#modalObra').classList.remove('active');
+  $('#modalObra').setAttribute('aria-hidden', 'true');
+  appState.editId = null;
+}
+
+function updateCaixaFormVisibility() {
+  const type = $('#tipoObraCadastro').value;
+  $('#boxCaixaCadastro').style.display = ['caixa','mcmv'].includes(type) ? 'block' : 'none';
+}
+
+function hasCaixaFinancing(record = appState.current) {
+  const type = String(record?.tipo || '').trim().toLowerCase();
+  return type === 'caixa' || type === 'mcmv';
+}
+
+function updateCaixaVisibility() {
+  const enabled = hasCaixaFinancing();
+  const menuButton = $('#erpNavigation [data-view="caixa"]');
+  const section = $('#caixa');
+
+  if (menuButton) menuButton.hidden = !enabled;
+
+  if (section) {
+    section.hidden = !enabled;
+
+    if (!enabled) {
+      section.classList.remove('active');
+      section.setAttribute('aria-hidden', 'true');
+    }
+  }
+
+  $('#painelCaixa').style.opacity = enabled ? '1' : '.72';
+  $('#painelCaixa').dataset.disabled = enabled ? 'false' : 'true';
+  $('#painelCaixa').querySelectorAll('input').forEach(input => input.disabled = !enabled);
+  $('#btnPdfCaixa').disabled = !enabled;
+
+  // Se trocar para uma obra particular estando no CAIXA, retorna ao resumo.
+  if (!enabled && getViewFromUrl() === 'caixa') {
+    navigateToView('visao-geral', { scroll:false });
+  }
+}
+
+function onlyDigits(value) {
+  return String(value || '').replace(/\D/g, '');
+}
+
+function validCPF(value) {
+  const cpf = onlyDigits(value);
+
+  if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+
+  let sum = 0;
+
+  for (let i = 0; i < 9; i++) {
+    sum += Number(cpf[i]) * (10 - i);
+  }
+
+  let digit = (sum * 10) % 11;
+  if (digit === 10) digit = 0;
+  if (digit !== Number(cpf[9])) return false;
+
+  sum = 0;
+
+  for (let i = 0; i < 10; i++) {
+    sum += Number(cpf[i]) * (11 - i);
+  }
+
+  digit = (sum * 10) % 11;
+  if (digit === 10) digit = 0;
+
+  return digit === Number(cpf[10]);
+}
+
+function formatCPF(value) {
+  const cpf = onlyDigits(value);
+  if (cpf.length !== 11) return value || '';
+  return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+}
+
+function generateWorkCode(cpf) {
+  const digits = onlyDigits(cpf);
+  const suffix = Math.floor(1000 + Math.random() * 9000);
+  return `PH-${new Date().getFullYear()}-${digits.slice(-4)}-${suffix}`;
+}
+
+async function submitWorkForm(event) {
+  event.preventDefault();
+
+  const errorBox = $('#obraFormError');
+  errorBox.classList.remove('show');
+  errorBox.textContent = '';
+
+  const cpf = onlyDigits($('#cpfCliente').value);
+
+  if (!validCPF(cpf)) {
+    errorBox.textContent = 'CPF inválido. Confira os 11 dígitos informados.';
+    errorBox.classList.add('show');
+    return;
+  }
+
+  const name = $('#nomeCliente').value.trim();
+
+  if (!name) {
+    errorBox.textContent = 'Informe o nome do cliente.';
+    errorBox.classList.add('show');
+    return;
+  }
+
+  const button = $('#btnCriarObra');
+  button.disabled = true;
+  button.textContent = 'Salvando cadastro...';
+
+  const previous = appState.editId ? appState.current : null;
+  const workData = previous ? mergeData(appState.data, {}) : emptyData();
+
+  workData.meta = {
+    ...workData.meta,
+    margem_lucro: number($('#margemLucro').value),
+    prazo_meses: number($('#prazoObra').value),
+    metragem_terreno: number($('#metragemTerreno').value),
+    metragem_construcao: number($('#metragemConstrucao').value),
+    caixa_contrato: $('#caixaContrato').value.trim(),
+    caixa_valor: number($('#caixaValor').value),
+    caixa_engenheiro: $('#caixaEng').value.trim()
+  };
+
+  const payload = {
+    id_obra: previous?.id_obra || generateWorkCode(cpf),
+    cpf,
+    cliente_nome: name,
+    telefone: $('#telCliente').value.trim(),
+    endereco: $('#enderecoObra').value.trim(),
+    tipo: $('#tipoObraCadastro').value,
+    data_inicio: $('#dataInicio').value || null,
+    valor_contrato: number($('#valorContrato').value),
+    cliente_id: $('#clienteVinculado').value || null,
+    status: $('#statusObra').value || 'Em andamento',
+    dados: workData
+  };
+
+  try {
+    let saved;
+
+    if (previous) {
+      saved = await api('/api/erp/obras/' + encodeURIComponent(previous.id), {
+        method:'PUT',
+        body:JSON.stringify(payload)
+      });
+
+      toast('Cadastro da obra atualizado.', 'success');
+    } else {
+      saved = await api('/api/erp/obras', {
+        method:'POST',
+        body:JSON.stringify(payload)
+      });
+
+      toast('Obra cadastrada com sucesso.', 'success');
+    }
+
+    closeModal();
+    await loadInitialData();
+
+    if (saved?.id) {
+      await openRecord(saved.id);
+    }
+  } catch (error) {
+    errorBox.textContent = error.message;
+    errorBox.classList.add('show');
+  } finally {
+    button.disabled = false;
+    button.innerHTML = previous
+      ? '<i class="fa-solid fa-floppy-disk"></i> Salvar cadastro'
+      : '<i class="fa-solid fa-check"></i> Criar obra';
+  }
+}
+
+async function loadLinkedPortalData() {
+  appState.files = [];
+  appState.updates = [];
+
+  const clientId = appState.current?.cliente_id;
+
+  if (!clientId) {
+    $('#uploadHint').textContent = 'Vincule esta obra a um cadastro do portal para enviar arquivos e publicar atualizações ao cliente.';
+
+    $('#listaArquivos').innerHTML = '<div class="record-empty"><i class="fa-solid fa-link-slash"></i><strong>Obra sem vínculo com o portal</strong><span>Edite o cadastro e selecione um cliente existente para ativar estes recursos.</span></div>';
+
+    $('#listaAtualizacoes').innerHTML = '';
+    $('#uploadForm').querySelector('button[type="submit"]').disabled = true;
+    $('#updateClientForm').querySelector('button[type="submit"]').disabled = true;
+    return;
+  }
+
+  $('#uploadHint').textContent = 'Os arquivos enviados também ficarão disponíveis na área do cliente vinculada.';
+  $('#uploadForm').querySelector('button[type="submit"]').disabled = false;
+  $('#updateClientForm').querySelector('button[type="submit"]').disabled = false;
+
+  const encoded = encodeURIComponent(clientId);
+
+  const [files, updates] = await Promise.allSettled([
+    api('/api/arquivos?cliente_id=' + encoded),
+    api('/api/atualizacoes?cliente_id=' + encoded)
+  ]);
+
+  appState.files = files.status === 'fulfilled' && Array.isArray(files.value) ? files.value : [];
+  appState.updates = updates.status === 'fulfilled' && Array.isArray(updates.value) ? updates.value : [];
+
+  renderLinkedFiles();
+  renderLinkedUpdates();
+}
+
+function renderLinkedFiles() {
+  const files = appState.files || [];
+
+  if (!files.length) {
+    $('#listaArquivos').innerHTML = '<div class="field-help">Nenhum arquivo compartilhado nesta obra ainda.</div>';
+    return;
+  }
+
+  $('#listaArquivos').innerHTML = files.map(file => `
+    <div class="record-chip" style="width:100%;justify-content:space-between">
+      <span style="min-width:0;overflow-wrap:anywhere"><i class="fa-regular fa-file-lines" style="color:var(--gold)"></i> <strong>${escapeHtml(file.nome || 'Arquivo')}</strong><br><small>${escapeHtml(file.categoria || 'Documento')} · ${escapeHtml(formatDate(file.created_at))}</small></span>
+      <span class="inline-actions"><a href="${escapeHtml(file.url)}" target="_blank" rel="noopener" class="btn-quiet btn-small">Abrir</a><button type="button" class="btn-danger btn-small" data-delete-file="${escapeHtml(file.id)}" title="Excluir arquivo"><i class="fa-solid fa-trash"></i></button></span>
+    </div>`).join('');
+}
+
+function renderLinkedUpdates() {
+  const updates = appState.updates || [];
+
+  $('#listaAtualizacoes').innerHTML = updates.length
+    ? updates.slice(0,5).map(item => `
+      <div class="record-chip" style="display:block;width:100%;margin-bottom:7px">
+        <strong>${escapeHtml(item.titulo || 'Atualização')}</strong>
+        <small style="display:block;margin-top:4px">${escapeHtml(formatDate(item.created_at))}</small>
+        <div style="font-size:10px;color:#777;line-height:1.5;margin-top:5px">${escapeHtml(item.descricao || '')}</div>
+      </div>`).join('')
+    : '<div class="field-help">Nenhuma atualização publicada.</div>';
+}
+
+async function uploadLinkedFile(event) {
+  event.preventDefault();
+
+  const clientId = appState.current?.cliente_id;
+  const file = $('#arquivoObra').files?.[0];
+
+  if (!clientId) return toast('Vincule um cadastro do portal antes de enviar arquivos.', 'error');
+  if (!file) return toast('Selecione um arquivo.', 'error');
+  if (file.size > 15 * 1024 * 1024) return toast('O arquivo excede o limite de 15 MB.', 'error');
+
+  const button = $('#uploadForm').querySelector('button[type="submit"]');
+  button.disabled = true;
+  button.textContent = 'Enviando arquivo...';
+
+  try {
+    const configResponse = await fetch('/api/config', { cache:'no-store' });
+
+    if (!configResponse.ok) {
+      throw new Error('Não foi possível carregar a configuração de arquivos.');
+    }
+
+    const config = await configResponse.json();
+
+    if (!config.cloudinaryName || !config.cloudinaryPreset) {
+      throw new Error('Configure CLOUDINARY_CLOUD_NAME e CLOUDINARY_PRESET no Render.');
+    }
+
+    const form = new FormData();
+    form.append('file', file);
+    form.append('upload_preset', config.cloudinaryPreset);
+
+    const uploadResponse = await fetch(
+      `https://api.cloudinary.com/v1_1/${encodeURIComponent(config.cloudinaryName)}/auto/upload`,
+      { method:'POST', body:form }
+    );
+
+    const uploaded = await uploadResponse.json();
+
+    if (!uploadResponse.ok || !uploaded.secure_url) {
+      throw new Error(uploaded.error?.message || 'O serviço de arquivos recusou o envio.');
+    }
+
+    const metadata = {
+      cliente_id: clientId,
+      nome: file.name,
+      url: uploaded.secure_url,
+      public_id: uploaded.public_id,
+      categoria: $('#arquivoCategoria').value,
+      etapa: $('#arquivoEtapa').value,
+      descricao: $('#arquivoDescricao').value.trim()
+    };
+
+    await api('/api/arquivos', {
+      method:'POST',
+      body:JSON.stringify(metadata)
+    });
+
+    $('#uploadForm').reset();
+    await loadLinkedPortalData();
+
+    toast('Arquivo enviado e compartilhado com o portal do cliente.', 'success');
+  } catch (error) {
+    toast(error.message, 'error');
+  } finally {
+    button.disabled = false;
+    button.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Enviar arquivo';
+  }
+}
+
+async function deleteLinkedFile(id) {
+  const file = appState.files.find(item => String(item.id) === String(id));
+
+  if (!file || !confirm(`Excluir o arquivo "${file.nome}" do portal do cliente?`)) return;
+
+  try {
+    await api('/api/arquivos?id=' + encodeURIComponent(id), { method:'DELETE' });
+    await loadLinkedPortalData();
+    toast('Arquivo removido.', 'success');
+  } catch (error) {
+    toast(error.message, 'error');
+  }
+}
+
+async function publishClientUpdate(event) {
+  event.preventDefault();
+
+  const clientId = appState.current?.cliente_id;
+
+  if (!clientId) {
+    return toast('Vincule um cadastro do portal antes de publicar atualizações.', 'error');
+  }
+
+  const title = $('#updateTitulo').value.trim();
+  const description = $('#updateDescricao').value.trim();
+
+  if (!title || !description) {
+    return toast('Preencha o título e a descrição.', 'error');
+  }
+
+  const button = $('#updateClientForm').querySelector('button[type="submit"]');
+  button.disabled = true;
+  button.textContent = 'Publicando...';
+
+  try {
+    await api('/api/atualizacoes', {
+      method:'POST',
+      body:JSON.stringify({
+        cliente_id:clientId,
+        titulo:title,
+        descricao:description
+      })
+    });
+
+    $('#updateClientForm').reset();
+    await loadLinkedPortalData();
+
+    toast('Atualização publicada na área do cliente.', 'success');
+  } catch (error) {
+    toast(error.message, 'error');
+  } finally {
+    button.disabled = false;
+    button.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Publicar no portal';
+  }
+}
+
+function renderAll() {
+  if (!appState.current || !appState.data) return renderNoRecord();
+
+  hydrateMeta();
+  renderComparativo();
+  renderCaixa();
+  renderFornecedores();
+  renderEstoque();
+  renderFluxo();
+  renderDocuments();
+  updateKpis();
+  updateCaixaVisibility();
+}
+
+function renderComparativo() {
+  const rows = appState.data.financeiro.etapas;
+
+  $('#tbodyComparativo').innerHTML = rows.length ? rows.map((row,index) => {
+    const budget = number(row.orcado);
+    const real = number(row.realizado);
+    const diff = budget - real;
+    const pct = budget > 0 ? Math.min(100, real / budget * 100) : 0;
+    const over = budget > 0 && real > budget;
+
+    return `<tr>
+      <td class="col-name"><input aria-label="Nome da etapa" data-collection="financeiro.etapas" data-index="${index}" data-key="nome" value="${escapeHtml(row.nome)}"></td>
+      <td><input type="number" min="0" step="0.01" aria-label="Orçado" data-collection="financeiro.etapas" data-index="${index}" data-key="orcado" value="${budget || ''}"></td>
+      <td><input type="number" min="0" step="0.01" aria-label="Realizado" data-collection="financeiro.etapas" data-index="${index}" data-key="realizado" value="${real || ''}"></td>
+      <td style="font-family:var(--font-mono);color:${over?'#b66e67':'#718a69'}">${currency(diff)}</td>
+      <td><div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div><small>${budget ? pct.toFixed(0)+'%' : 'Sem orçamento'}</small></td>
+      <td><button type="button" class="btn-danger btn-small" data-remove="financeiro.etapas" data-index="${index}" aria-label="Remover etapa"><i class="fa-solid fa-trash"></i></button></td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="6" class="empty-row">Nenhuma etapa cadastrada.</td></tr>';
+
+  $('#taxasObra').value = number(appState.data.financeiro.taxas) || 0;
+  $('#observacaoFinanceira').value = appState.data.financeiro.observacao || '';
+
+  updateBudgetAlert();
+}
+
+function renderCaixa() {
+  const caixa = appState.data.caixa;
+
+  $('#caixaPercentLiberado').value = number(caixa.percentualLiberado);
+  $('#caixaProximaMedicao').value = caixa.proximaMedicao || '';
+
+  $('#checklistCaixa').innerHTML = caixaChecklistItems.map((item,index) => `
+    <label><input type="checkbox" data-scope="caixa.checklist" data-key="${index}" ${caixa.checklist[index] ? 'checked' : ''}> ${escapeHtml(item)}</label>
+  `).join('');
+
+  $('#tbodyCronograma').innerHTML = caixa.cronograma.map((item,index) => `
+    <tr><td>${escapeHtml(item.etapa)}</td>
+    <td><input type="number" min="0" max="100" step="0.1" data-collection="caixa.cronograma" data-index="${index}" data-key="percentual" value="${number(item.percentual)}"></td>
+    <td style="font-family:var(--font-mono)">${currency(number(getMeta().valor_contrato) * number(item.percentual) / 100)}</td>
+    <td><input type="date" data-collection="caixa.cronograma" data-index="${index}" data-key="data" value="${escapeHtml(item.data || '')}"></td></tr>
+  `).join('');
+
+  calculateCaixa();
+}
+
+function renderFornecedores() {
+  const list = appState.data.fornecedores;
+
+  $('#tbodyFornecedores').innerHTML = list.length ? list.map((item,index) => {
+    const score = supplierScore(item);
+
+    return `<tr>
+      <td><input data-collection="fornecedores" data-index="${index}" data-key="empresa" value="${escapeHtml(item.empresa || '')}" placeholder="Empresa"></td>
+      <td><input data-collection="fornecedores" data-index="${index}" data-key="cnpj" value="${escapeHtml(item.cnpj || '')}" placeholder="CNPJ"></td>
+      <td><input data-collection="fornecedores" data-index="${index}" data-key="servico" value="${escapeHtml(item.servico || '')}" placeholder="Serviço"></td>
+      <td><input type="number" min="0" step="0.01" data-collection="fornecedores" data-index="${index}" data-key="valor" value="${number(item.valor) || ''}"></td>
+      <td><input type="number" min="0" data-collection="fornecedores" data-index="${index}" data-key="atraso" value="${number(item.atraso) || 0}"></td>
+      <td><input type="number" min="0" max="10" step="0.1" data-collection="fornecedores" data-index="${index}" data-key="nota" value="${item.nota ?? ''}" placeholder="0 a 10"></td>
+      <td><span class="score ${score.className}">${score.label}</span></td>
+      <td><button type="button" class="btn-danger btn-small" data-remove="fornecedores" data-index="${index}" aria-label="Remover fornecedor"><i class="fa-solid fa-trash"></i></button></td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="8" class="empty-row">Nenhum fornecedor cadastrado. Use “Adicionar fornecedor” para começar.</td></tr>';
+
+  const low = list.filter(item => supplierScore(item).className === 'low');
+
+  $('#alertasFornecedor').innerHTML = low.length
+    ? `<div class="pill-alert">Atenção: ${low.length} fornecedor(es) com avaliação baixa ou atraso superior a 5 dias. Revise o histórico antes de novas contratações.</div>`
+    : '';
+}
+
+function supplierScore(item) {
+  const hasNote = item.nota !== '' && item.nota !== null && item.nota !== undefined && Number.isFinite(Number(item.nota));
+  const note = hasNote ? number(item.nota) : null;
+  const delay = number(item.atraso);
+
+  if (!hasNote && !delay) return { className:'none', label:'Sem avaliação' };
+  if ((note !== null && note < 6) || delay > 5) return { className:'low', label:'Baixo' };
+  if ((note !== null && note < 8) || delay > 2) return { className:'mid', label:'Médio' };
+
+  return { className:'high', label:'Alto' };
+}
+
+function renderEstoque() {
+  const list = appState.data.estoque;
+
+  $('#tbodyEstoque').innerHTML = list.length ? list.map((item,index) => {
+    const balance = number(item.comprado) - number(item.utilizado);
+    const percent = number(item.comprado) > 0 ? number(item.utilizado) / number(item.comprado) * 100 : 0;
+    const alert = balance < 0
+      ? ['out','Estoque negativo']
+      : balance <= number(item.comprado) * .2
+        ? ['low','Reposição']
+        : ['','Normal'];
+
+    return `<tr>
+      <td><input data-collection="estoque" data-index="${index}" data-key="material" value="${escapeHtml(item.material || '')}" placeholder="Material"></td>
+      <td><select data-collection="estoque" data-index="${index}" data-key="unidade"><option ${item.unidade==='un'?'selected':''}>un</option><option ${item.unidade==='saco'?'selected':''}>saco</option><option ${item.unidade==='kg'?'selected':''}>kg</option><option ${item.unidade==='m³'?'selected':''}>m³</option><option ${item.unidade==='m²'?'selected':''}>m²</option><option ${item.unidade==='l'?'selected':''}>l</option></select></td>
+      <td><input type="number" min="0" step="0.01" data-collection="estoque" data-index="${index}" data-key="comprado" value="${number(item.comprado) || ''}"></td>
+      <td><input type="number" min="0" step="0.01" data-collection="estoque" data-index="${index}" data-key="utilizado" value="${number(item.utilizado) || ''}"></td>
+      <td style="font-family:var(--font-mono)">${balance.toLocaleString('pt-BR')} ${escapeHtml(item.unidade || 'un')}</td>
+      <td>${percent.toFixed(1)}%</td><td><span class="stock-alert ${alert[0]}">${alert[1]}</span></td>
+      <td><button type="button" class="btn-danger btn-small" data-remove="estoque" data-index="${index}"><i class="fa-solid fa-trash"></i></button></td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="8" class="empty-row">Nenhum material cadastrado no estoque.</td></tr>';
+}
+
+function renderFluxo() {
+  const list = [...appState.data.fluxo].sort((a,b) => String(a.data || '').localeCompare(String(b.data || '')));
+
+  let balance = 0;
+  let entries = 0;
+  let outputs = 0;
+
+  $('#tbodyFluxo').innerHTML = list.length ? list.map(item => {
+    const value = number(item.valor);
+
+    if (item.tipo === 'entrada') {
+      balance += value;
+      entries += value;
+    } else {
+      balance -= value;
+      outputs += value;
+    }
+
+    return `<tr>
+      <td>${formatDate(item.data)}</td><td><span class="tag-muted">${item.tipo === 'entrada' ? 'Entrada' : 'Saída'}</span></td>
+      <td>${escapeHtml(item.descricao)}</td>
+      <td style="font-family:var(--font-mono);color:${item.tipo === 'entrada' ? '#718a69' : '#b66e67'}">${item.tipo === 'entrada' ? '+' : '−'} ${currency(value)}</td>
+      <td style="font-family:var(--font-mono)">${currency(balance)}</td>
+      <td><button type="button" class="btn-danger btn-small" data-remove="fluxo" data-id="${escapeHtml(item.id)}"><i class="fa-solid fa-trash"></i></button></td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="6" class="empty-row">Nenhuma entrada ou saída registrada.</td></tr>';
+
+  $('#totalEntradas').textContent = currency(entries);
+  $('#totalSaidas').textContent = currency(outputs);
+  $('#saldoFluxo').textContent = currency(balance);
+  $('#kpiFluxo').textContent = currency(balance);
+
+  appState._flowTotals = { entries, outputs, balance };
+}
+
+function renderDocuments() {
+  const docs = [
+    ...appState.data.contratos.map(item => ({ ...item, kind:'Contrato' })),
+    ...appState.data.recibos.map(item => ({ ...item, kind:'Recibo' })),
+    ...appState.data.extras.map(item => ({ ...item, kind:'Orçamento extra' }))
+  ].sort((a,b) => String(b.created_at || '').localeCompare(String(a.created_at || '')));
+
+  $('#listaDocumentos').innerHTML = docs.length
+    ? `<div class="record-list">${docs.map(item => `
+        <div class="record-chip"><i class="fa-regular fa-file-pdf" style="color:var(--gold)"></i><span><strong>${escapeHtml(item.kind)}</strong> · ${escapeHtml(item.titulo || item.nome || item.descricao || '')}<br><small>${escapeHtml(formatDate(item.created_at?.slice(0,10) || item.data || ''))} · ${currency(item.valor)}</small></span><button type="button" data-doc-pdf="${escapeHtml(item.id)}" data-doc-kind="${item.kind}" title="Gerar novamente"><i class="fa-solid fa-download"></i></button></div>
+      `).join('')}</div>`
+    : '<div class="record-empty"><i class="fa-regular fa-folder-open"></i><strong>Nenhum documento registrado</strong><span>Use os formulários acima para criar contratos, recibos ou extras.</span></div>';
+
+  $('#resumoFornecedores').textContent = appState.data.fornecedores.length;
+  $('#resumoMateriais').textContent = appState.data.estoque.length;
+  $('#resumoMovimentos').textContent = appState.data.fluxo.length;
+}
+
+function renderDashboardAlerts() {
+  const list = $('#dashboardAlertsList');
+  const count = $('#dashboardAlertCount');
+
+  if (!list || !count) return;
+
+  if (!appState.current || !appState.data) {
+    count.textContent = '0 alertas';
+    list.innerHTML = '<div class="dashboard-alert-item neutral"><i class="fa-solid fa-circle-info"></i><span>Selecione uma obra para visualizar os alertas.</span></div>';
+    return;
+  }
+
+  const data = appState.data;
+  const alerts = [];
+  const contract = number(appState.current.valor_contrato);
+  const budget = data.financeiro.etapas.reduce((sum,item) => sum + number(item.orcado), 0);
+  const actualStages = data.financeiro.etapas.reduce((sum,item) => sum + number(item.realizado), 0);
+  const actualTotal = actualStages + number(data.financeiro.taxas);
+
+  if (contract > 0 && actualTotal > contract) {
+    alerts.push({
+      type:'danger',
+      icon:'fa-triangle-exclamation',
+      text:`O custo registrado ultrapassou o valor do contrato em ${currency(actualTotal-contract)}.`
+    });
+  }
+
+  if (budget > 0 && actualStages > budget) {
+    alerts.push({
+      type:'warning',
+      icon:'fa-chart-line',
+      text:`O realizado por etapa está ${currency(actualStages-budget)} acima do orçamento planejado.`
+    });
+  }
+
+  const supplierIssues = data.fornecedores.filter(item => supplierScore(item).className === 'low').length;
+
+  if (supplierIssues) {
+    alerts.push({
+      type:'warning',
+      icon:'fa-truck-field',
+      text:`${supplierIssues} fornecedor(es) precisam de atenção por avaliação baixa ou atraso relevante.`
+    });
+  }
+
+  const stockIssues = data.estoque.filter(item => {
+    const purchased = number(item.comprado);
+    const balance = purchased - number(item.utilizado);
+    return balance < 0 || (purchased > 0 && balance <= purchased * .2);
+  }).length;
+
+  if (stockIssues) {
+    alerts.push({
+      type:'warning',
+      icon:'fa-boxes-stacked',
+      text:`${stockIssues} material(is) com estoque crítico ou necessidade de reposição.`
+    });
+  }
+
+  if (hasCaixaFinancing() && data.caixa?.proximaMedicao) {
+    const medicao = new Date(`${data.caixa.proximaMedicao}T00:00:00`);
+    const hoje = new Date();
+    hoje.setHours(0,0,0,0);
+
+    const dias = Math.round((medicao.getTime()-hoje.getTime())/86400000);
+
+    if (dias < 0) {
+      alerts.push({
+        type:'danger',
+        icon:'fa-calendar-xmark',
+        text:`A data prevista para a próxima medição (${formatDate(data.caixa.proximaMedicao)}) já passou. Atualize o cronograma.`
+      });
+    } else if (dias <= 7) {
+      alerts.push({
+        type:'warning',
+        icon:'fa-calendar-check',
+        text:`Próxima medição prevista para ${formatDate(data.caixa.proximaMedicao)}${dias === 0 ? ' (hoje)' : ` (em ${dias} dia(s))`}.`
+      });
+    }
+  }
+
+  count.textContent = `${alerts.length} ${alerts.length === 1 ? 'alerta' : 'alertas'}`;
+
+  if (!alerts.length) {
+    list.innerHTML = '<div class="dashboard-alert-item success"><i class="fa-solid fa-circle-check"></i><span>Nenhum alerta identificado nos dados cadastrados. Continue atualizando os lançamentos para manter este acompanhamento preciso.</span></div>';
+    return;
+  }
+
+  list.innerHTML = alerts.map(alert => `
+    <div class="dashboard-alert-item ${alert.type}">
+      <i class="fa-solid ${alert.icon}"></i>
+      <span>${escapeHtml(alert.text)}</span>
+    </div>
+  `).join('');
+}
+
+function updateKpis() {
+  if (!appState.current || !appState.data) {
+    renderDashboardAlerts();
+    return;
+  }
+
+  const contract = number(appState.current.valor_contrato);
+  const budget = appState.data.financeiro.etapas.reduce((sum,item) => sum + number(item.orcado), 0);
+  const actualStages = appState.data.financeiro.etapas.reduce((sum,item) => sum + number(item.realizado), 0);
+  const actual = actualStages + number(appState.data.financeiro.taxas);
+  const balance = contract - actual;
+  const profit = contract - actual;
+  const pct = contract > 0 ? actual / contract * 100 : 0;
+  const plannedMargin = number(appState.data.meta.margem_lucro);
+  const deviation = actualStages - budget;
+
+  $('#kpiContrato').textContent = currency(contract);
+  $('#kpiGasto').textContent = currency(actual);
+  $('#kpiGasto').className = actual > contract && contract > 0 ? 'kpi-negative' : '';
+  $('#kpiSaldo').textContent = currency(balance);
+  $('#kpiSaldo').className = balance < 0 ? 'kpi-negative' : 'kpi-positive';
+  $('#kpiLucro').textContent = currency(profit);
+  $('#kpiLucro').className = profit < 0 ? 'kpi-negative' : 'kpi-positive';
+  $('#kpiMargem').textContent = `Margem planejada ${plannedMargin.toLocaleString('pt-BR')}%`;
+  $('#kpiPctGasto').textContent = `${pct.toFixed(1)}% do contrato consumido`;
+  $('#kpiPctRestante').textContent = `${(100 - pct).toFixed(1)}% disponível`;
+  $('#progressGasto').style.width = `${Math.max(0,Math.min(100,pct))}%`;
+  $('#kpiOrcado').textContent = currency(budget);
+  $('#kpiDesvio').textContent = currency(deviation);
+  $('#kpiDesvio').className = deviation > 0 ? 'kpi-negative' : 'kpi-positive';
+  $('#kpiDesvioNota').textContent = deviation > 0 ? 'Realizado acima do orçamento' : 'Dentro do orçamento acumulado';
+
+  $('#resumoContrato').textContent = currency(contract);
+  $('#resumoOrcado').textContent = currency(budget);
+  $('#resumoGasto').textContent = currency(actualStages);
+  $('#resumoTaxas').textContent = currency(number(appState.data.financeiro.taxas));
+  $('#resumoSaldo').textContent = currency(balance);
+  $('#resumoLucro').textContent = currency(profit);
+  $('#resumoMargem').textContent = contract > 0 ? `${(profit / contract * 100).toFixed(1)}%` : '0%';
+
+  updateBudgetAlert();
+  renderDashboardAlerts();
+}
+
+function updateBudgetAlert() {
+  if (!appState.data) return;
+
+  const budget = appState.data.financeiro.etapas.reduce((sum,item) => sum + number(item.orcado), 0);
+  const actual = appState.data.financeiro.etapas.reduce((sum,item) => sum + number(item.realizado), 0);
+  const delta = actual - budget;
+  const alert = $('#alertaEstouro');
+
+  if (budget > 0 && delta > 0) {
+    alert.style.display = 'block';
+    alert.textContent = `Atenção: o realizado está ${currency(delta)} acima do orçamento total cadastrado.`;
+  } else {
+    alert.style.display = 'none';
+  }
+}
+
+function calculateCaixa() {
+  if (!appState.data || !appState.current) return;
+
+  const total = number(appState.data.meta.caixa_valor) || number(appState.current.valor_contrato);
+  const pct = Math.min(100,Math.max(0,number(appState.data.caixa.percentualLiberado)));
+  const released = total * pct / 100;
+
+  $('#caixaJaLiberado').value = currency(released);
+  $('#caixaAReceber').value = currency(total - released);
+}
+
+function markDirty(message = 'Alterações pendentes') {
+  if (!appState.current || !appState.data) return;
+
+  appState.revision += 1;
+  appState.dirty = true;
+
+  setSaveState('pending', message);
+  updateKpis();
+
+  window.clearTimeout(appState.saveTimer);
+  appState.saveTimer = window.setTimeout(() => saveCurrent(false), 1100);
+}
+
+function currentPayload() {
+  const record = appState.current;
+
+  return {
+    id_obra: record.id_obra,
+    cpf: record.cpf,
+    cliente_nome: record.cliente_nome,
+    telefone: record.telefone || '',
+    endereco: record.endereco || '',
+    tipo: record.tipo || 'particular',
+    data_inicio: record.data_inicio || null,
+    valor_contrato: number(record.valor_contrato),
+    cliente_id: record.cliente_id || null,
+    status: record.status || 'Em andamento',
+    dados: appState.data
+  };
+}
+
+async function saveCurrent(showMessage = true) {
+  if (!appState.current || !appState.data || appState.saving || !appState.dirty) return;
+
+  appState.saving = true;
+
+  const savedRecordId = appState.current.id;
+  const savedRevision = appState.revision;
+  const payload = currentPayload();
+
+  let requestSucceeded = false;
+
+  setSaveState('pending', 'Sincronizando com o Supabase...');
+  $('#btnSalvar').disabled = true;
+
+  try {
+    const result = await api('/api/erp/obras/' + encodeURIComponent(savedRecordId), {
+      method:'PUT',
+      body:JSON.stringify(payload)
+    });
+
+    requestSucceeded = true;
+
+    if (appState.current?.id === savedRecordId) {
+      appState.current = result;
+      appState.records = appState.records.map(row => row.id === result.id ? result : row);
+
+      renderRecordOptions();
+
+      if (appState.revision === savedRevision) {
+        appState.dirty = false;
+
+        setSaveState(
+          '',
+          'Salvo na nuvem · ' + new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})
+        );
+
+        if (showMessage) {
+          toast('Dados da obra salvos no Supabase.', 'success');
+        }
+      } else {
+        appState.dirty = true;
+        setSaveState('pending', 'Há novas alterações · sincronizando novamente...');
+      }
+    }
+  } catch (error) {
+    setSaveState('error', 'Falha ao salvar · ' + error.message);
+    toast('Não foi possível salvar: ' + error.message, 'error');
+  } finally {
+    appState.saving = false;
+    $('#btnSalvar').disabled = !appState.current;
+
+    if (requestSucceeded && appState.dirty && appState.current?.id === savedRecordId) {
+      window.clearTimeout(appState.saveTimer);
+      appState.saveTimer = window.setTimeout(() => saveCurrent(false), 350);
+    }
+  }
+}
+
+function addCollectionItem(collection, item) {
+  if (!appState.data) return;
+
+  const list = collection.split('.').reduce((value, key) => value?.[key], appState.data);
+
+  if (!Array.isArray(list)) {
+    return toast('Não foi possível adicionar este registro.', 'error');
+  }
+
+  list.push(item);
+  renderCollection(collection);
+  markDirty('Novo registro adicionado');
+}
+
+function renderCollection(collection) {
+  if (collection === 'financeiro.etapas') renderComparativo();
+  if (collection === 'fornecedores') renderFornecedores();
+  if (collection === 'estoque') renderEstoque();
+  if (collection === 'caixa.cronograma') renderCaixa();
+  if (collection === 'fluxo') renderFluxo();
+  if (['contratos','recibos','extras'].includes(collection)) renderDocuments();
+
+  updateKpis();
+}
+
+function removeCollectionItem(collection, index, id) {
+  if (!appState.data) return;
+
+  if (collection === 'fluxo') {
+    appState.data.fluxo = appState.data.fluxo.filter(item => item.id !== id);
+  } else {
+    const list = collection.split('.').reduce((value,key) => value?.[key], appState.data);
+
+    if (!Array.isArray(list)) return;
+
+    list.splice(Number(index),1);
+  }
+
+  renderCollection(collection);
+  markDirty('Registro removido');
+}
+
+function onFieldEdit(event) {
+  const el = event.target;
+
+  if (!appState.data) return;
+
+  if (el.dataset.collection) {
+    const path = el.dataset.collection.split('.');
+    const list = path.reduce((value,key) => value?.[key], appState.data);
+    const item = Array.isArray(list) ? list[Number(el.dataset.index)] : null;
+
+    if (!item) return;
+
+    const value = el.type === 'number' ? number(el.value) : el.value;
+
+    item[el.dataset.key] = value;
+
+    if (el.dataset.collection === 'fornecedores') renderFornecedoresRow(el);
+    if (el.dataset.collection === 'estoque') renderEstoqueRow(el);
+    if (el.dataset.collection === 'caixa.cronograma') renderCronogramaValue(el);
+
+    markDirty();
+    return;
+  }
+
+  if (el.dataset.scope) {
+    const scope = el.dataset.scope.split('.');
+    let target = appState.data;
+
+    for (let i = 0; i < scope.length; i++) {
+      target = target[scope[i]];
+    }
+
+    const value = el.type === 'checkbox'
+      ? el.checked
+      : el.type === 'number'
+        ? number(el.value)
+        : el.value;
+
+    target[el.dataset.key] = value;
+
+    if (el.dataset.scope === 'caixa') calculateCaixa();
+
+    markDirty();
+  }
+}
+
+function renderFornecedoresRow(el) {
+  const tr = el.closest('tr');
+  const item = appState.data.fornecedores[Number(el.dataset.index)];
+  const score = supplierScore(item);
+  const scoreEl = tr?.querySelector('.score');
+
+  if (scoreEl) {
+    scoreEl.className = 'score ' + score.className;
+    scoreEl.textContent = score.label;
+  }
+}
+
+function renderEstoqueRow(el) {
+  const tr = el.closest('tr');
+  const item = appState.data.estoque[Number(el.dataset.index)];
+
+  if (!tr || !item) return;
+
+  const balance = number(item.comprado) - number(item.utilizado);
+  const percent = number(item.comprado) > 0
+    ? number(item.utilizado) / number(item.comprado) * 100
+    : 0;
+
+  const alert = balance < 0
+    ? ['out','Estoque negativo']
+    : balance <= number(item.comprado) * .2
+      ? ['low','Reposição']
+      : ['','Normal'];
+
+  tr.children[4].textContent = `${balance.toLocaleString('pt-BR')} ${item.unidade || 'un'}`;
+  tr.children[5].textContent = `${percent.toFixed(1)}%`;
+  tr.children[6].innerHTML = `<span class="stock-alert ${alert[0]}">${alert[1]}</span>`;
+}
+
+function renderCronogramaValue(el) {
+  const index = Number(el.dataset.index);
+  const item = appState.data.caixa.cronograma[index];
+
+  if (!item) return;
+
+  const valueCell = el.closest('tr')?.children[2];
+
+  if (valueCell) {
+    valueCell.textContent = currency(number(appState.current.valor_contrato) * number(item.percentual) / 100);
+  }
+}
+
+function addFornecedor() {
+  addCollectionItem('fornecedores', {
+    id:makeId(),
+    empresa:'',
+    cnpj:'',
+    servico:'',
+    valor:0,
+    atraso:0,
+    nota:''
+  });
+}
+
+function addStock() {
+  addCollectionItem('estoque', {
+    id:makeId(),
+    material:'',
+    unidade:'un',
+    comprado:0,
+    utilizado:0
+  });
+}
+
+function addStage() {
+  addCollectionItem('financeiro.etapas', {
+    id:makeId(),
+    nome:'Nova etapa',
+    orcado:0,
+    realizado:0
+  });
+}
+
+function addCashflow(event) {
+  event.preventDefault();
+
+  if (!appState.current) {
+    return toast('Selecione uma obra primeiro.', 'error');
+  }
+
+  const value = number($('#fluxoValor').value);
+  const date = $('#fluxoData').value;
+  const desc = $('#fluxoDescricao').value.trim();
+
+  if (!value || !date || !desc) {
+    return toast('Preencha data, valor e descrição.', 'error');
+  }
+
+  addCollectionItem('fluxo', {
+    id:makeId(),
+    tipo:$('#fluxoTipo').value,
+    data:date,
+    valor:value,
+    descricao:desc
+  });
+
+  $('#fluxoForm').reset();
+  $('#fluxoData').value = todayISO();
+}
+
+function addDocument(collection, item, pdfKind) {
+  item.id = makeId();
+  item.created_at = new Date().toISOString();
+
+  addCollectionItem(collection, item);
+  generateDocumentPdf(pdfKind, item);
+}
+
+function onContractSubmit(event) {
+  event.preventDefault();
+
+  if (!appState.current) {
+    return toast('Selecione uma obra primeiro.', 'error');
+  }
+
+  const item = {
+    nome:$('#contratoNome').value.trim(),
+    documento:$('#contratoDoc').value.trim(),
+    titulo:$('#contratoObjeto').value.trim(),
+    valor:number($('#contratoValor').value),
+    prazo:$('#contratoPrazo').value.trim(),
+    data:todayISO()
+  };
+
+  if (!item.nome || !item.titulo || !item.valor) {
+    return toast('Preencha nome, objeto e valor do contrato.', 'error');
+  }
+
+  addDocument('contratos', item, 'Contrato');
+  $('#contratoForm').reset();
+}
+
+function onReceiptSubmit(event) {
+  event.preventDefault();
+
+  if (!appState.current) {
+    return toast('Selecione uma obra primeiro.', 'error');
+  }
+
+  const item = {
+    nome:$('#reciboNome').value.trim(),
+    documento:$('#reciboDoc').value.trim(),
+    valor:number($('#reciboValor').value),
+    descricao:$('#reciboRef').value.trim(),
+    data:$('#reciboData').value
+  };
+
+  if (!item.nome || !item.valor || !item.descricao || !item.data) {
+    return toast('Preencha os campos obrigatórios do recibo.', 'error');
+  }
+
+  addDocument('recibos', item, 'Recibo');
+  $('#reciboForm').reset();
+  $('#reciboData').value = todayISO();
+}
+
+function onExtraSubmit(event) {
+  event.preventDefault();
+
+  if (!appState.current) {
+    return toast('Selecione uma obra primeiro.', 'error');
+  }
+
+  const item = {
+    descricao:$('#extraDesc').value.trim(),
+    valor:number($('#extraValor').value),
+    status:$('#extraStatus').value,
+    data:todayISO()
+  };
+
+  if (!item.descricao || !item.valor) {
+    return toast('Informe a descrição e o valor do extra.', 'error');
+  }
+
+  addDocument('extras', item, 'Orçamento extra');
+  $('#extraForm').reset();
+}
+
+function formatDate(value) {
+  if (!value) return '—';
+
+  const parts = String(value).slice(0,10).split('-');
+
+  return parts.length === 3
+    ? `${parts[2]}/${parts[1]}/${parts[0]}`
+    : value;
+}
+
+function pdfAvailable() {
+  if (!window.jspdf?.jsPDF) {
+    toast('Não foi possível carregar a biblioteca de PDF. Verifique sua conexão e recarregue a página.', 'error');
+    return false;
+  }
+
+  return true;
+}
+
+function pdfBase(title, subtitle) {
+  const doc = new window.jspdf.jsPDF({ unit:'mm', format:'a4' });
+  const pageWidth = doc.internal.pageSize.getWidth();
+
+  doc.setFillColor(23,26,29);
+  doc.rect(0,0,pageWidth,31,'F');
+
+  doc.setFillColor(184,148,94);
+  doc.rect(0,31,pageWidth,1.2,'F');
+
+  doc.setTextColor(255,255,255);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(15);
+  doc.text('PH ENGENHARIA',15,13);
+
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(8);
+  doc.setTextColor(220,211,195);
+  doc.text('GESTÃO INTEGRADA DE OBRAS',15,20);
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(13);
+  doc.setTextColor(255,255,255);
+  doc.text(title, pageWidth-15,13,{align:'right'});
+
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(8);
+  doc.text(subtitle || '',pageWidth-15,20,{align:'right'});
+
+  doc.setTextColor(45,45,43);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(14);
+  doc.text(getMeta().id_obra || 'Obra',15,43);
+
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(9);
+  doc.setTextColor(105,103,96);
+  doc.text(`Cliente: ${getMeta().cliente_nome || ''}`,15,50);
+  doc.text(`Endereço: ${getMeta().endereco || 'Não informado'}`,15,56);
+  doc.text(`Emitido em: ${new Date().toLocaleString('pt-BR')}`,15,62);
+
+  return doc;
+}
+
+function pdfLine(doc, label, value, y, bold = false) {
+  doc.setFont('helvetica', bold ? 'bold' : 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(75,74,70);
+  doc.text(String(label),15,y);
+
+  doc.setFont('helvetica', bold ? 'bold' : 'normal');
+  doc.setTextColor(55,55,52);
+  doc.text(String(value),195,y,{align:'right'});
+}
+
+function pdfFooter(doc) {
+  const pages = doc.internal.getNumberOfPages();
+
+  for (let i = 1; i <= pages; i++) {
+    doc.setPage(i);
+
+    const h = doc.internal.pageSize.getHeight();
+
+    doc.setDrawColor(224,218,207);
+    doc.line(15,h-15,195,h-15);
+
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(7);
+    doc.setTextColor(135,130,119);
+
+    doc.text('PH ENGENHARIA · Documento gerado pelo sistema de gestão de obras',15,h-9);
+    doc.text(`${i}/${pages}`,195,h-9,{align:'right'});
+  }
+}
+
+function safeFileName(value) {
+  return String(value || 'obra')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-zA-Z0-9_-]+/g,'-')
+    .replace(/^-|-$/g,'')
+    .toLowerCase();
+}
+
+function generateDocumentPdf(kind, item) {
+  if (!pdfAvailable()) return;
+
+  const doc = pdfBase(kind, 'DOCUMENTO DE OBRA');
+
+  let y = 77;
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(12);
+  doc.setTextColor(145,116,72);
+  doc.text(kind.toUpperCase(),15,y);
+
+  y += 12;
+
+  const details = kind === 'Contrato'
+    ? [
+        ['Contratado',item.nome],
+        ['Documento',item.documento || 'Não informado'],
+        ['Objeto',item.titulo],
+        ['Valor contratado',currency(item.valor)],
+        ['Prazo / condição',item.prazo || 'A definir']
+      ]
+    : kind === 'Recibo'
+      ? [
+          ['Recebedor',item.nome],
+          ['Documento',item.documento || 'Não informado'],
+          ['Valor recebido',currency(item.valor)],
+          ['Referente a',item.descricao],
+          ['Data',formatDate(item.data)]
+        ]
+      : [
+          ['Descrição do serviço extra',item.descricao],
+          ['Valor proposto',currency(item.valor)],
+          ['Situação',item.status],
+          ['Data de emissão',formatDate(item.data)]
+        ];
+
+  details.forEach(([label,value]) => {
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(9);
+    doc.setTextColor(120,115,105);
+    doc.text(label,15,y);
+
+    doc.setFont('helvetica','normal');
+    doc.setTextColor(45,45,43);
+
+    const lines = doc.splitTextToSize(String(value || '—'),125);
+    doc.text(lines,70,y);
+
+    y += Math.max(9,lines.length*5+3);
+  });
+
+  y += 13;
+
+  if (kind === 'Contrato') {
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(9);
+    doc.setTextColor(65,64,60);
+
+    const paragraph = 'As partes identificadas neste documento declaram que os serviços descritos serão executados conforme escopo, prazo, condições e valores registrados, observando os projetos, especificações técnicas, normas aplicáveis e demais condições formalmente acordadas.';
+
+    doc.text(doc.splitTextToSize(paragraph,180),15,y);
+    y += 35;
+  }
+
+  doc.setDrawColor(190,174,146);
+  doc.line(20,245,90,245);
+  doc.line(120,245,190,245);
+
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(8);
+  doc.setTextColor(105,101,92);
+
+  doc.text('PH Engenharia / Responsável',55,251,{align:'center'});
+  doc.text(kind === 'Recibo' ? 'Recebedor' : 'Contratado / Cliente',155,251,{align:'center'});
+
+  pdfFooter(doc);
+
+  doc.save(`${safeFileName(getMeta().id_obra)}-${safeFileName(kind)}.pdf`);
+}
+
+function findDocument(id, kind) {
+  const key = kind === 'Contrato'
+    ? 'contratos'
+    : kind === 'Recibo'
+      ? 'recibos'
+      : 'extras';
+
+  return appState.data?.[key]?.find(item => item.id === id);
+}
+
+function generateCajaPdf() {
+  if (!appState.current) {
+    return toast('Selecione uma obra primeiro.', 'error');
+  }
+
+  if (!pdfAvailable()) return;
+
+  const doc = pdfBase('MEDIÇÃO / CAIXA', 'RESUMO FÍSICO-FINANCEIRO');
+  const total = number(appState.data.meta.caixa_valor) || number(appState.current.valor_contrato);
+  const pct = number(appState.data.caixa.percentualLiberado);
+
+  let y = 80;
+
+  pdfLine(doc,'Valor-base considerado',currency(total),y);
+  y += 9;
+
+  pdfLine(doc,'Percentual informado como liberado',`${pct.toFixed(2)}%`,y);
+  y += 9;
+
+  pdfLine(doc,'Valor liberado estimado',currency(total*pct/100),y,true);
+  y += 9;
+
+  pdfLine(doc,'Saldo a receber estimado',currency(total*(1-pct/100)),y,true);
+  y += 17;
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(10);
+  doc.setTextColor(145,116,72);
+  doc.text('CHECKLIST DOCUMENTAL',15,y);
+
+  y += 8;
+
+  caixaChecklistItems.forEach((item,index) => {
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(9);
+    doc.setTextColor(60,60,56);
+    doc.text(`${appState.data.caixa.checklist[index] ? '[X]' : '[ ]'} ${item}`,17,y);
+    y += 7;
+  });
+
+  y += 8;
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(10);
+  doc.setTextColor(145,116,72);
+  doc.text('CRONOGRAMA DE REFERÊNCIA',15,y);
+
+  y += 8;
+
+  appState.data.caixa.cronograma.forEach(item => {
+    if (y > 270) {
+      doc.addPage();
+      y = 22;
+    }
+
+    pdfLine(
+      doc,
+      item.etapa,
+      `${number(item.percentual).toFixed(1)}% · ${currency(total*number(item.percentual)/100)} · ${formatDate(item.data)}`,
+      y
+    );
+
+    y += 8;
+  });
+
+  pdfFooter(doc);
+  doc.save(`${safeFileName(getMeta().id_obra)}-medicao-caixa.pdf`);
+}
+
+function generateFinalReport() {
+  if (!appState.current) {
+    return toast('Selecione uma obra primeiro.', 'error');
+  }
+
+  if (!pdfAvailable()) return;
+
+  const doc = pdfBase('RELATÓRIO GERENCIAL', 'CONSOLIDADO DA OBRA');
+  const data = appState.data;
+
+  const contract = number(appState.current.valor_contrato);
+  const budget = data.financeiro.etapas.reduce((s,x) => s + number(x.orcado),0);
+  const actual = data.financeiro.etapas.reduce((s,x) => s + number(x.realizado),0);
+  const totalCost = actual + number(data.financeiro.taxas);
+  const profit = contract - totalCost;
+
+  let y = 80;
+
+  [
+    ['Valor do contrato',currency(contract)],
+    ['Orçamento por etapa',currency(budget)],
+    ['Realizado por etapa',currency(actual)],
+    ['Taxas e despesas',currency(data.financeiro.taxas)],
+    ['Custo total registrado',currency(totalCost)],
+    ['Saldo do contrato',currency(contract-totalCost)],
+    ['Resultado projetado',currency(profit)],
+    ['Margem projetada',contract ? `${(profit/contract*100).toFixed(1)}%` : '0%']
+  ].forEach(([a,b],i) => {
+    pdfLine(doc,a,b,y,i === 6);
+    y += 8;
+  });
+
+  y += 8;
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(10);
+  doc.setTextColor(145,116,72);
+  doc.text('ORÇADO X REALIZADO',15,y);
+
+  y += 8;
+
+  data.financeiro.etapas.forEach(item => {
+    if (y > 270) {
+      doc.addPage();
+      y = 22;
+    }
+
+    pdfLine(
+      doc,
+      item.nome,
+      `Orçado ${currency(item.orcado)} · Realizado ${currency(item.realizado)} · Saldo ${currency(number(item.orcado)-number(item.realizado))}`,
+      y
+    );
+
+    y += 7;
+  });
+
+  y += 8;
+
+  if (y > 265) {
+    doc.addPage();
+    y = 22;
+  }
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(10);
+  doc.setTextColor(145,116,72);
+  doc.text('RESUMO OPERACIONAL',15,y);
+
+  y += 8;
+
+  pdfLine(doc,'Fornecedores cadastrados',String(data.fornecedores.length),y);
+  y += 7;
+
+  pdfLine(doc,'Materiais no estoque',String(data.estoque.length),y);
+  y += 7;
+
+  pdfLine(doc,'Movimentações no fluxo',String(data.fluxo.length),y);
+  y += 7;
+
+  pdfLine(doc,'Contratos / recibos / extras',String(data.contratos.length+data.recibos.length+data.extras.length),y);
+  y += 11;
+
+  const note = 'Relatório gerencial baseado nos dados lançados no sistema. Valores, medições, coeficientes e projeções devem ser conferidos com documentos fiscais, contratos, projetos aprovados e registros oficiais da obra.';
+
+  doc.setFont('helvetica','italic');
+  doc.setFontSize(8);
+  doc.setTextColor(110,106,98);
+  doc.text(doc.splitTextToSize(note,180),15,y);
+
+  pdfFooter(doc);
+
+  doc.save(`${safeFileName(appState.current.id_obra)}-relatorio-gerencial.pdf`);
+
+  $('#relatorioPreview').textContent =
+    `Gerado em ${new Date().toLocaleString('pt-BR')} · Contrato ${currency(contract)} · Realizado ${currency(totalCost)} · Resultado ${currency(profit)}`;
+}
+
+function shareWhatsApp() {
+  if (!appState.current) {
+    return toast('Selecione uma obra primeiro.', 'error');
+  }
+
+  const contract = number(appState.current.valor_contrato);
+  const budget = appState.data.financeiro.etapas.reduce((s,x) => s + number(x.orcado),0);
+  const realized = appState.data.financeiro.etapas.reduce((s,x) => s + number(x.realizado),0) + number(appState.data.financeiro.taxas);
+  const profit = contract - realized;
+
+  const message = `*PH ENGENHARIA | RESUMO DA OBRA*\nObra: ${appState.current.id_obra}\nCliente: ${appState.current.cliente_nome}\nContrato: ${currency(contract)}\nOrçado: ${currency(budget)}\nRealizado: ${currency(realized)}\nSaldo: ${currency(contract-realized)}\nResultado projetado: ${currency(profit)}\nAtualizado em: ${new Date().toLocaleString('pt-BR')}`;
+
+  window.open('https://wa.me/?text=' + encodeURIComponent(message),'_blank','noopener');
+}
+
+function calculateConcrete() {
+  const m3 = Math.max(0,number($('#calcConcM3').value));
+  const traco = $('#calcConcTraco').value;
+
+  const coefficients = traco === '1152'
+    ? {cement:9,sand:.5,gravel:.6}
+    : traco === '134'
+      ? {cement:5,sand:.8,gravel:.9}
+      : {cement:7,sand:.6,gravel:.7};
+
+  const cement = Math.ceil(coefficients.cement*m3);
+  const sand = coefficients.sand*m3;
+  const gravel = coefficients.gravel*m3;
+
+  const cost =
+    cement*number($('#precoCimento').value) +
+    sand*number($('#precoAreia').value) +
+    gravel*number($('#precoBrita').value);
+
+  $('#resConcCimento').textContent = `Cimento: ${cement} sacos`;
+  $('#resConcAreia').textContent = `Areia: ${sand.toFixed(2)} m³`;
+  $('#resConcBrita').textContent = `Brita: ${gravel.toFixed(2)} m³`;
+  $('#resConcValor').textContent = `Custo estimado: ${currency(cost)}`;
+}
+
+function calculateFloor() {
+  const area = Math.max(0,number($('#calcPisoM2').value));
+  const price = Math.max(0,number($('#calcPisoValor').value));
+  const loss = Math.max(0,number($('#calcPisoPerda').value));
+
+  const total = area*(1+loss/100);
+
+  $('#resPisoQtd').textContent = `Área com perda: ${total.toFixed(2)} m²`;
+  $('#resPisoArg').textContent = `Argamassa estimada: ${Math.ceil(total/4)} sacos (ref. 1 saco/4 m²)`;
+  $('#resPisoRej').textContent = `Rejunte estimado: ${Math.ceil(total*.3)} kg (coeficiente indicativo)`;
+  $('#resPisoValor').textContent = `Custo estimado: ${currency(total*price)}`;
+}
+
+function calculateRoof() {
+  const area = Math.max(0,number($('#calcTelhaM2').value));
+  const rate = Math.max(.01,number($('#calcTelhaTipo').value));
+  const price = Math.max(0,number($('#calcTelhaValor').value));
+  const loss = Math.max(0,number($('#calcTelhaPerda').value));
+
+  // Telhas: unidades por m². Painel: m² por chapa.
+  const quantity = rate > 10
+    ? Math.ceil(area * rate * (1 + loss/100))
+    : Math.ceil(area / rate * (1 + loss/100));
+
+  const cost = quantity * price;
+
+  $('#resTelhaQtd').textContent = `Quantidade: ${quantity} un / chapas`;
+  $('#resTelhaMad').textContent = `Madeiramento de referência: ${currency(area*65)}`;
+  $('#resTelhaValor').textContent = `Custo de telhas estimado: ${currency(cost)}`;
+}
+
+function calculateMasonry() {
+  const area = Math.max(0,number($('#areaParede').value));
+  const rate = Math.max(0,number($('#tipoTijolo').value));
+  const price = Math.max(0,number($('#valorMilheiro').value));
+  const loss = Math.max(0,number($('#perdaTijolo').value));
+
+  const quantity = Math.ceil(area*rate*(1+loss/100));
+
+  $('#qtdTijolo').textContent = `${quantity.toLocaleString('pt-BR')} un`;
+  $('#custoTijolo').textContent = currency(quantity/1000*price);
+  $('#argamassaEst').textContent = `${Math.ceil(area*.13)} sacos (referência)`;
+}
+
+const erpViewLabels = {
+  'visao-geral': 'Visão geral',
+  'financeiro': 'Orçamento',
+  'caixa': 'CAIXA / MCMV',
+  'fornecedores': 'Fornecedores',
+  'estoque': 'Estoque',
+  'calculadoras': 'Calculadoras',
+  'fluxo': 'Fluxo de caixa',
+  'documentos': 'Documentos',
+  'relatorios': 'Relatórios'
+};
+
+function getViewFromUrl() {
+  let view = '';
+
+  try {
+    view = decodeURIComponent((window.location.hash || '').replace(/^#/, ''));
+  } catch (_) {}
+
+  return Object.prototype.hasOwnProperty.call(erpViewLabels, view)
+    ? view
+    : 'visao-geral';
+}
+
+function navigateToView(viewId, options = {}) {
+  let view = Object.prototype.hasOwnProperty.call(erpViewLabels, viewId)
+    ? viewId
+    : 'visao-geral';
+
+  // Não permite abrir o módulo CAIXA em obras sem financiamento.
+  if (view === 'caixa' && !hasCaixaFinancing()) {
+    view = 'visao-geral';
+  }
+
+  const target = document.getElementById(view);
+
+  if (!target) return;
+
+  $$('.erp-section').forEach(section => {
+    const active = section.id === view;
+
+    section.classList.toggle('active', active);
+    section.setAttribute('aria-hidden', active ? 'false' : 'true');
+  });
+
+  $$('#erpNavigation [data-view]').forEach(button => {
+    const active = button.dataset.view === view;
+
+    button.classList.toggle('active', active);
+
+    if (active) {
+      button.setAttribute('aria-current', 'page');
+    } else {
+      button.removeAttribute('aria-current');
+    }
+  });
+
+  const currentLabel = $('#activeViewLabel');
+
+  if (currentLabel) {
+    currentLabel.textContent = erpViewLabels[view];
+  }
+
+  if (options.updateHistory !== false) {
+    const hash = '#' + view;
+
+    if (window.location.hash !== hash) {
+      window.history.pushState(
+        { erpView:view },
+        '',
+        window.location.pathname + window.location.search + hash
+      );
+    }
+  }
+
+  if (options.scroll !== false) {
+    window.scrollTo({ top:0, behavior:'smooth' });
+  }
+}
+
+function wireEvents() {
+  // Proteção contra botões sem type: não devem enviar formulários por acidente.
+  document.querySelectorAll('button:not([type])').forEach(button => {
+    button.type = 'button';
+  });
+
+  $('#erpNavigation').addEventListener('click', event => {
+    const button = event.target.closest('[data-view]');
+
+    if (!button) return;
+
+    event.preventDefault();
+    navigateToView(button.dataset.view);
+  });
+
+  window.addEventListener('popstate', () => {
+    navigateToView(getViewFromUrl(), { updateHistory:false });
+  });
+
+  $('#btnNovaObra').addEventListener('click', () => openNewModal());
+
+  $('#btnEditarObra').addEventListener('click', () => {
+    if (appState.current) openNewModal(appState.current);
+  });
+
+  $('#btnExcluirObra').addEventListener('click', deleteCurrentRecord);
+  $('#btnSalvar').addEventListener('click', () => saveCurrent(true));
+  $('#btnBackup').addEventListener('click', exportBackup);
+  $('#btnCsv').addEventListener('click', exportCsv);
+  $('#btnImportBackup').addEventListener('click', () => $('#backupFile').click());
+  $('#backupFile').addEventListener('change', importBackup);
+
+  $('#obraSelecionada').addEventListener('change', event => {
+    openRecord(event.target.value);
+  });
+
+  $('#btnFecharModal').addEventListener('click', closeModal);
+  $('#btnCancelarObra').addEventListener('click', closeModal);
+
+  $('#modalObra').addEventListener('click', event => {
+    if (event.target === $('#modalObra')) {
+      closeModal();
+    }
+  });
+
+  $('#tipoObraCadastro').addEventListener('change', updateCaixaFormVisibility);
+
+  $('#obraForm').addEventListener('submit', submitWorkForm);
+
+  $('#clienteVinculado').addEventListener('change', event => {
+    const client = appState.portalClients.find(item => String(item.id) === event.target.value);
+
+    if (client) {
+      if (!$('#nomeCliente').value.trim()) {
+        $('#nomeCliente').value = client.nome || '';
+      }
+
+      if (!$('#enderecoObra').value.trim()) {
+        $('#enderecoObra').value = client.endereco_obra || '';
+      }
+    }
+  });
+
+  $('#btnAddEtapa').addEventListener('click', addStage);
+  $('#btnAddFornecedor').addEventListener('click', addFornecedor);
+  $('#btnAddEstoque').addEventListener('click', addStock);
+
+  $('#fluxoForm').addEventListener('submit', addCashflow);
+  $('#contratoForm').addEventListener('submit', onContractSubmit);
+  $('#reciboForm').addEventListener('submit', onReceiptSubmit);
+  $('#extraForm').addEventListener('submit', onExtraSubmit);
+
+  $('#btnPdfCaixa').addEventListener('click', generateCajaPdf);
+
+  $('#btnResetCronograma').addEventListener('click', () => {
+    if (!appState.data) return;
+
+    appState.data.caixa.cronograma = clone(cronogramaBase);
+
+    renderCaixa();
+    markDirty('Cronograma restaurado');
+  });
+
+  $('#btnRelatorio').addEventListener('click', generateFinalReport);
+  $('#btnWhats').addEventListener('click', shareWhatsApp);
+  $('#uploadForm').addEventListener('submit', uploadLinkedFile);
+  $('#updateClientForm').addEventListener('submit', publishClientUpdate);
+
+  // Campos de texto e numéricos: atualizam enquanto o usuário digita.
+  // Selects e checkboxes são tratados exclusivamente no evento change.
+  document.addEventListener('input', event => {
+    const el = event.target;
+
+    if (
+      el.matches('[data-collection],[data-scope]') &&
+      !el.matches('select,[type="checkbox"]')
+    ) {
+      onFieldEdit(event);
+    }
+
+    if (['calcConcM3','calcConcTraco','precoCimento','precoAreia','precoBrita'].includes(el.id)) {
+      calculateConcrete();
+    }
+
+    if (['calcPisoM2','calcPisoValor','calcPisoPerda'].includes(el.id)) {
+      calculateFloor();
+    }
+
+    if (['calcTelhaM2','calcTelhaTipo','calcTelhaValor','calcTelhaPerda'].includes(el.id)) {
+      calculateRoof();
+    }
+
+    if (['areaParede','tipoTijolo','valorMilheiro','perdaTijolo'].includes(el.id)) {
+      calculateMasonry();
+    }
+  });
+
+  document.addEventListener('change', event => {
+    const el = event.target;
+
+    if (el.matches('select[data-collection],select[data-scope],input[type="checkbox"][data-scope]')) {
+      onFieldEdit(event);
+    }
+
+    if (['calcConcM3','calcConcTraco','precoCimento','precoAreia','precoBrita'].includes(el.id)) {
+      calculateConcrete();
+    }
+
+    if (['calcPisoM2','calcPisoValor','calcPisoPerda'].includes(el.id)) {
+      calculateFloor();
+    }
+
+    if (['calcTelhaM2','calcTelhaTipo','calcTelhaValor','calcTelhaPerda'].includes(el.id)) {
+      calculateRoof();
+    }
+
+    if (['areaParede','tipoTijolo','valorMilheiro','perdaTijolo'].includes(el.id)) {
+      calculateMasonry();
+    }
+  });
+
+  document.addEventListener('click', event => {
+    const remove = event.target.closest('[data-remove]');
+
+    if (remove) {
+      removeCollectionItem(
+        remove.dataset.remove,
+        remove.dataset.index,
+        remove.dataset.id
+      );
+    }
+
+    const docButton = event.target.closest('[data-doc-pdf]');
+
+    if (docButton && appState.data) {
+      const item = findDocument(
+        docButton.dataset.docPdf,
+        docButton.dataset.docKind
+      );
+
+      if (item) {
+        generateDocumentPdf(docButton.dataset.docKind, item);
+      }
+    }
+
+    const fileButton = event.target.closest('[data-delete-file]');
+
+    if (fileButton) {
+      deleteLinkedFile(fileButton.dataset.deleteFile);
+    }
+  });
+}
+
+function downloadBlob(content, filename, type) {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filename;
+
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+
+  window.setTimeout(() => URL.revokeObjectURL(url), 1500);
+}
+
+function exportBackup() {
+  if (!appState.current) return;
+
+  const backup = {
+    sistema: 'PH Engenharia ERP',
+    versao: 1,
+    exportado_em: new Date().toISOString(),
+    obra: appState.current,
+    dados: appState.data
+  };
+
+  downloadBlob(
+    JSON.stringify(backup, null, 2),
+    `${safeFileName(appState.current.id_obra)}-backup.json`,
+    'application/json;charset=utf-8'
+  );
+
+  toast('Backup JSON exportado.', 'success');
+}
+
+function csvEscape(value) {
+  const text = String(value ?? '');
+  return '"' + text.replace(/"/g, '""') + '"';
+}
+
+function exportCsv() {
+  if (!appState.current || !appState.data) return;
+
+  const rows = [
+    ['Grupo','Descrição','Orçado (R$)','Realizado (R$)','Detalhe']
+  ];
+
+  appState.data.financeiro.etapas.forEach(item => {
+    rows.push([
+      'Financeiro',
+      item.nome,
+      number(item.orcado),
+      number(item.realizado),
+      'Etapa'
+    ]);
+  });
+
+  rows.push([
+    'Financeiro',
+    'Taxas e despesas',
+    0,
+    number(appState.data.financeiro.taxas),
+    'Despesas gerais'
+  ]);
+
+  appState.data.fornecedores.forEach(item => {
+    rows.push([
+      'Fornecedor',
+      item.empresa,
+      0,
+      number(item.valor),
+      `Serviço: ${item.servico || ''}; Nota: ${item.nota ?? ''}; Atraso: ${item.atraso || 0} dias`
+    ]);
+  });
+
+  appState.data.estoque.forEach(item => {
+    rows.push([
+      'Estoque',
+      item.material,
+      number(item.comprado),
+      number(item.utilizado),
+      `Unidade: ${item.unidade || 'un'}; Saldo: ${number(item.comprado)-number(item.utilizado)}`
+    ]);
+  });
+
+  appState.data.fluxo.forEach(item => {
+    rows.push([
+      'Fluxo de caixa',
+      item.descricao,
+      item.tipo === 'entrada' ? number(item.valor) : 0,
+      item.tipo === 'saida' ? number(item.valor) : 0,
+      formatDate(item.data)
+    ]);
+  });
+
+  const csv = '\uFEFF' + rows.map(row => row.map(csvEscape).join(';')).join('\r\n');
+
+  downloadBlob(
+    csv,
+    `${safeFileName(appState.current.id_obra)}-gestao.csv`,
+    'text/csv;charset=utf-8'
+  );
+
+  toast('Planilha CSV exportada.', 'success');
+}
+
+async function importBackup(event) {
+  const file = event.target.files?.[0];
+  event.target.value = '';
+
+  if (!file || !appState.current) return;
+
+  try {
+    const parsed = JSON.parse(await file.text());
+    const backupRecord = parsed.obra || {};
+
+    if (!parsed.dados || typeof parsed.dados !== 'object') {
+      throw new Error('O arquivo não contém os dados esperados do ERP.');
+    }
+
+    if (backupRecord.id_obra && backupRecord.id_obra !== appState.current.id_obra) {
+      throw new Error('Este backup pertence a outra obra. Selecione a obra correta antes de restaurar.');
+    }
+
+    if (!confirm(`Restaurar o backup sobre a obra ${appState.current.id_obra}? Os dados atuais dos módulos serão substituídos.`)) {
+      return;
+    }
+
+    appState.data = mergeData(parsed.dados, {});
+    appState.dirty = true;
+
+    await saveCurrent(false);
+
+    if (appState.dirty) {
+      throw new Error('O backup foi lido, mas não foi possível sincronizá-lo com o Supabase. Tente salvar novamente.');
+    }
+
+    renderAll();
+    toast('Backup restaurado e sincronizado.', 'success');
+  } catch (error) {
+    toast(error.message || 'Não foi possível restaurar o backup.', 'error');
+  }
+}
+
+async function deleteCurrentRecord() {
+  if (!appState.current) return;
+
+  const name = appState.current.cliente_nome || appState.current.id_obra;
+
+  if (!confirm(`Excluir definitivamente a gestão da obra ${appState.current.id_obra} (${name})?\n\nOs registros financeiros, fornecedores, estoque e documentos do ERP desta obra serão removidos. O cadastro do cliente no portal não será excluído.`)) {
+    return;
+  }
+
+  try {
+    await api('/api/erp/obras/' + encodeURIComponent(appState.current.id), {
+      method:'DELETE'
+    });
+
+    toast('Gestão da obra excluída.', 'success');
+
+    appState.current = null;
+    appState.data = null;
+
+    await loadInitialData();
+  } catch (error) {
+    toast(error.message, 'error');
+  }
+}
+
+async function init() {
+  $('#currentDate').textContent = new Date().toLocaleDateString('pt-BR', {
+    day:'2-digit',
+    month:'long',
+    year:'numeric'
+  });
+
+  $('#fluxoData').value = todayISO();
+  $('#reciboData').value = todayISO();
+
+  $('#arquivoEtapa').innerHTML =
+    '<option value="">Sem etapa específica</option>' +
+    stageNames.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
+
+  wireEvents();
+
+  navigateToView(getViewFromUrl(), {
+    updateHistory:false,
+    scroll:false
+  });
+
+  calculateConcrete();
+  calculateFloor();
+  calculateRoof();
+  calculateMasonry();
+
+  // Não há formulário de login nem verificação de sessão nesta página.
+  // A conexão tenta carregar diretamente os registros da API.
+  setConnection(true, 'Conectando ao banco');
+
+  await loadInitialData();
+}
+
+init();
+</script>
+</body>
+</html>
