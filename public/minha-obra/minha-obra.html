@@ -21,25 +21,6 @@
 @media(max-width:480px){.erp-nav{grid-template-columns:repeat(2,minmax(0,1fr))}.form-grid,.form-grid.three,.cash-summary{grid-template-columns:1fr}.checkbox-grid{grid-template-columns:1fr 1fr}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 
-/* Acesso administrativo do ERP — utiliza a mesma identidade visual do painel. */
-.erp-login-gate{position:fixed;inset:0;z-index:30000;display:flex;align-items:center;justify-content:center;padding:22px;background:rgba(23,26,29,.96);backdrop-filter:blur(7px)}
-.erp-login-gate[hidden]{display:none!important}
-body:not(.erp-authenticated) .app-container{visibility:hidden}
-.erp-login-card{width:min(100%,420px);padding:28px;background:#f8f7f3;border:1px solid #b8945e;border-radius:16px;box-shadow:0 24px 80px rgba(0,0,0,.35)}
-.erp-login-brand{display:flex;align-items:center;gap:12px;margin-bottom:22px}
-.erp-login-mark{width:46px;height:46px;display:grid;place-items:center;border:1px solid #b8945e;border-radius:10px;color:#b8945e;font:800 16px var(--font-display);background:#202428}
-.erp-login-brand strong{display:block;color:#292b2b;font:800 13px var(--font-display);letter-spacing:.07em}
-.erp-login-brand small{display:block;margin-top:3px;color:#85877f;font:9px var(--font-mono);letter-spacing:.12em}
-.erp-login-card h2{margin:0 0 7px;color:#292b2b;font:800 22px var(--font-display)}
-.erp-login-card>p{margin:0 0 18px;color:#77766e;font-size:11px;line-height:1.6}
-.erp-login-card label{display:block;margin:0 0 6px;color:#5f5d55;font-size:10px;font-weight:700}
-.erp-login-card input{width:100%;min-height:44px;padding:11px 12px;border:1px solid #ded8cc;border-radius:8px;background:#fff;color:#292b2b;outline:none}
-.erp-login-card input:focus{border-color:#b8945e;box-shadow:0 0 0 3px rgba(184,148,94,.15)}
-.erp-login-card button{width:100%;min-height:44px;margin-top:13px}
-.erp-login-error{display:none;margin-top:12px;padding:10px 11px;border-radius:8px;background:#fbefed;color:#a75f58;font-size:11px;line-height:1.5}
-.erp-login-error.show{display:block}
-.erp-login-foot{margin-top:17px;color:#918b7e;font:9px var(--font-mono);line-height:1.5;text-align:center}
-@media(max-width:520px){.erp-login-card{padding:22px}}
 </style>
 </head>
 <body>
@@ -260,48 +241,51 @@ function mergeData(raw,meta={}) {
 function toast(message,type='') {
  const el=document.createElement('div'); el.className='erp-toast '+type; el.textContent=message; $('#toastContainer').appendChild(el); setTimeout(()=>el.remove(),4500);
 }
-function showLoginGate(message='') {
- document.body.classList.remove('erp-authenticated');
- const gate=$('#erpLoginGate');if(gate)gate.hidden=false;
- const error=$('#erpLoginError');if(error){error.textContent=message;error.classList.toggle('show',Boolean(message));}
-}
-function unlockERP() {
- document.body.classList.add('erp-authenticated');
- const gate=$('#erpLoginGate');if(gate)gate.hidden=true;
- const error=$('#erpLoginError');if(error){error.textContent='';error.classList.remove('show');}
-}
-async function submitERPLogin(ev) {
- ev.preventDefault();
- const password=$('#erpAdminPassword').value;
- if(!password)return;
- const button=$('#btnEntrarERP');button.disabled=true;button.innerHTML='<i class="fa-solid fa-circle-notch fa-spin"></i> Validando acesso...';
- try {
-  await api('/api/erp/login',{method:'POST',body:JSON.stringify({password})});
-  unlockERP();$('#erpAdminPassword').value='';
-  setConnection(true,'Acesso autorizado');
-  if(appState.current&&appState.data&&appState.dirty){appState.saving=false;await saveCurrent(false);if(appState.dirty){showLoginGate('A sessão foi renovada, mas há alterações que ainda não foram sincronizadas. Confira a conexão e tente salvar novamente.');return;}}
-  else await loadInitialData();
-  toast('Acesso administrativo autorizado.','success');
- } catch(e) {showLoginGate(e.message||'Não foi possível validar a senha.');}
- finally {button.disabled=false;button.innerHTML='<i class="fa-solid fa-lock"></i> Entrar no sistema';}
-}
-async function logoutERP() {
- if(appState.dirty){
-  const save=confirm('Há alterações pendentes. Deseja salvar antes de sair?');
-  if(save){await saveCurrent(false);if(appState.dirty)return toast('Não foi possível salvar. A sessão foi mantida para evitar perda de dados.','error');}
-  else if(!confirm('Descartar as alterações não salvas e encerrar a sessão?'))return;
- }
- try{await api('/api/erp/logout',{method:'POST'});}catch(e){return toast(e.message||'Não foi possível encerrar a sessão.','error');}
- renderNoRecord();appState.records=[];appState.portalClients=[];showLoginGate('Sessão encerrada. Entre novamente para continuar.');setConnection(false,'Sessão encerrada');
-}
-async function api(path,options={}) {
- const res=await fetch(path,{credentials:'same-origin',cache:'no-store',...options,headers:{Accept:'application/json',...(options.body?{'Content-Type':'application/json'}:{}),...(options.headers||{})}});
- const raw=await res.text(); let body=null; if(raw){try{body=JSON.parse(raw);}catch{body=raw;}}
- if(!res.ok){
-  if(res.status===401&&path!=='/api/erp/login'&&path!=='/api/erp/session'&&path!=='/api/erp/logout')showLoginGate('Sua sessão administrativa expirou. Entre novamente para continuar.');
-  const e=new Error(body&&typeof body==='object'?(body.error||body.message||'Falha na solicitação.'):String(body||'Falha na solicitação.'));e.status=res.status;throw e;
- }
- return body;
+async function api(path, options = {}) {
+
+    const res = await fetch(path, {
+        credentials: 'same-origin',
+        cache: 'no-store',
+        ...options,
+        headers: {
+            Accept: 'application/json',
+            ...(options.body
+                ? { 'Content-Type': 'application/json' }
+                : {}),
+            ...(options.headers || {})
+        }
+    });
+
+    const raw = await res.text();
+
+    let body = null;
+
+    if (raw) {
+        try {
+            body = JSON.parse(raw);
+        } catch {
+            body = raw;
+        }
+    }
+
+    if (!res.ok) {
+
+        const error = new Error(
+            body && typeof body === 'object'
+                ? (
+                    body.error ||
+                    body.message ||
+                    'Falha na solicitação.'
+                )
+                : String(body || 'Falha na solicitação.')
+        );
+
+        error.status = res.status;
+
+        throw error;
+    }
+
+    return body;
 }
 function setConnection(ok,label){const el=$('#connectionPill');el.className='system-pill '+(ok?'online':'offline');el.innerHTML=`<i class="fa-solid ${ok?'fa-circle-check':'fa-triangle-exclamation'}"></i> ${esc(label)}`;}
 function setSaveState(state,label){const el=$('#saveState');el.className='save-state '+(state||'');const icon=state==='pending'?'fa-rotate fa-spin':state==='error'?'fa-circle-exclamation':'fa-circle-check';el.innerHTML=`<i class="fa-solid ${icon}"></i> ${esc(label)}`;}
@@ -559,7 +543,6 @@ function getViewFromUrl(){let v='';try{v=decodeURIComponent((location.hash||'').
 function wireEvents(){
  document.querySelectorAll('button:not([type])').forEach(b=>b.type='button');
  $('#erpNavigation').addEventListener('click',ev=>{const b=ev.target.closest('[data-view]');if(b){ev.preventDefault();navigateToView(b.dataset.view);}});window.addEventListener('popstate',()=>navigateToView(getViewFromUrl(),{updateHistory:false}));
- $('#erpLoginForm').addEventListener('submit',submitERPLogin);$('#btnSair').addEventListener('click',logoutERP);
  $('#btnNovaObra').addEventListener('click',()=>openNewModal());$('#btnEditarObra').addEventListener('click',()=>appState.current&&openNewModal(appState.current));$('#btnExcluirObra').addEventListener('click',deleteCurrentRecord);$('#btnSalvar').addEventListener('click',()=>saveCurrent(true));$('#btnBackup').addEventListener('click',exportBackup);$('#btnCsv').addEventListener('click',exportCsv);$('#btnImportBackup').addEventListener('click',()=>$('#backupFile').click());$('#backupFile').addEventListener('change',importBackup);
  $('#obraSelecionada').addEventListener('change',ev=>openRecord(ev.target.value));$('#btnFecharModal').addEventListener('click',closeModal);$('#btnCancelarObra').addEventListener('click',closeModal);$('#modalObra').addEventListener('click',ev=>{if(ev.target===$('#modalObra'))closeModal();});$('#tipoObraCadastro').addEventListener('change',updateCaixaFormVisibility);$('#obraForm').addEventListener('submit',submitWorkForm);
  $('#clienteVinculado').addEventListener('change',ev=>{const c=appState.portalClients.find(x=>String(x.id)===ev.target.value);if(c){if(!$('#nomeCliente').value.trim())$('#nomeCliente').value=c.nome||'';if(!$('#enderecoObra').value.trim())$('#enderecoObra').value=c.endereco_obra||'';}});
@@ -577,18 +560,78 @@ function wireEvents(){
  const pdf=ev.target.closest('[data-doc-pdf]');if(pdf&&appState.data){const item=findDoc(pdf.dataset.docPdf,pdf.dataset.docKind);if(item)generateDocumentPdf(pdf.dataset.docKind,item);return;}const file=ev.target.closest('[data-delete-file]');if(file)deleteLinkedFile(file.dataset.deleteFile);
  });
 }
-async function init(){
- $('#currentDate').textContent=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});$('#fluxoData').value=todayISO();$('#reciboData').value=todayISO();$('#diData').value=todayISO();$('#ctVencimento').value=todayISO();$('#coData').value=todayISO();$('#cotValidade').value=todayISO();
- $('#arquivoEtapa').innerHTML='<option value="">Sem etapa específica</option>'+stageNames.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('');wireEvents();navigateToView(getViewFromUrl(),{updateHistory:false,scroll:false});calcAll();
- setConnection(true,'Verificando sessão');
- try{
-  const session=await api('/api/erp/session');
-  if(!session?.configured){showLoginGate('O acesso ainda não está configurado no servidor. Confira ERP_ADMIN_PASSWORD, ERP_SESSION_SECRET, SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY no Render.');setConnection(false,'Acesso não configurado');return;}
-  if(!session.authenticated){showLoginGate();setConnection(false,'Aguardando acesso administrativo');return;}
-  unlockERP();setConnection(true,'Acesso autorizado');await loadInitialData();
- }catch(e){showLoginGate('Não foi possível verificar a sessão: '+(e.message||'API indisponível.'));setConnection(false,'API indisponível');}
+async function init() {
+
+    $('#currentDate').textContent =
+        new Date().toLocaleDateString('pt-BR', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric'
+        });
+
+    $('#fluxoData').value = todayISO();
+    $('#reciboData').value = todayISO();
+    $('#diData').value = todayISO();
+    $('#ctVencimento').value = todayISO();
+    $('#coData').value = todayISO();
+    $('#cotValidade').value = todayISO();
+
+    $('#arquivoEtapa').innerHTML =
+        '<option value="">Sem etapa específica</option>' +
+        stageNames.map(x =>
+            `<option value="${esc(x)}">${esc(x)}</option>`
+        ).join('');
+
+    wireEvents();
+
+    navigateToView(
+        getViewFromUrl(),
+        {
+            updateHistory: false,
+            scroll: false
+        }
+    );
+
+    calcAll();
+
+    setConnection(
+        true,
+        'Conectando ao banco'
+    );
+
+    try {
+
+        await loadInitialData();
+
+    } catch (e) {
+
+        toast(
+            e.message,
+            'error'
+        );
+
+        setConnection(
+            false,
+            'Falha na conexão'
+        );
+    }
 }
-init().catch(e=>{console.error(e);showLoginGate('Falha ao iniciar o sistema: '+e.message);setConnection(false,'Falha na inicialização');});
+
+init().catch(e => {
+
+    console.error(e);
+
+    toast(
+        'Falha ao iniciar o sistema: ' + e.message,
+        'error'
+    );
+
+    setConnection(
+        false,
+        'Falha na inicialização'
+    );
+
+});
 </script>
 </body>
 </html>
