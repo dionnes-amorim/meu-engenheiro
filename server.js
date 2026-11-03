@@ -1,236 +1,227 @@
 
-const registerErpApi = require('./erp-api');
+'use strict';
+
+// ======================================================
+// PH ENGENHARIA — ERP DE GESTÃO DE OBRAS
+// Persistência: API do servidor + Supabase.
+// Autenticação: erp-api.js + cookie HttpOnly.
+// Sessão administrativa: ph_erp_admin.
+// ======================================================
+
 const express = require('express');
-const session = require('express-session');
 const path = require('path');
 const crypto = require('crypto');
 
 const app = express();
-const PORT = process.env.PORT || 10000;
+
+const PORT = Number(process.env.PORT) || 10000;
 const PUBLIC_DIR = path.join(__dirname, 'public');
 
-// --------------------------------------------------
-// CONFIGURAÇÕES DE AUTENTICAÇÃO
-// --------------------------------------------------
+// ======================================================
+// CARREGAMENTO DO MÓDULO ERP
+// ======================================================
 
-const SENHA_ADMIN = process.env.ERP_ADMIN_PASSWORD;
+// O erp-api.js pode exportar diretamente a função ou
+// exportá-la dentro de registerErpApi/default.
+//
+// A forma recomendada é:
+// module.exports = function registerErpApi(app) { ... };
 
-if (!SENHA_ADMIN) {
-    throw new Error(
-        'A variável ERP_ADMIN_PASSWORD não foi configurada no Render.'
+const erpApiModule = require('./erp-api');
+
+const registerErpApi =
+    typeof erpApiModule === 'function'
+        ? erpApiModule
+        : typeof erpApiModule?.registerErpApi === 'function'
+            ? erpApiModule.registerErpApi
+            : typeof erpApiModule?.default === 'function'
+                ? erpApiModule.default
+                : null;
+
+if (typeof registerErpApi !== 'function') {
+    throw new TypeError(
+        'Não foi possível carregar ./erp-api.js como função. ' +
+        'Confira o module.exports do arquivo.'
     );
 }
 
-// Configure SESSION_SECRET no Render.
-// O fallback mantém a assinatura estável entre reinicializações.
-const SESSION_SECRET =
-    process.env.SESSION_SECRET ||
-    crypto.createHash('sha256')
-        .update('PH-ENGENHARIA-SESSION:' + SENHA_ADMIN)
-        .digest('hex');
+console.log(
+    '[ERP] Módulo carregado:',
+    require.resolve('./erp-api')
+);
 
-// --------------------------------------------------
+// ======================================================
 // CONFIGURAÇÕES GERAIS
-// --------------------------------------------------
+// ======================================================
 
 app.set('trust proxy', 1);
 app.disable('x-powered-by');
 
-app.use(express.json({ limit: '1mb' }));
-app.use(express.urlencoded({ extended: false, limit: '1mb' }));
-
-// --------------------------------------------------
-// SESSÕES
-// --------------------------------------------------
-
-app.use(session({
-    name: 'ph.sid',
-    secret: SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-
-    cookie: {
-        httpOnly: true,
-        secure: 'auto',
-        sameSite: 'lax',
-        path: '/',
-        maxAge: 8 * 60 * 60 * 1000
-    }
+app.use(express.json({
+    limit: '2mb'
 }));
 
-// --------------------------------------------------
-// COMPARAÇÃO SEGURA DA SENHA
-// --------------------------------------------------
+app.use(express.urlencoded({
+    extended: true,
+    limit: '2mb'
+}));
 
-function validarSenha(senhaDigitada) {
-    if (typeof senhaDigitada !== 'string') {
-        return false;
-    }
+// ======================================================
+// REGISTRO DAS ROTAS DO ERP
+// ======================================================
 
-    const hashDigitado = crypto
-        .createHash('sha256')
-        .update(senhaDigitada, 'utf8')
-        .digest();
+// Deve ser registrado depois dos parsers de JSON
+// e antes dos arquivos estáticos e do tratamento 404.
 
-    const hashCorreto = crypto
-        .createHash('sha256')
-        .update(SENHA_ADMIN, 'utf8')
-        .digest();
+try {
+    registerErpApi(app);
 
-    return crypto.timingSafeEqual(
-        hashDigitado,
-        hashCorreto
+    console.log('[ERP] Rotas administrativas registradas.');
+
+} catch (error) {
+    console.error(
+        '[ERP] Falha ao registrar as rotas:',
+        error.stack || error
     );
+
+    throw error;
 }
 
-// --------------------------------------------------
-// LOGIN ADMINISTRATIVO
-// --------------------------------------------------
+// ======================================================
+// AUTENTICAÇÃO DAS ROTAS COMPLEMENTARES
+// ======================================================
 
-app.post('/api/login', (req, res, next) => {
+// O erp-api.js é responsável por validar o cookie
+// HttpOnly ph_erp_admin.
+//
+// Para proteger as operações complementares sem duplicar
+// a lógica criptográfica do erp-api.js, consultamos a rota
+// oficial de sessão e encaminhamos o cookie recebido.
+//
+// Isso mantém uma única fonte de autenticação.
+
+async function exigirErpAdmin(req, res, next) {
     try {
-        const senhaDigitada = req.body?.password;
+        const cookie = req.headers.cookie || '';
+
+        const response = await fetch(
+            `http://127.0.0.1:${PORT}/api/erp/session`,
+            {
+                method: 'GET',
+                headers: {
+                    Cookie: cookie,
+                    Accept: 'application/json'
+                },
+                cache: 'no-store'
+            }
+        );
+
+        let session = null;
+
+        try {
+            session = await response.json();
+        } catch {
+            session = null;
+        }
 
         if (
-            typeof senhaDigitada !== 'string' ||
-            senhaDigitada.length === 0
+            response.ok &&
+            session?.authenticated === true
         ) {
-            return res.status(400).json({
-                ok: false,
-                message: 'Informe sua senha para continuar.'
-            });
+            return next();
         }
 
-        if (!validarSenha(senhaDigitada)) {
-            console.warn('[AUTH] Tentativa de acesso recusada.');
-
-            return res.status(401).json({
-                ok: false,
-                message: 'Senha incorreta. Verifique e tente novamente.'
-            });
-        }
-
-        // Gera uma nova sessão após a autenticação.
-        req.session.regenerate((erro) => {
-            if (erro) {
-                console.error(
-                    '[AUTH] Erro ao criar sessão:',
-                    erro.message
-                );
-
-                return next(erro);
-            }
-
-            req.session.adminAuthenticated = true;
-
-            req.session.save((erroSalvar) => {
-                if (erroSalvar) {
-                    console.error(
-                        '[AUTH] Erro ao salvar sessão:',
-                        erroSalvar.message
-                    );
-
-                    return next(erroSalvar);
-                }
-
-                console.log('[AUTH] Acesso administrativo autorizado.');
-
-                return res.status(200).json({
-                    ok: true,
-                    message: 'Acesso autorizado.'
-                });
-            });
+        return res.status(401).json({
+            ok: false,
+            authenticated: false,
+            message: 'Sessão administrativa necessária.'
         });
 
     } catch (error) {
-        console.error('[AUTH] Erro no login:', error.message);
-        return next(error);
+        console.error(
+            '[AUTH] Falha ao verificar sessão:',
+            error.message
+        );
+
+        return res.status(503).json({
+            ok: false,
+            message: 'Não foi possível verificar a sessão administrativa.'
+        });
     }
-});
+}
 
-// --------------------------------------------------
-// VERIFICAR SESSÃO DO ADMINISTRADOR
-// --------------------------------------------------
+// ======================================================
+// LOGIN ANTIGO — AVISO DE MIGRAÇÃO
+// ======================================================
 
-app.get('/api/auth/status', (req, res) => {
-    res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+// A autenticação antiga utilizava express-session e o
+// cookie ph.sid. O novo ERP utiliza ph_erp_admin.
+//
+// Estas rotas antigas não devem criar uma segunda sessão,
+// pois ela não seria reconhecida pelo novo painel.
 
-    return res.status(200).json({
-        ok: true,
-        authenticated:
-            req.session?.adminAuthenticated === true
+app.all([
+    '/api/login',
+    '/api/auth/status',
+    '/api/logout'
+], (_req, res) => {
+    return res.status(410).json({
+        ok: false,
+        message:
+            'A autenticação foi atualizada. Utilize ' +
+            '/api/erp/login, /api/erp/session e /api/erp/logout.'
     });
 });
 
-// --------------------------------------------------
-// ENCERRAR SESSÃO
-// --------------------------------------------------
-
-app.post('/api/logout', (req, res) => {
-    if (!req.session) {
-        res.clearCookie('ph.sid', { path: '/' });
-
-        return res.json({
-            ok: true,
-            message: 'Sessão encerrada.'
-        });
-    }
-
-    req.session.destroy((erro) => {
-        if (erro) {
-            console.error(
-                '[AUTH] Erro ao encerrar sessão:',
-                erro.message
-            );
-
-            return res.status(500).json({
-                ok: false,
-                message: 'Não foi possível encerrar a sessão.'
-            });
-        }
-
-        res.clearCookie('ph.sid', {
-            path: '/',
-            httpOnly: true,
-            sameSite: 'lax',
-            secure: 'auto'
-        });
-
-        return res.json({
-            ok: true,
-            message: 'Sessão encerrada.'
-        });
-    });
-});
-
-// --------------------------------------------------
-// REGISTRO DAS ROTAS DO ERP
-// --------------------------------------------------
-
-registerErpApi(app);
-
-// --------------------------------------------------
-// CONFIGURAÇÕES E UTILITÁRIOS
-// --------------------------------------------------
+// ======================================================
+// CONFIGURAÇÕES PÚBLICAS
+// ======================================================
 
 app.get('/api/config', (_req, res) => {
     res.set('Cache-Control', 'no-store');
 
-    res.json({
+    return res.json({
         supabaseUrl: process.env.SUPABASE_URL || '',
-        supabaseKey: process.env.SUPABASE_KEY || '',
-        cloudinaryName: process.env.CLOUDINARY_CLOUD_NAME || '',
-        cloudinaryPreset: process.env.CLOUDINARY_PRESET || ''
+
+        // Esta variável deve conter exclusivamente
+        // a chave pública/anon do Supabase.
+        //
+        // Nunca coloque SUPABASE_SERVICE_ROLE_KEY aqui.
+        supabaseKey:
+            process.env.SUPABASE_ANON_KEY ||
+            process.env.SUPABASE_KEY ||
+            '',
+
+        cloudinaryName:
+            process.env.CLOUDINARY_CLOUD_NAME || '',
+
+        cloudinaryPreset:
+            process.env.CLOUDINARY_PRESET || ''
     });
 });
 
+// ======================================================
+// HEALTH CHECK
+// ======================================================
+
 app.get('/health', (_req, res) => {
-    res.status(200).send('OK');
+    return res.status(200).send('OK');
 });
 
+// ======================================================
+// REDIRECIONAMENTO ANTIGO
+// ======================================================
+
 app.get('/public/minha-obra/minha-obra.html', (_req, res) => {
-    res.redirect(302, '/minha-obra/minha-obra.html');
+    return res.redirect(
+        302,
+        '/minha-obra/minha-obra.html'
+    );
 });
+
+// ======================================================
+// UTILITÁRIOS
+// ======================================================
 
 function validId(value) {
     return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
@@ -238,7 +229,10 @@ function validId(value) {
 }
 
 function cleanText(value, maxLength = 500) {
-    if (typeof value !== 'string') return '';
+    if (typeof value !== 'string') {
+        return '';
+    }
+
     return value.trim().slice(0, maxLength);
 }
 
@@ -248,26 +242,40 @@ function isCloudinaryUrl(value) {
 
         return (
             parsed.protocol === 'https:' &&
-            parsed.hostname === 'res.cloudinary.com'
+            parsed.hostname === 'res.cloudinary.com' &&
+            !parsed.username &&
+            !parsed.password
         );
+
     } catch {
         return false;
     }
 }
 
 function handleError(res, error, publicMessage) {
-    console.error('[API]', error?.message || error);
+    console.error(
+        '[API]',
+        error?.stack || error
+    );
 
-    res.status(500).json({
+    return res.status(500).json({
         error: publicMessage
     });
 }
 
-// --------------------------------------------------
+// ======================================================
 // SUPABASE — ACESSO PELO SERVIDOR
-// --------------------------------------------------
+// ======================================================
 
-async function supabaseRequest(table, method, query = '', body = null) {
+// A chave de serviço permanece exclusivamente no servidor.
+// Nenhuma rota pública retorna essa credencial.
+
+async function supabaseRequest(
+    table,
+    method,
+    query = '',
+    body = null
+) {
     const supabaseUrl = process.env.SUPABASE_URL;
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -295,11 +303,15 @@ async function supabaseRequest(table, method, query = '', body = null) {
         {
             method,
             headers,
-            body: body === null ? undefined : JSON.stringify(body)
+            body:
+                body === null
+                    ? undefined
+                    : JSON.stringify(body)
         }
     );
 
     const responseText = await response.text();
+
     let data = null;
 
     if (responseText) {
@@ -313,24 +325,33 @@ async function supabaseRequest(table, method, query = '', body = null) {
     if (!response.ok) {
         const message =
             data && typeof data === 'object'
-                ? data.message || data.details || data.hint
+                ? (
+                    data.message ||
+                    data.details ||
+                    data.hint
+                )
                 : null;
 
         throw new Error(
-            message || `Erro no Supabase: HTTP ${response.status}.`
+            message ||
+            `Erro no Supabase: HTTP ${response.status}.`
         );
     }
 
     return data;
 }
 
-// --------------------------------------------------
+// ======================================================
 // ARQUIVOS — LISTAGEM
-// --------------------------------------------------
+// ======================================================
+
+// Mantida para consulta pelo portal do cliente.
 
 app.get('/api/arquivos', async (req, res) => {
     try {
-        const clienteId = String(req.query.cliente_id || '');
+        const clienteId = String(
+            req.query.cliente_id || ''
+        );
 
         if (!validId(clienteId)) {
             return res.status(400).json({
@@ -347,6 +368,7 @@ app.get('/api/arquivos', async (req, res) => {
         );
 
         res.set('Cache-Control', 'no-store');
+
         return res.json(files || []);
 
     } catch (error) {
@@ -358,156 +380,222 @@ app.get('/api/arquivos', async (req, res) => {
     }
 });
 
-// --------------------------------------------------
+// ======================================================
 // ARQUIVOS — CADASTRO
-// --------------------------------------------------
+// ======================================================
 
-app.post('/api/arquivos', async (req, res) => {
-    try {
-        const body = req.body || {};
+app.post(
+    '/api/arquivos',
+    exigirErpAdmin,
+    async (req, res) => {
+        try {
+            const body = req.body || {};
 
-        const clienteId = String(body.cliente_id || '');
-        const nome = cleanText(body.nome, 200);
-        const url = typeof body.url === 'string' ? body.url.trim() : '';
-        const publicId = cleanText(body.public_id, 500);
-        const categoria = cleanText(body.categoria, 40) || 'Documento';
-        const etapa = cleanText(body.etapa, 100);
-        const descricao = cleanText(body.descricao, 1000);
+            const clienteId = String(
+                body.cliente_id || ''
+            );
 
-        if (!validId(clienteId)) {
-            return res.status(400).json({
-                error: 'ID do cliente inválido.'
-            });
-        }
+            const nome = cleanText(
+                body.nome,
+                200
+            );
 
-        if (!nome || !isCloudinaryUrl(url)) {
-            return res.status(400).json({
-                error: 'Informe um nome válido e uma URL segura do Cloudinary.'
-            });
-        }
+            const url =
+                typeof body.url === 'string'
+                    ? body.url.trim()
+                    : '';
 
-        if (!['Documento', 'Foto da obra'].includes(categoria)) {
-            return res.status(400).json({
-                error: 'Categoria inválida. Use Documento ou Foto da obra.'
-            });
-        }
+            const publicId = cleanText(
+                body.public_id,
+                500
+            );
 
-        const rows = await supabaseRequest(
-            'arquivos',
-            'POST',
-            '?select=id,cliente_id,nome,url,public_id,created_at,categoria,etapa,descricao',
-            {
-                cliente_id: clienteId,
-                nome,
-                url,
-                public_id: publicId || null,
-                categoria,
-                etapa: etapa || null,
-                descricao: descricao || null
+            const categoria =
+                cleanText(body.categoria, 40) ||
+                'Documento';
+
+            const etapa = cleanText(
+                body.etapa,
+                100
+            );
+
+            const descricao = cleanText(
+                body.descricao,
+                1000
+            );
+
+            if (!validId(clienteId)) {
+                return res.status(400).json({
+                    error: 'ID do cliente inválido.'
+                });
             }
-        );
 
-        return res.status(201).json(
-            Array.isArray(rows) ? rows[0] : rows
-        );
+            if (!nome || !isCloudinaryUrl(url)) {
+                return res.status(400).json({
+                    error:
+                        'Informe um nome válido e uma URL segura do Cloudinary.'
+                });
+            }
 
-    } catch (error) {
-        return handleError(
-            res,
-            error,
-            'Não foi possível registrar o arquivo. Confirme se a migração SQL foi executada.'
-        );
+            if (
+                !['Documento', 'Foto da obra'].includes(
+                    categoria
+                )
+            ) {
+                return res.status(400).json({
+                    error:
+                        'Categoria inválida. Use Documento ou Foto da obra.'
+                });
+            }
+
+            const rows = await supabaseRequest(
+                'arquivos',
+                'POST',
+                '?select=id,cliente_id,nome,url,public_id,created_at,categoria,etapa,descricao',
+                {
+                    cliente_id: clienteId,
+                    nome,
+                    url,
+                    public_id: publicId || null,
+                    categoria,
+                    etapa: etapa || null,
+                    descricao: descricao || null
+                }
+            );
+
+            return res.status(201).json(
+                Array.isArray(rows)
+                    ? rows[0]
+                    : rows
+            );
+
+        } catch (error) {
+            return handleError(
+                res,
+                error,
+                'Não foi possível registrar o arquivo. Confirme se a migração SQL foi executada.'
+            );
+        }
     }
-});
+);
 
-// --------------------------------------------------
+// ======================================================
 // ARQUIVOS — RENOMEAR E EDITAR METADADOS
-// --------------------------------------------------
+// ======================================================
 
-app.patch('/api/arquivos', async (req, res) => {
-    try {
-        const id = String(req.query.id || '');
-        const body = req.body || {};
+app.patch(
+    '/api/arquivos',
+    exigirErpAdmin,
+    async (req, res) => {
+        try {
+            const id = String(
+                req.query.id || ''
+            );
 
-        if (!validId(id)) {
-            return res.status(400).json({
-                error: 'ID do arquivo inválido.'
-            });
-        }
+            const body = req.body || {};
 
-        const updates = {};
-
-        if (body.nome !== undefined) {
-            const nome = cleanText(body.nome, 200);
-
-            if (!nome) {
+            if (!validId(id)) {
                 return res.status(400).json({
-                    error: 'O nome do arquivo não pode ficar vazio.'
+                    error: 'ID do arquivo inválido.'
                 });
             }
 
-            updates.nome = nome;
-        }
+            const updates = {};
 
-        if (body.categoria !== undefined) {
-            const categoria = cleanText(body.categoria, 40);
+            if (body.nome !== undefined) {
+                const nome = cleanText(
+                    body.nome,
+                    200
+                );
 
-            if (!['Documento', 'Foto da obra'].includes(categoria)) {
+                if (!nome) {
+                    return res.status(400).json({
+                        error:
+                            'O nome do arquivo não pode ficar vazio.'
+                    });
+                }
+
+                updates.nome = nome;
+            }
+
+            if (body.categoria !== undefined) {
+                const categoria = cleanText(
+                    body.categoria,
+                    40
+                );
+
+                if (
+                    !['Documento', 'Foto da obra'].includes(
+                        categoria
+                    )
+                ) {
+                    return res.status(400).json({
+                        error: 'Categoria inválida.'
+                    });
+                }
+
+                updates.categoria = categoria;
+            }
+
+            if (body.etapa !== undefined) {
+                updates.etapa =
+                    cleanText(body.etapa, 100) || null;
+            }
+
+            if (body.descricao !== undefined) {
+                updates.descricao =
+                    cleanText(body.descricao, 1000) || null;
+            }
+
+            if (Object.keys(updates).length === 0) {
                 return res.status(400).json({
-                    error: 'Categoria inválida.'
+                    error:
+                        'Nenhum campo válido foi enviado para atualização.'
                 });
             }
 
-            updates.categoria = categoria;
+            const rows = await supabaseRequest(
+                'arquivos',
+                'PATCH',
+                `?id=eq.${encodeURIComponent(id)}` +
+                '&select=id,cliente_id,nome,url,public_id,created_at,categoria,etapa,descricao',
+                updates
+            );
+
+            if (
+                !Array.isArray(rows) ||
+                rows.length === 0
+            ) {
+                return res.status(404).json({
+                    error: 'Arquivo não encontrado.'
+                });
+            }
+
+            return res.json(rows[0]);
+
+        } catch (error) {
+            return handleError(
+                res,
+                error,
+                'Não foi possível atualizar os dados do arquivo.'
+            );
         }
-
-        if (body.etapa !== undefined) {
-            updates.etapa = cleanText(body.etapa, 100) || null;
-        }
-
-        if (body.descricao !== undefined) {
-            updates.descricao = cleanText(body.descricao, 1000) || null;
-        }
-
-        if (Object.keys(updates).length === 0) {
-            return res.status(400).json({
-                error: 'Nenhum campo válido foi enviado para atualização.'
-            });
-        }
-
-        const rows = await supabaseRequest(
-            'arquivos',
-            'PATCH',
-            `?id=eq.${encodeURIComponent(id)}` +
-            '&select=id,cliente_id,nome,url,public_id,created_at,categoria,etapa,descricao',
-            updates
-        );
-
-        if (!Array.isArray(rows) || rows.length === 0) {
-            return res.status(404).json({
-                error: 'Arquivo não encontrado.'
-            });
-        }
-
-        return res.json(rows[0]);
-
-    } catch (error) {
-        return handleError(
-            res,
-            error,
-            'Não foi possível atualizar os dados do arquivo.'
-        );
     }
-});
+);
 
-// --------------------------------------------------
+// ======================================================
 // CLOUDINARY — EXCLUIR MÍDIA
-// --------------------------------------------------
+// ======================================================
 
 async function deleteCloudinaryFile(file) {
-    const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-    const apiKey = process.env.CLOUDINARY_API_KEY;
-    const apiSecret = process.env.CLOUDINARY_API_SECRET;
+    const cloudName =
+        process.env.CLOUDINARY_CLOUD_NAME;
+
+    const apiKey =
+        process.env.CLOUDINARY_API_KEY;
+
+    const apiSecret =
+        process.env.CLOUDINARY_API_SECRET;
 
     if (!cloudName || !apiKey || !apiSecret) {
         throw new Error(
@@ -521,7 +609,9 @@ async function deleteCloudinaryFile(file) {
         );
     }
 
-    const timestamp = Math.floor(Date.now() / 1000);
+    const timestamp = Math.floor(
+        Date.now() / 1000
+    );
 
     const signatureBase =
         `public_id=${file.public_id}&timestamp=${timestamp}`;
@@ -536,7 +626,10 @@ async function deleteCloudinaryFile(file) {
     if (typeof file.url === 'string') {
         if (file.url.includes('/raw/upload/')) {
             resourceType = 'raw';
-        } else if (file.url.includes('/video/upload/')) {
+
+        } else if (
+            file.url.includes('/video/upload/')
+        ) {
             resourceType = 'video';
         }
     }
@@ -553,7 +646,8 @@ async function deleteCloudinaryFile(file) {
         {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
+                'Content-Type':
+                    'application/x-www-form-urlencoded'
             },
             body: form
         }
@@ -563,6 +657,7 @@ async function deleteCloudinaryFile(file) {
 
     try {
         result = await response.json();
+
     } catch {
         throw new Error(
             'Resposta inválida recebida do Cloudinary.'
@@ -576,7 +671,11 @@ async function deleteCloudinaryFile(file) {
         );
     }
 
-    if (!['ok', 'not found'].includes(result?.result)) {
+    if (
+        !['ok', 'not found'].includes(
+            result?.result
+        )
+    ) {
         throw new Error(
             'O Cloudinary não confirmou a exclusão do arquivo.'
         );
@@ -585,65 +684,79 @@ async function deleteCloudinaryFile(file) {
     return result;
 }
 
-// --------------------------------------------------
+// ======================================================
 // ARQUIVOS — EXCLUIR
-// --------------------------------------------------
+// ======================================================
 
-app.delete('/api/arquivos', async (req, res) => {
-    try {
-        const id = String(req.query.id || '');
+app.delete(
+    '/api/arquivos',
+    exigirErpAdmin,
+    async (req, res) => {
+        try {
+            const id = String(
+                req.query.id || ''
+            );
 
-        if (!validId(id)) {
-            return res.status(400).json({
-                error: 'ID do arquivo inválido.'
+            if (!validId(id)) {
+                return res.status(400).json({
+                    error: 'ID do arquivo inválido.'
+                });
+            }
+
+            const rows = await supabaseRequest(
+                'arquivos',
+                'GET',
+                `?id=eq.${encodeURIComponent(id)}` +
+                '&select=id,cliente_id,public_id,url'
+            );
+
+            const file =
+                Array.isArray(rows)
+                    ? rows[0]
+                    : null;
+
+            if (!file) {
+                return res.status(404).json({
+                    error: 'Arquivo não encontrado.'
+                });
+            }
+
+            // Se o Cloudinary falhar, o registro
+            // será preservado no banco.
+
+            await deleteCloudinaryFile(file);
+
+            await supabaseRequest(
+                'arquivos',
+                'DELETE',
+                `?id=eq.${encodeURIComponent(id)}`
+            );
+
+            return res.json({
+                success: true,
+                message: 'Arquivo removido da obra.'
             });
+
+        } catch (error) {
+            return handleError(
+                res,
+                error,
+                error?.message ||
+                'Não foi possível excluir o arquivo.'
+            );
         }
-
-        const rows = await supabaseRequest(
-            'arquivos',
-            'GET',
-            `?id=eq.${encodeURIComponent(id)}` +
-            '&select=id,cliente_id,public_id,url'
-        );
-
-        const file = Array.isArray(rows) ? rows[0] : null;
-
-        if (!file) {
-            return res.status(404).json({
-                error: 'Arquivo não encontrado.'
-            });
-        }
-
-        // Se o Cloudinary falhar, o registro será preservado.
-        await deleteCloudinaryFile(file);
-
-        await supabaseRequest(
-            'arquivos',
-            'DELETE',
-            `?id=eq.${encodeURIComponent(id)}`
-        );
-
-        return res.json({
-            success: true,
-            message: 'Arquivo removido da obra.'
-        });
-
-    } catch (error) {
-        return handleError(
-            res,
-            error,
-            error?.message || 'Não foi possível excluir o arquivo.'
-        );
     }
-});
+);
 
-// --------------------------------------------------
-// ETAPAS DA OBRA
-// --------------------------------------------------
+// ======================================================
+// ETAPAS DA OBRA — LISTAGEM
+// ======================================================
 
 app.get('/api/etapas', async (req, res) => {
     try {
-        const clienteId = String(req.query.cliente_id || '');
+        const clienteId = String(
+            req.query.cliente_id || ''
+        );
 
         if (!validId(clienteId)) {
             return res.status(400).json({
@@ -671,65 +784,93 @@ app.get('/api/etapas', async (req, res) => {
     }
 });
 
-app.post('/api/etapas', async (req, res) => {
-    try {
-        const body = req.body || {};
+// ======================================================
+// ETAPAS DA OBRA — CADASTRO
+// ======================================================
 
-        const clienteId = String(body.cliente_id || '');
-        const nome = cleanText(body.nome, 150);
-        const ordem = Number(body.ordem);
+app.post(
+    '/api/etapas',
+    exigirErpAdmin,
+    async (req, res) => {
+        try {
+            const body = req.body || {};
 
-        if (
-            !validId(clienteId) ||
-            !nome ||
-            !Number.isInteger(ordem) ||
-            ordem < 0
-        ) {
-            return res.status(400).json({
-                error: 'Informe cliente, nome da etapa e ordem válida.'
-            });
-        }
+            const clienteId = String(
+                body.cliente_id || ''
+            );
 
-        const status = cleanText(body.status, 40) || 'Pendente';
+            const nome = cleanText(
+                body.nome,
+                150
+            );
 
-        if (!['Pendente', 'Em andamento', 'Concluída'].includes(status)) {
-            return res.status(400).json({
-                error: 'Status da etapa inválido.'
-            });
-        }
+            const ordem = Number(body.ordem);
 
-        const rows = await supabaseRequest(
-            'etapas_obra',
-            'POST',
-            '?select=*',
-            {
-                cliente_id: clienteId,
-                nome,
-                ordem,
-                status
+            if (
+                !validId(clienteId) ||
+                !nome ||
+                !Number.isInteger(ordem) ||
+                ordem < 0
+            ) {
+                return res.status(400).json({
+                    error:
+                        'Informe cliente, nome da etapa e ordem válida.'
+                });
             }
-        );
 
-        return res.status(201).json(
-            Array.isArray(rows) ? rows[0] : rows
-        );
+            const status =
+                cleanText(body.status, 40) ||
+                'Pendente';
 
-    } catch (error) {
-        return handleError(
-            res,
-            error,
-            'Não foi possível cadastrar a etapa da obra.'
-        );
+            if (
+                ![
+                    'Pendente',
+                    'Em andamento',
+                    'Concluída'
+                ].includes(status)
+            ) {
+                return res.status(400).json({
+                    error: 'Status da etapa inválido.'
+                });
+            }
+
+            const rows = await supabaseRequest(
+                'etapas_obra',
+                'POST',
+                '?select=*',
+                {
+                    cliente_id: clienteId,
+                    nome,
+                    ordem,
+                    status
+                }
+            );
+
+            return res.status(201).json(
+                Array.isArray(rows)
+                    ? rows[0]
+                    : rows
+            );
+
+        } catch (error) {
+            return handleError(
+                res,
+                error,
+                'Não foi possível cadastrar a etapa da obra.'
+            );
+        }
     }
-});
+);
 
-// --------------------------------------------------
-// HISTÓRICO E ATUALIZAÇÕES DA OBRA
-// --------------------------------------------------
+// ======================================================
+// HISTÓRICO E ATUALIZAÇÕES — LISTAGEM
+// ======================================================
 
 app.get('/api/atualizacoes', async (req, res) => {
     try {
-        const clienteId = String(req.query.cliente_id || '');
+        const clienteId = String(
+            req.query.cliente_id || ''
+        );
 
         if (!validId(clienteId)) {
             return res.status(400).json({
@@ -757,82 +898,87 @@ app.get('/api/atualizacoes', async (req, res) => {
     }
 });
 
-app.post('/api/atualizacoes', async (req, res) => {
-    try {
-        const body = req.body || {};
+// ======================================================
+// HISTÓRICO E ATUALIZAÇÕES — CADASTRO
+// ======================================================
 
-        const clienteId = String(body.cliente_id || '');
-        const titulo = cleanText(body.titulo, 200);
-        const descricao = cleanText(body.descricao, 2000);
+app.post(
+    '/api/atualizacoes',
+    exigirErpAdmin,
+    async (req, res) => {
+        try {
+            const body = req.body || {};
 
-        if (!validId(clienteId) || !titulo || !descricao) {
-            return res.status(400).json({
-                error: 'Informe o cliente, o título e a descrição da atualização.'
-            });
-        }
+            const clienteId = String(
+                body.cliente_id || ''
+            );
 
-        const rows = await supabaseRequest(
-            'atualizacoes_obra',
-            'POST',
-            '?select=*',
-            {
-                cliente_id: clienteId,
-                titulo,
-                descricao
+            const titulo = cleanText(
+                body.titulo,
+                200
+            );
+
+            const descricao = cleanText(
+                body.descricao,
+                2000
+            );
+
+            if (
+                !validId(clienteId) ||
+                !titulo ||
+                !descricao
+            ) {
+                return res.status(400).json({
+                    error:
+                        'Informe o cliente, o título e a descrição da atualização.'
+                });
             }
-        );
 
-        return res.status(201).json(
-            Array.isArray(rows) ? rows[0] : rows
-        );
+            const rows = await supabaseRequest(
+                'atualizacoes_obra',
+                'POST',
+                '?select=*',
+                {
+                    cliente_id: clienteId,
+                    titulo,
+                    descricao
+                }
+            );
 
-    } catch (error) {
-        return handleError(
-            res,
-            error,
-            'Não foi possível salvar a atualização da obra.'
-        );
+            return res.status(201).json(
+                Array.isArray(rows)
+                    ? rows[0]
+                    : rows
+            );
+
+        } catch (error) {
+            return handleError(
+                res,
+                error,
+                'Não foi possível salvar a atualização da obra.'
+            );
+        }
     }
-});
+);
 
-// --------------------------------------------------
-// PROTEÇÃO DO PAINEL DO ENGENHEIRO
-// --------------------------------------------------
-
-function exigirAdministrador(req, res, next) {
-    if (req.session?.adminAuthenticated === true) {
-        return next();
-    }
-
-    // Respostas JSON para tentativas de acesso a arquivos
-    // administrativos por requisições fetch.
-    if (
-        req.path.endsWith('.json') ||
-        req.path.startsWith('/api/')
-    ) {
-        return res.status(401).json({
-            ok: false,
-            authenticated: false,
-            message: 'Sessão administrativa necessária.'
-        });
-    }
-
-    // Acesso direto sem login retorna à central.
-    return res.redirect('/');
-}
-
-// Tudo dentro desta pasta exige sessão administrativa.
-app.use('/minha-obra', exigirAdministrador);
-
-// --------------------------------------------------
+// ======================================================
 // ARQUIVOS ESTÁTICOS
-// --------------------------------------------------
+// ======================================================
+
+// A página pode ser carregada sem sessão para que o
+// JavaScript exiba a tela de autenticação externa.
+//
+// Os dados administrativos continuam protegidos pelas
+// rotas /api/erp registradas pelo erp-api.js.
 
 app.use(express.static(PUBLIC_DIR, {
     extensions: ['html'],
 
     setHeaders(res) {
-        res.setHeader('X-Content-Type-Options', 'nosniff');
+        res.setHeader(
+            'X-Content-Type-Options',
+            'nosniff'
+        );
 
         res.setHeader(
             'Referrer-Policy',
@@ -841,9 +987,9 @@ app.use(express.static(PUBLIC_DIR, {
     }
 }));
 
-// --------------------------------------------------
+// ======================================================
 // TRATAMENTO DE ROTAS INEXISTENTES
-// --------------------------------------------------
+// ======================================================
 
 app.use((req, res) => {
     if (req.path.startsWith('/api/')) {
@@ -853,15 +999,20 @@ app.use((req, res) => {
         });
     }
 
-    return res.status(404).send('Página não encontrada.');
+    return res.status(404).send(
+        'Página não encontrada.'
+    );
 });
 
-// --------------------------------------------------
+// ======================================================
 // TRATAMENTO GLOBAL DE ERROS
-// --------------------------------------------------
+// ======================================================
 
 app.use((error, req, res, next) => {
-    console.error('[SERVER]', error?.stack || error);
+    console.error(
+        '[SERVER]',
+        error?.stack || error
+    );
 
     if (res.headersSent) {
         return next(error);
@@ -873,11 +1024,20 @@ app.use((error, req, res, next) => {
     });
 });
 
-// --------------------------------------------------
+// ======================================================
 // INICIALIZAÇÃO
-// --------------------------------------------------
+// ======================================================
 
 app.listen(PORT, () => {
-    console.log(`PH Engenharia rodando na porta ${PORT}`);
-    console.log('Autenticação administrativa habilitada.');
+    console.log(
+        `PH Engenharia rodando na porta ${PORT}`
+    );
+
+    console.log(
+        'Autenticação administrativa via erp-api.js habilitada.'
+    );
+
+    console.log(
+        'Supabase e Cloudinary configurados por variáveis de ambiente.'
+    );
 });
