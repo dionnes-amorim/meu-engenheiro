@@ -457,32 +457,58 @@
            TELA DE LOGIN
         ========================================= */
 
-        .auth-overlay {
+.auth-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+    overflow-y: auto;
+
     background:
         linear-gradient(
-            rgba(10,10,10,.75),
-            rgba(10,10,10,.83)
+            rgba(10,10,10,.78),
+            rgba(10,10,10,.88)
         );
+
+    backdrop-filter: blur(9px);
+    -webkit-backdrop-filter: blur(9px);
+
+    transition:
+        opacity .25s ease,
+        visibility .25s ease;
 }
 
 .construction-bg{
     position:absolute;
     inset:0;
+    overflow:hidden;
 
     background:
         url('/assets/img/construcao-bg.jpg')
         center center / cover no-repeat;
 
-    filter:
-        grayscale(.15)
-        contrast(1.05)
-        brightness(.55);
-
     transform:scale(1.05);
 
     animation:bgZoom 18s ease-in-out infinite alternate;
+}
 
-    z-index:0;
+.construction-bg::after{
+    content:"";
+    position:absolute;
+    inset:0;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(0,0,0,.65),
+            rgba(23,26,29,.45),
+            rgba(184,148,94,.15)
+        );
 }
 
 .construction-grid{
@@ -524,21 +550,6 @@
         transform:scale(1.12);
     }
 }
-        
-        .auth-overlay {
-            position: fixed;
-            inset: 0;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            overflow-y: auto;
-            background: rgba(15,18,20,.88);
-            backdrop-filter: blur(9px);
-            -webkit-backdrop-filter: blur(9px);
-            transition: opacity .25s ease, visibility .25s ease;
-        }
 
         .auth-overlay.is-hidden {
             opacity: 0;
@@ -546,31 +557,52 @@
             pointer-events: none;
         }
 
-        .auth-card{
-            position:relative;
-            z-index:5;
-        
-            width:100%;
-            max-width:460px;
-        
-            background:
-                rgba(255,255,255,.96);
-        
-            backdrop-filter:
-                blur(18px);
-        
-            border:
-                1px solid rgba(184,148,94,.35);
-        
-            border-radius:22px;
-        
-            box-shadow:
-                0 30px 100px rgba(0,0,0,.45),
-                0 0 0 1px rgba(184,148,94,.15);
-        
-            animation:
-                authEnter .55s cubic-bezier(.2,.9,.2,1);
-        }
+.auth-card{
+    position:relative;
+    z-index:10;
+    overflow:hidden;
+
+    width:100%;
+    max-width:460px;
+
+    padding:34px 32px 28px;
+
+    background:rgba(255,255,255,.96);
+
+    backdrop-filter:blur(18px);
+
+    border:1px solid rgba(184,148,94,.35);
+    border-radius:22px;
+
+    box-shadow:
+        0 30px 100px rgba(0,0,0,.45),
+        0 0 0 1px rgba(184,148,94,.15);
+
+    animation:authEnter .55s cubic-bezier(.2,.9,.2,1);
+}
+
+        .auth-card::before{
+    content:"";
+    position:absolute;
+    top:0;
+    left:0;
+
+    width:100%;
+    height:4px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #b8945e,
+            #e0c28e,
+            #b8945e
+        );
+}
+
+        .construction-bg,
+.construction-grid{
+    pointer-events:none;
+}
 
         @keyframes authEnter {
             from {
@@ -629,30 +661,33 @@
             margin-top: 27px;
         }
 
-        .auth-lock{
-            width:64px;
-            height:64px;
-        
-            border-radius:18px;
-        
-            background:
-                linear-gradient(
-                    135deg,
-                    #caa875,
-                    #b8945e
-                );
-        
-            color:white;
-        
-            font-size:22px;
-        
-            border:none;
-        
-            box-shadow:
-                0 15px 35px rgba(184,148,94,.4);
-        
-            animation:pulseGold 3s infinite;
-        }
+.auth-lock{
+    width:64px;
+    height:64px;
+
+    display:grid;
+    place-items:center;
+
+    margin:0 auto 16px;
+
+    border-radius:18px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #caa875,
+            #b8945e
+        );
+
+    color:#fff;
+
+    font-size:22px;
+
+    box-shadow:
+        0 15px 35px rgba(184,148,94,.4);
+
+    animation:pulseGold 3s infinite;
+}
 
 @keyframes pulseGold{
 
@@ -690,6 +725,20 @@
             text-transform: uppercase;
         }
 
+.auth-divider{
+    width:70px;
+    height:2px;
+    margin:14px auto;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            #b8945e,
+            transparent
+        );
+}
+        
         .auth-description {
             font-size: 12px;
             color: #85827b;
@@ -771,27 +820,30 @@
         }
 
 .btn-primary{
-
     width:100%;
     height:52px;
 
-    border:none;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
 
+    position:relative;
+    overflow:hidden;
+
+    border:none;
     border-radius:12px;
 
-    background:
-        linear-gradient(
-            135deg,
-            #171a1d,
-            #2a2f33
-        );
+    background:linear-gradient(
+        135deg,
+        #171a1d,
+        #2a2f33
+    );
 
     color:white;
 
     font-weight:700;
-
     cursor:pointer;
-
     transition:.25s;
 
     box-shadow:
@@ -833,14 +885,6 @@
     }
 }
 
-        position:relative;
-        overflow:hidden;
-
-        .btn-primary:hover:not(:disabled) {
-            background: #30363a;
-            border-color: #30363a;
-            transform: translateY(-1px);
-        }
 
         .btn-primary:disabled {
             opacity: .7;
@@ -1207,8 +1251,6 @@
 
         </div>
     </header>
-
-sessionStorage.clear();
     
     <!-- CONTEÚDO PRINCIPAL -->
     <main class="main">
@@ -1314,31 +1356,35 @@ sessionStorage.clear();
 
     <form class="auth-card" id="authForm" autocomplete="on">
 
-        <!-- mantém tudo exatamente igual -->
+<div class="auth-heading">
 
-    </form>
+    <div class="auth-lock">
+        <i class="fa-solid fa-lock"></i>
+    </div>
+
+    <h2>Gestão de Obras</h2>
+
+    <div class="auth-divider"></div>
+
+    <span>Acesso administrativo</span>
 
 </div>
-
-        <div class="auth-heading">
-
-            <div class="auth-lock">
-                <i class="fa-solid fa-lock"></i>
-            </div>
-
-            <h2>Gestão de Obras</h2>
-            <span>Acesso administrativo</span>
-
-        </div>
 
         <p class="auth-description">
             Informe sua senha para acessar a central administrativa
             e realizar a gestão de obras, projetos e clientes.
         </p>
 
-        <div id="authError" class="auth-error" role="alert" aria-live="polite"></div>
+        <div
+            id="authError"
+            class="auth-error"
+            role="alert"
+            aria-live="polite">
+        </div>
 
-        <label for="adminPassword">Senha de acesso</label>
+        <label for="adminPassword">
+            Senha de acesso
+        </label>
 
         <div class="password-field">
 
@@ -1354,11 +1400,10 @@ sessionStorage.clear();
             <button
                 type="button"
                 class="toggle-password"
-                id="togglePassword"
-                aria-label="Mostrar senha"
-                title="Mostrar senha"
-            >
+                id="togglePassword">
+
                 <i class="fa-regular fa-eye"></i>
+
             </button>
 
         </div>
@@ -1366,14 +1411,17 @@ sessionStorage.clear();
         <button
             type="submit"
             class="btn-primary"
-            id="btnEntrar"
-        >
+            id="btnEntrar">
+
             <span>Entrar no sistema</span>
             <i class="fa-solid fa-arrow-right"></i>
+
         </button>
 
         <div class="auth-footnote">
+
             <i class="fa-solid fa-shield-halved"></i>
+
         </div>
 
     </form>
@@ -1388,7 +1436,7 @@ sessionStorage.clear();
    Sessão: /api/erp/session
    Cookie: ph_erp_admin (HttpOnly)
 ========================================= */
-
+sessionStorage.clear();
 const authForm = document.getElementById('authForm');
 const authOverlay = document.getElementById('authOverlay');
 const authError = document.getElementById('authError');
@@ -1422,55 +1470,6 @@ function liberarAcesso() {
     setTimeout(() => {
         authOverlay.style.display = 'none';
     }, 260);
-}
-
-// --------------------------------------------------
-// VERIFICAR SESSÃO EXISTENTE
-// --------------------------------------------------
-
-async function verificarSessao() {
-    try {
-        const resposta = await fetch('/api/erp/session', {
-            method: 'GET',
-            credentials: 'same-origin',
-            cache: 'no-store',
-            headers: {
-                Accept: 'application/json'
-            }
-        });
-
-        const dados = await resposta.json().catch(() => ({}));
-
-        if (!resposta.ok) {
-            throw new Error(
-                dados.error ||
-                dados.message ||
-                'Não foi possível verificar a sessão.'
-            );
-        }
-
-        if (!dados.configured) {
-            mostrarErro(
-                'A autenticação administrativa não está configurada. Confira ERP_ADMIN_PASSWORD, ERP_SESSION_SECRET e as variáveis do Supabase no Render.'
-            );
-            return false;
-        }
-
-        if (dados.authenticated === true) {
-            liberarAcesso();
-            return true;
-        }
-
-        return false;
-
-    } catch (erro) {
-        console.error(
-            'Não foi possível verificar a sessão:',
-            erro
-        );
-
-        return false;
-    }
 }
 
 // --------------------------------------------------
