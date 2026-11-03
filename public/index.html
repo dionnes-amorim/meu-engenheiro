@@ -82,14 +82,64 @@
            CABEÇALHO
         ========================================= */
 
-        .topbar {
-            width: 100%;
-            min-height: 112px;
-            background: var(--dark);
-            border-bottom: 1px solid rgba(184,148,94,.42);
-            position: relative;
-            z-index: 2;
-        }
+ .top-header {
+  position: relative;
+  top: auto;
+  z-index: 2;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 22px;
+
+  padding: 16px 24px;
+
+  background: linear-gradient(
+    135deg,
+    #f9fbfc 0%,
+    #e7eef2 100%
+  );
+
+  color: var(--dark);
+
+  border: 1px solid #cbd9e0;
+  border-radius: 14px;
+
+  box-shadow:
+    0 12px 30px rgba(25, 49, 63, .075),
+    0 2px 5px rgba(25, 49, 63, .035);
+
+  backdrop-filter: none;
+
+  animation: entradaSuave .65s ease both;
+
+  overflow: hidden;
+}
+
+.top-header::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+
+  width: 100%;
+  height: 2px;
+
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--accent),
+    var(--gold-light),
+    transparent
+  );
+
+  background-size: 200% 100%;
+
+  animation: brilhoDourado 8s linear infinite;
+
+  opacity: .8;
+}
 
         .topbar-inner {
             max-width: 1500px;
