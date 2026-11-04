@@ -165,12 +165,23 @@ a {
     font-family: 'Manrope', sans-serif;
     font-weight: 800;
     letter-spacing: -.045em;
-    color: var(--ink);
+    color:#fff;
+}
+
+.topbar .btn-outline{
+    background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.15);
+    color:#fff;
+}
+
+.topbar .btn-outline:hover{
+    background:rgba(198,154,69,.18);
+    border-color:#d9b56c;
 }
 
 .brand-subtitle {
     font-size: 9px;
-    color: var(--gold-dark);
+    color:#d8bf8c;
     margin-top: 5px;
     letter-spacing: .14em;
     text-transform: uppercase;
@@ -286,18 +297,143 @@ a {
    BARRA SUPERIOR
    ========================================================= */
 
-.topbar {
-    min-height: 76px;
-    background: rgba(255, 255, 255, .96);
-    border-bottom: 1px solid var(--line);
-    display: flex;
-    align-items: center;
-    position: sticky;
-    top: 0;
-    z-index: 20;
-    backdrop-filter: blur(18px);
-    box-shadow: 0 3px 15px rgba(40, 33, 22, .025);
+.topbar{
+    min-height:112px;
+
+    position:sticky;
+    top:0;
+    z-index:999;
+
+    overflow:hidden;
+
+    background:
+    linear-gradient(
+        90deg,
+        #171a1d 0%,
+        #2b281f 20%,
+        #5d4a20 40%,
+        #b8945e 50%,
+        #5d4a20 60%,
+        #2b281f 80%,
+        #171a1d 100%
+    );
+
+    background-size:250% 250%;
+
+    animation:goldGradientMove 12s ease infinite;
+
+    border-bottom:1px solid rgba(184,148,94,.25);
+
+    box-shadow:
+        0 12px 40px rgba(0,0,0,.18),
+        inset 0 0 40px rgba(255,215,0,.08),
+        0 0 30px rgba(184,148,94,.12);
+
+    backdrop-filter:blur(12px);
 }
+
+.topbar::before{
+    content:"";
+
+    position:absolute;
+
+    width:900px;
+    height:400px;
+
+    right:-150px;
+    top:-120px;
+
+    background:
+    linear-gradient(
+        135deg,
+        rgba(255,215,0,.60),
+        rgba(212,175,55,.35),
+        rgba(255,235,170,.08)
+    );
+
+    border-radius:40px;
+
+    filter:blur(40px);
+
+    animation:goldHeaderMove 16s ease-in-out infinite alternate;
+
+    pointer-events:none;
+}
+
+.topbar::after{
+    content:"";
+
+    position:absolute;
+
+    left:-35%;
+    top:0;
+
+    width:25%;
+    height:100%;
+
+    background:
+    linear-gradient(
+        90deg,
+        transparent,
+        rgba(255,255,255,.45),
+        transparent
+    );
+
+    transform:skewX(-25deg);
+
+    filter:blur(10px);
+
+    animation:goldShine 5s linear infinite;
+
+    pointer-events:none;
+}
+
+@keyframes goldGradientMove{
+
+    0%{
+        background-position:0% 50%;
+    }
+
+    50%{
+        background-position:100% 50%;
+    }
+
+    100%{
+        background-position:0% 50%;
+    }
+
+}
+
+@keyframes goldShine{
+
+    0%{
+        left:-30%;
+    }
+
+    100%{
+        left:130%;
+    }
+
+}
+
+@keyframes goldHeaderMove{
+
+    from{
+        transform:
+            rotate(-12deg)
+            translateX(0)
+            scale(1);
+    }
+
+    to{
+        transform:
+            rotate(-4deg)
+            translateX(-40px)
+            scale(1.15);
+    }
+
+}
+
 
 .topbar-inner {
     width: min(1440px, 100%);
