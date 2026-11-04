@@ -82,162 +82,138 @@
            CABEÇALHO
         ========================================= */
 
-.top-header {
-  position: relative;
-  top: auto;
-  z-index: 2;
+.topbar{
+    width:100%;
+    min-height:112px;
 
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 22px;
+    position:relative;
+    overflow:hidden;
 
-  padding: 16px 24px;
+    background:
+        linear-gradient(
+            135deg,
+            #131618 0%,
+            #1d2225 45%,
+            #23292d 100%
+        );
 
-  background: linear-gradient(
-    135deg,
-    #f9fbfc 0%,
-    #e7eef2 100%
-  );
+    border-bottom:
+        1px solid rgba(184,148,94,.25);
 
-  color: var(--dark);
-
-  border: 1px solid #cbd9e0;
-  border-radius: 14px;
-
-  box-shadow:
-    0 12px 30px rgba(25, 49, 63, .075),
-    0 2px 5px rgba(25, 49, 63, .035);
-
-  backdrop-filter: none;
-
-  animation: entradaSuave .65s ease both;
-
-  overflow: hidden;
+    box-shadow:
+        0 12px 40px rgba(0,0,0,.18);
 }
 
-/* BLOCO DOURADO ANIMADO */
+.topbar::before{
+    content:"";
 
-.top-header::before {
-  content: "";
+    position:absolute;
 
-  position: absolute;
+    width:990px;
+    height:450px;
 
-  width: 480px;
-  height: 480px;
+    right:-180px;
+    top:-120px;
 
-  right: -160px;
-  top: -220px;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(212,175,55,.55)
+            rgba(184,148,94,.35)
+            rgba(255,220,130,.08)
+        );
 
-  border-radius: 48px;
+    border-radius:40px;
 
-  background: linear-gradient(
-    135deg,
-    rgba(212,175,55,.35),
-    rgba(184,148,94,.22),
-    rgba(255,214,90,.10)
-  );
+    transform:rotate(-12deg);
 
-  filter: blur(35px);
+    filter:blur(40px);
 
-  transform: rotate(28deg);
+    animation:goldHeaderMove 16s ease-in-out infinite alternate;
 
-  animation: goldFloat 16s ease-in-out infinite alternate;
+    pointer-events:none;
 
-  pointer-events: none;
-
-  z-index: 0;
+    z-index:0;
 }
 
-/* BRILHO DOURADO SUPERIOR */
+        .topbar::after{
+    content:"";
 
-.top-header::after {
-  content: "";
+    position:absolute;
 
-  position: absolute;
+    width:420px;
+    height:220px;
 
-  inset: 0;
+    left:-120px;
+    bottom:-90px;
 
-  background:
-    linear-gradient(
-      115deg,
-      transparent 15%,
-      rgba(255,215,140,.10) 48%,
-      rgba(255,255,255,.25) 50%,
-      rgba(255,215,140,.10) 52%,
-      transparent 85%
-    );
+    background:
+        linear-gradient(
+            135deg,
+            rgba(184,148,94,.18),
+            rgba(255,215,120,.08)
+        );
 
-  background-size: 250% 100%;
+    border-radius:35px;
 
-  animation: brilhoDourado 10s linear infinite;
+    filter:blur(35px);
 
-  pointer-events: none;
+    animation:goldHeaderMove2 12s ease-in-out infinite alternate;
 
-  z-index: 0;
+    pointer-events:none;
+
+    z-index:0;
 }
 
-/* GARANTE QUE O CONTEÚDO FIQUE ACIMA */
+        @keyframes goldHeaderMove{
 
-.top-header > * {
-  position: relative;
-  z-index: 1;
+    from{
+        transform:
+            rotate(-12deg)
+            translateX(0)
+            translateY(0)
+            scale(1);
+    }
+
+    to{
+        transform:
+            rotate(-4deg)
+            translateX(-40px)
+            translateY(20px)
+            scale(1.15);
+    }
 }
 
-/* ANIMAÇÃO DO BLOCO */
+@keyframes goldHeaderMove2{
 
-@keyframes goldFloat {
+    from{
+        transform:
+            rotate(8deg)
+            scale(1);
+    }
 
-  0% {
-    transform:
-      rotate(28deg)
-      translateX(0)
-      translateY(0)
-      scale(1);
-  }
-
-  50% {
-    transform:
-      rotate(20deg)
-      translateX(-25px)
-      translateY(15px)
-      scale(1.08);
-  }
-
-  100% {
-    transform:
-      rotate(36deg)
-      translateX(35px)
-      translateY(-20px)
-      scale(1.18);
-  }
+    to{
+        transform:
+            rotate(16deg)
+            translateX(40px)
+            scale(1.2);
+    }
 }
 
-/* ANIMAÇÃO DO BRILHO */
+.topbar-inner {
+    width: 100%;
+    min-height: 112px;
 
-@keyframes brilhoDourado {
+    padding: 14px 40px 14px 8px;
 
-  from {
-    background-position: 250% 0;
-  }
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
 
-  to {
-    background-position: -250% 0;
-  }
+    position: relative;
+    z-index: 2;
 }
-
-        .topbar-inner {
-            max-width: 1500px;
-            width: 100%;
-            min-height: 112px;
-            margin: 0 auto;
-            padding: 14px 5%;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 24px;
-        }
 
         .owner-brand {
             display: flex;
