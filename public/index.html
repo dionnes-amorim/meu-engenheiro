@@ -1,1158 +1,1660 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#8b641f">
-    <meta name="description" content="PH Engenharia — Central de Gestão.">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#171a1d">
+<meta name="description" content="PH Engenharia — Central de Gestão.">
 
-    <title>PH Engenharia | Central de Gestão</title>
+<title>PH Engenharia | Central de Gestão</title>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-    <style>
+<style>
 
-    /* ==================================================
-       PH ENGENHARIA — CENTRAL DE GESTÃO
-       IDENTIDADE VISUAL GOLDEN
-       ================================================== */
+/* =========================================================
+   PH ENGENHARIA — CENTRAL DE GESTÃO
+   IDENTIDADE VISUAL GOLDEN ARCHITECTURE
+   ========================================================= */
 
-    :root {
-        --gold: #a87927;
-        --gold-dark: #80591c;
-        --gold-deep: #634516;
-        --gold-light: #c69a4a;
-        --gold-soft: #f2e8d5;
+:root {
 
-        --bg: #f5f2eb;
-        --surface: #fffefa;
-        --surface-soft: #faf7f0;
+    --bg: #eeece7;
+    --bg-deep: #e8e5de;
 
-        --ink: #45351e;
-        --text: #554b3b;
-        --muted: #8a7e6c;
+    --surface: #ffffff;
+    --surface-soft: #f8f7f3;
+    --surface-gold: #f5f0e7;
 
-        --border: #e6dcc9;
+    --dark: #171a1d;
+    --dark-soft: #202428;
+    --dark-card: #292e32;
 
-        --green: #518269;
-        --red: #b45f56;
+    --border: #e3dfd7;
+    --border-soft: #eeeae3;
 
-        --shadow: 0 6px 22px rgba(91, 65, 25, .08);
-        --shadow-hover: 0 15px 35px rgba(91, 65, 25, .15);
+    --gold: #b8945e;
+    --gold-light: #d5b783;
+    --gold-dark: #92764d;
+    --gold-pale: rgba(184,148,94,.10);
 
-        --radius: 14px;
+    --green: #829b7b;
+    --red: #bd7770;
+    --blue: #7c9caf;
 
-        --font: 'DM Sans', sans-serif;
-        --display: 'Manrope', sans-serif;
-        --mono: 'DM Mono', monospace;
+    --text: #292a29;
+    --text-dark: #202326;
+    --text-muted: #85847d;
+    --text-soft: #a5a196;
+    --text-light: #f6f3ec;
 
-        --transition: .25s ease;
+    --radius: 14px;
+    --radius-sm: 9px;
+
+    --shadow:
+        0 5px 20px rgba(35,32,26,.045),
+        0 1px 3px rgba(35,32,26,.035);
+
+    --shadow-hover:
+        0 18px 40px rgba(35,32,26,.09),
+        0 4px 12px rgba(184,148,94,.09);
+
+    --shadow-gold:
+        0 8px 24px rgba(184,148,94,.15);
+
+    --font-main: 'DM Sans', sans-serif;
+    --font-display: 'Manrope', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+
+    --transition: .25s cubic-bezier(.2,.7,.2,1);
+
+}
+
+
+/* =========================================================
+   RESET
+   ========================================================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    min-height: 100%;
+    scroll-behavior: smooth;
+    scrollbar-color: var(--gold) var(--bg-deep);
+}
+
+body {
+    min-height: 100vh;
+    min-height: 100dvh;
+
+    overflow-x: hidden;
+
+    background: var(--bg);
+    color: var(--text);
+
+    font-family: var(--font-main);
+    -webkit-font-smoothing: antialiased;
+
+    background-image:
+        radial-gradient(
+            ellipse at 12% 0%,
+            rgba(184,148,94,.11),
+            transparent 38%
+        ),
+        radial-gradient(
+            ellipse at 100% 80%,
+            rgba(184,148,94,.06),
+            transparent 35%
+        );
+}
+
+button,
+input {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+::selection {
+    background: var(--gold);
+    color: #fff;
+}
+
+
+/* =========================================================
+   ESTRUTURA
+   ========================================================= */
+
+.app {
+    position: relative;
+    z-index: 1;
+
+    width: 100%;
+    max-width: 1550px;
+
+    min-height: 100vh;
+    min-height: 100dvh;
+
+    margin: 0 auto;
+    padding: 18px 26px 0;
+
+    display: flex;
+    flex-direction: column;
+}
+
+
+/* =========================================================
+   ANIMAÇÕES
+   ========================================================= */
+
+@keyframes entradaSuave {
+
+    from {
+        opacity: 0;
+        transform: translateY(15px);
     }
 
-    /* RESET */
-
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 
-    html {
-        min-height: 100%;
-        scroll-behavior: smooth;
+}
+
+@keyframes brilhoDourado {
+
+    from {
+        background-position: -200% center;
     }
 
-    body {
-        min-height: 100vh;
-        min-height: 100dvh;
-        overflow-x: hidden;
-
-        background:
-            radial-gradient(ellipse at 10% 0%, rgba(168, 121, 39, .10), transparent 40%),
-            radial-gradient(ellipse at 100% 90%, rgba(198, 154, 74, .08), transparent 35%),
-            var(--bg);
-
-        color: var(--text);
-        font-family: var(--font);
-        -webkit-font-smoothing: antialiased;
+    to {
+        background-position: 200% center;
     }
 
-    body::before {
-        content: "";
-        position: fixed;
-        inset: 0;
-        z-index: 0;
-        pointer-events: none;
+}
 
-        background-image:
-            linear-gradient(rgba(128, 89, 28, .035) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(128, 89, 28, .035) 1px, transparent 1px);
+@keyframes fundoZoom {
 
-        background-size: 38px 38px;
-
-        mask-image: linear-gradient(to bottom, #000, transparent 85%);
+    from {
+        transform: scale(1.04);
     }
 
-    button,
-    input {
-        font: inherit;
+    to {
+        transform: scale(1.12);
     }
 
-    button,
-    a {
-        -webkit-tap-highlight-color: transparent;
-    }
+}
 
-    button {
-        cursor: pointer;
-    }
 
-    a {
-        color: inherit;
-        text-decoration: none;
-    }
+/* =========================================================
+   CABEÇALHO — GOLDEN ARCHITECTURE
+   ========================================================= */
 
-    ::selection {
-        background: var(--gold);
-        color: #fff;
-    }
+.top-header {
 
-    /* ESTRUTURA */
+    position: relative;
+    z-index: 10;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+
+    gap: 22px;
+
+    padding: 15px 24px;
+
+    /* COR ORIGINAL DO CABEÇALHO MINHA OBRA */
+
+    background: rgba(23,26,29,.97);
+
+    border: 1px solid rgba(184,148,94,.32);
+    border-radius: 14px;
+
+    box-shadow:
+        0 12px 35px rgba(28,27,23,.12);
+
+    backdrop-filter: blur(18px);
+
+    animation: entradaSuave .65s ease both;
+
+    overflow: hidden;
+
+}
+
+
+/* LINHA DOURADA INFERIOR */
+
+.top-header::after {
+
+    content: "";
+
+    position: absolute;
+    bottom: 0;
+    left: 0;
+
+    width: 100%;
+    height: 2px;
+
+    background: linear-gradient(
+        90deg,
+        transparent,
+        var(--gold-light),
+        var(--gold),
+        transparent
+    );
+
+    background-size: 200% 100%;
+
+    animation: brilhoDourado 7s linear infinite;
+
+    opacity: .9;
+
+}
+
+
+/* LOGOTIPOS */
+
+.logos {
+
+    display: flex;
+    align-items: center;
+
+    gap: 20px;
+
+    min-width: 0;
+
+}
+
+.logos img {
+
+    display: block;
+
+    height: 68px;
+    max-width: 230px;
+
+    padding: 0;
+
+    object-fit: contain;
+
+    background: transparent;
+
+    border: 0;
+    border-radius: 0;
+
+    box-shadow: none;
+
+    transition: transform var(--transition);
+
+}
+
+.logos img:first-child {
+
+    height: 105px;
+    max-width: 270px;
+
+}
+
+.logos img:nth-of-type(2) {
+
+    height: 62px;
+    max-width: 190px;
+
+}
+
+.logos img:hover {
+
+    transform: translateY(-2px);
+
+}
+
+.divisor {
+
+    width: 1px;
+    height: 55px;
+
+    background: rgba(255,255,255,.20);
+
+    flex-shrink: 0;
+
+}
+
+
+/* IDENTIFICAÇÃO */
+
+.header-context {
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+
+    gap: 6px;
+
+}
+
+.header-context span {
+
+    color: #bcb6aa;
+
+    font-family: var(--font-mono);
+    font-size: 9px;
+
+    letter-spacing: .14em;
+
+}
+
+.header-context strong {
+
+    color: var(--gold-light);
+
+    font-family: var(--font-display);
+    font-size: 11px;
+
+    font-weight: 800;
+
+    letter-spacing: .07em;
+
+}
+
+
+/* =========================================================
+   CONTEÚDO PRINCIPAL
+   ========================================================= */
+
+.main {
+
+    width: 100%;
+    max-width: 1300px;
+
+    margin: 0 auto;
+
+    padding: 65px 5% 65px;
+
+    flex: 1;
+
+}
+
+.page-top {
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 15px;
+
+    margin-bottom: 17px;
+
+}
+
+.page-label {
+
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    color: var(--gold-dark);
+
+    font-family: var(--font-mono);
+    font-size: 10px;
+
+    letter-spacing: .16em;
+
+    text-transform: uppercase;
+
+}
+
+.page-label::before {
+
+    content: "";
+
+    width: 23px;
+    height: 1px;
+
+    background: var(--gold);
+
+}
+
+.page-code {
+
+    color: var(--text-soft);
+
+    font-family: var(--font-mono);
+    font-size: 9px;
+
+    white-space: nowrap;
+
+}
+
+
+/* TÍTULO */
+
+.heading {
+
+    max-width: 740px;
+
+}
+
+.heading h1 {
+
+    color: var(--dark);
+
+    font-family: var(--font-display);
+
+    font-size: clamp(35px,4.5vw,51px);
+
+    font-weight: 800;
+
+    letter-spacing: -.065em;
+    line-height: 1.12;
+
+}
+
+.heading h1 span {
+
+    color: var(--gold);
+
+}
+
+.heading p {
+
+    margin-top: 13px;
+
+    color: var(--text-muted);
+
+    font-size: 13px;
+
+    line-height: 1.7;
+
+}
+
+
+/* =========================================================
+   AMBIENTES DISPONÍVEIS
+   ========================================================= */
+
+.access-area {
+
+    margin-top: 52px;
+
+}
+
+.access-header {
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 12px;
+
+    padding-bottom: 15px;
+
+    margin-bottom: 20px;
+
+    border-bottom: 1px solid var(--border);
+
+}
+
+.access-header strong {
+
+    color: var(--text-muted);
+
+    font-family: var(--font-mono);
+    font-size: 10px;
+
+    letter-spacing: .16em;
+
+}
+
+.access-header span {
+
+    color: var(--text-soft);
+
+    font-family: var(--font-mono);
+    font-size: 9px;
+
+    white-space: nowrap;
+
+}
+
+.access-grid {
+
+    display: grid;
+
+    grid-template-columns: repeat(2,minmax(0,1fr));
+
+    gap: 20px;
+
+}
+
+
+/* =========================================================
+   CARTÕES
+   ========================================================= */
+
+.access-card {
+
+    position: relative;
+
+    min-width: 0;
+    min-height: 245px;
+
+    padding: 26px 28px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    background: var(--surface);
+
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+
+    box-shadow: var(--shadow);
+
+    transition:
+        transform var(--transition),
+        border-color var(--transition),
+        box-shadow var(--transition);
+
+}
+
+.access-card:hover {
+
+    transform: translateY(-5px);
+
+    border-color: var(--gold);
+
+    box-shadow: var(--shadow-hover);
+
+}
+
+
+/* CARTÃO PRINCIPAL */
+
+.access-card.primary {
+
+    background: linear-gradient(
+        145deg,
+        #171a1d,
+        #202428
+    );
+
+    border-color: rgba(184,148,94,.45);
+
+    color: #fff;
+
+    box-shadow:
+        0 8px 25px rgba(23,26,29,.15),
+        0 2px 5px rgba(23,26,29,.08);
+
+}
+
+.access-card.primary:hover {
+
+    border-color: var(--gold-light);
+
+    box-shadow:
+        0 18px 40px rgba(23,26,29,.18),
+        0 4px 12px rgba(184,148,94,.12);
+
+}
+
+
+/* PARTE SUPERIOR */
+
+.card-top {
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 15px;
+
+}
+
+.card-index {
+
+    color: var(--gold-dark);
+
+    font-family: var(--font-mono);
+    font-size: 10px;
+
+    letter-spacing: .06em;
+
+}
+
+.primary .card-index {
+
+    color: var(--gold-light);
+
+}
+
+
+/* ÍCONES */
+
+.card-symbol {
+
+    width: 45px;
+    height: 45px;
+
+    display: grid;
+    place-items: center;
+
+    background: var(--surface-gold);
+
+    border: 1px solid rgba(184,148,94,.25);
+
+    border-radius: 9px;
+
+    color: var(--gold-dark);
+
+    flex-shrink: 0;
+
+}
+
+.card-symbol i {
+
+    font-size: 20px;
+
+}
+
+.primary .card-symbol {
+
+    background: rgba(184,148,94,.10);
+
+    border-color: rgba(184,148,94,.30);
+
+    color: var(--gold-light);
+
+}
+
+
+/* CONTEÚDO */
+
+.card-content {
+
+    margin-top: 23px;
+
+}
+
+.card-content h2 {
+
+    color: var(--dark);
+
+    font-family: var(--font-display);
+    font-size: 19px;
+
+    font-weight: 800;
+
+    line-height: 1.35;
+
+}
+
+.primary .card-content h2 {
+
+    color: #fff;
+
+}
+
+.card-content p {
+
+    margin-top: 8px;
+
+    color: var(--text-muted);
+
+    font-size: 11px;
+
+    line-height: 1.7;
+
+}
+
+.primary .card-content p {
+
+    color: #bcb6aa;
+
+}
+
+
+/* RODAPÉ DOS CARTÕES */
+
+.card-footer {
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 12px;
+
+    border-top: 1px solid var(--border-soft);
+
+    padding-top: 15px;
+
+    margin-top: 22px;
+
+}
+
+.primary .card-footer {
+
+    border-color: rgba(255,255,255,.13);
+
+}
+
+.card-footer span {
+
+    color: var(--gold-dark);
+
+    font-family: var(--font-mono);
+    font-size: 9px;
+
+    letter-spacing: .05em;
+
+}
+
+.primary .card-footer span {
+
+    color: var(--gold-light);
+
+}
+
+.card-arrow {
+
+    width: 32px;
+    height: 32px;
+
+    display: grid;
+    place-items: center;
+
+    background: var(--gold-pale);
+
+    border: 1px solid rgba(184,148,94,.28);
+
+    border-radius: 8px;
+
+    color: var(--gold-dark);
+
+    font-size: 17px;
+
+    flex-shrink: 0;
+
+    transition: transform var(--transition);
+
+}
+
+.access-card:hover .card-arrow {
+
+    transform: translate(3px,-3px);
+
+}
+
+.primary .card-arrow {
+
+    background: rgba(184,148,94,.10);
+
+    border-color: rgba(184,148,94,.30);
+
+    color: var(--gold-light);
+
+}
+
+
+/* =========================================================
+   RODAPÉ GERAL
+   ========================================================= */
+
+.footer {
+
+    min-height: 61px;
+
+    padding: 15px 24px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 15px;
+
+    border-top: 1px solid var(--border);
+
+    background: #e8e5de;
+
+    font-family: var(--font-mono);
+    font-size: 8px;
+
+    color: var(--text-muted);
+
+}
+
+.footer-right {
+
+    text-align: right;
+
+}
+
+.footer-right strong {
+
+    color: var(--gold-dark);
+
+}
+
+
+/* =========================================================
+   TELA DE LOGIN
+   ========================================================= */
+
+.auth-overlay {
+
+    position: fixed;
+    inset: 0;
+
+    z-index: 1000;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    overflow-y: auto;
+
+    background: rgba(23,26,29,.88);
+
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    transition:
+        opacity .25s ease,
+        visibility .25s ease;
+
+}
+
+.auth-overlay.is-hidden {
+
+    opacity: 0;
+    visibility: hidden;
+
+    pointer-events: none;
+
+}
+
+
+/* IMAGEM DE FUNDO */
+
+.construction-bg {
+
+    position: absolute;
+    inset: 0;
+
+    overflow: hidden;
+
+    pointer-events: none;
+
+    background:
+        url('/assets/img/construcao-bg.jpg')
+        center center / cover no-repeat;
+
+    animation: fundoZoom 18s ease-in-out infinite alternate;
+
+}
+
+.construction-bg::after {
+
+    content: "";
+
+    position: absolute;
+    inset: 0;
+
+    background: linear-gradient(
+        135deg,
+        rgba(23,26,29,.89),
+        rgba(32,36,40,.82),
+        rgba(66,54,36,.62)
+    );
+
+}
+
+
+/* CARTÃO DE LOGIN */
+
+.auth-card {
+
+    position: relative;
+    z-index: 10;
+
+    width: 100%;
+    max-width: 450px;
+
+    padding: 34px 32px 28px;
+
+    background: rgba(255,255,255,.98);
+
+    border: 1px solid rgba(184,148,94,.42);
+
+    border-radius: 16px;
+
+    box-shadow:
+        0 30px 90px rgba(0,0,0,.36),
+        0 0 0 1px rgba(184,148,94,.08);
+
+    overflow: hidden;
+
+    animation: entradaSuave .55s ease both;
+
+}
+
+
+/* LINHA DOURADA DO CARTÃO */
+
+.auth-card::before {
+
+    content: "";
+
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 3px;
+
+    background: linear-gradient(
+        90deg,
+        var(--gold-dark),
+        var(--gold-light),
+        var(--gold),
+        var(--gold-dark)
+    );
+
+    background-size: 200% 100%;
+
+    animation: brilhoDourado 6s linear infinite;
+
+}
+
+
+/* =========================================================
+   LOGO DO ENGENHEIRO NO LOGIN
+   SUBSTITUI O CADEADO
+   ========================================================= */
+
+.auth-logo {
+
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin: 5px auto 17px;
+
+}
+
+.auth-logo img {
+
+    display: block;
+
+    width: auto;
+    max-width: 230px;
+
+    height: 88px;
+
+    object-fit: contain;
+
+    background: transparent;
+
+    filter: drop-shadow(0 3px 6px rgba(35,32,26,.10));
+
+}
+
+.auth-heading {
+
+    text-align: center;
+
+}
+
+.auth-heading h2 {
+
+    color: var(--dark);
+
+    font-family: var(--font-display);
+    font-size: 23px;
+
+    font-weight: 800;
+
+    letter-spacing: -.04em;
+
+}
+
+.auth-heading span {
+
+    display: block;
+
+    margin-top: 7px;
+
+    color: var(--gold-dark);
+
+    font-family: var(--font-mono);
+    font-size: 9px;
+
+    letter-spacing: .13em;
+
+    text-transform: uppercase;
+
+}
+
+.auth-divider {
+
+    width: 70px;
+    height: 2px;
+
+    margin: 14px auto;
+
+    background: linear-gradient(
+        90deg,
+        transparent,
+        var(--gold),
+        transparent
+    );
+
+}
+
+.auth-description {
+
+    margin: 17px 0 24px;
+
+    color: var(--text-muted);
+
+    font-size: 12px;
+
+    line-height: 1.7;
+
+    text-align: center;
+
+}
+
+
+/* =========================================================
+   FORMULÁRIO
+   ========================================================= */
+
+.auth-card label {
+
+    display: block;
+
+    margin-bottom: 9px;
+
+    color: var(--dark);
+
+    font-size: 11px;
+
+    font-weight: 800;
+
+}
+
+.password-field {
+
+    position: relative;
+
+    width: 100%;
+
+}
+
+.auth-card input {
+
+    display: block;
+
+    width: 100%;
+    height: 49px;
+
+    padding: 0 48px 0 15px;
+
+    background: #f8f7f3;
+
+    border: 1px solid #ded8cc;
+
+    border-radius: 8px;
+
+    color: var(--text-dark);
+
+    font-size: 13px;
+
+    outline: none;
+
+    transition:
+        border-color var(--transition),
+        box-shadow var(--transition),
+        background var(--transition);
+
+}
+
+.auth-card input::placeholder {
+
+    color: #a5a196;
+
+}
+
+.auth-card input:focus {
+
+    background: #fff;
+
+    border-color: var(--gold);
+
+    box-shadow: 0 0 0 3px rgba(184,148,94,.13);
+
+}
+
+
+/* MOSTRAR SENHA */
+
+.toggle-password {
+
+    position: absolute;
+
+    top: 0;
+    right: 0;
+
+    width: 47px;
+    height: 49px;
+
+    display: grid;
+    place-items: center;
+
+    border: 0;
+
+    background: transparent;
+
+    color: var(--text-muted);
+
+    cursor: pointer;
+
+    border-radius: 0 8px 8px 0;
+
+    transition: color var(--transition);
+
+}
+
+.toggle-password:hover {
+
+    color: var(--gold-dark);
+
+}
+
+
+/* ERRO */
+
+.auth-error {
+
+    display: none;
+
+    margin: 0 0 15px;
+
+    padding: 11px 12px;
+
+    border: 1px solid #ebd0cc;
+
+    border-radius: 8px;
+
+    background: #fbefed;
+
+    color: #a9635d;
+
+    font-size: 11px;
+
+    line-height: 1.5;
+
+}
+
+.auth-error.show {
+
+    display: block;
+
+}
+
+
+/* =========================================================
+   BOTÃO DE ENTRADA
+   ========================================================= */
+
+.btn-primary {
+
+    position: relative;
+
+    overflow: hidden;
+
+    width: 100%;
+    height: 52px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 10px;
+
+    margin-top: 17px;
+
+    border: 1px solid #8d7049;
+
+    border-radius: 9px;
+
+    background: linear-gradient(
+        135deg,
+        #92764d,
+        #b8945e,
+        #92764d
+    );
+
+    color: #fff;
+
+    font-family: var(--font-main);
+    font-size: 12px;
+
+    font-weight: 800;
+
+    letter-spacing: .045em;
+
+    cursor: pointer;
+
+    transition: var(--transition);
+
+    box-shadow: var(--shadow-gold);
+
+}
+
+.btn-primary::before {
+
+    content: "";
+
+    position: absolute;
+    inset: 0;
+
+    background: linear-gradient(
+        110deg,
+        transparent 25%,
+        rgba(255,255,255,.30) 48%,
+        transparent 70%
+    );
+
+    transform: translateX(-120%);
+
+    transition: transform .65s ease;
+
+}
+
+.btn-primary:hover::before {
+
+    transform: translateX(120%);
+
+}
+
+.btn-primary:hover {
+
+    background: linear-gradient(
+        135deg,
+        #a88750,
+        #c4a16a
+    );
+
+    border-color: var(--gold-light);
+
+    transform: translateY(-2px);
+
+    box-shadow: 0 10px 25px rgba(184,148,94,.25);
+
+}
+
+.btn-primary:active {
+
+    transform: scale(.98);
+
+}
+
+.btn-primary:disabled {
+
+    opacity: .7;
+
+    cursor: wait;
+
+    transform: none;
+
+}
+
+
+/* RODAPÉ LOGIN */
+
+.auth-footnote {
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 7px;
+
+    margin-top: 21px;
+
+    color: var(--text-soft);
+
+    font-family: var(--font-mono);
+    font-size: 8px;
+
+    letter-spacing: .06em;
+
+    text-align: center;
+
+}
+
+.auth-footnote i {
+
+    color: var(--gold-dark);
+
+}
+
+
+/* =========================================================
+   RESPONSIVIDADE
+   ========================================================= */
+
+@media (max-width: 1000px) {
 
     .app {
-        position: relative;
-        z-index: 1;
-
-        width: 100%;
-        max-width: 1500px;
-        min-height: 100vh;
-        min-height: 100dvh;
-
-        margin: 0 auto;
-        padding: 20px 28px 0;
-
-        display: flex;
-        flex-direction: column;
+        padding: 16px 18px 0;
     }
 
-    /* ANIMAÇÕES */
-
-    @keyframes entrada {
-        from {
-            opacity: 0;
-            transform: translateY(15px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    .main {
+        padding-top: 52px;
     }
 
-    @keyframes brilho {
-        from {
-            background-position: -200% center;
-        }
+}
 
-        to {
-            background-position: 200% center;
-        }
-    }
-
-    @keyframes zoomFundo {
-        from {
-            transform: scale(1.04);
-        }
-
-        to {
-            transform: scale(1.12);
-        }
-    }
-
-    /* ==================================================
-       CABEÇALHO
-       ================================================== */
+@media (max-width: 900px) {
 
     .top-header {
-        position: relative;
-
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-wrap: wrap;
-
-        gap: 20px;
-        padding: 15px 24px;
-
-        background: linear-gradient(135deg, #fffefa, #eee5d5);
-
-        border: 1px solid #d9c9aa;
-        border-radius: var(--radius);
-
-        box-shadow: var(--shadow);
-
-        overflow: hidden;
-
-        animation: entrada .6s ease both;
-    }
-
-    .top-header::after {
-        content: "";
-        position: absolute;
-        bottom: 0;
-        left: 0;
-
-        width: 100%;
-        height: 2px;
-
-        background: linear-gradient(
-            90deg,
-            transparent,
-            var(--gold-dark),
-            var(--gold-light),
-            transparent
-        );
-
-        background-size: 200% 100%;
-        animation: brilho 8s linear infinite;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 17px;
     }
 
     .logos {
-        display: flex;
-        align-items: center;
-        gap: 20px;
-        min-width: 0;
-    }
-
-    .logos img {
-        display: block;
-        height: 68px;
-        max-width: 230px;
-
-        object-fit: contain;
-
-        filter: drop-shadow(0 2px 4px rgba(91, 65, 25, .10));
-
-        transition: transform var(--transition);
-    }
-
-    .logos img:first-child {
-        height: 100px;
-        max-width: 260px;
-    }
-
-    .logos img:nth-of-type(2) {
-        height: 62px;
-        max-width: 190px;
-    }
-
-    .logos img:hover {
-        transform: translateY(-2px);
-    }
-
-    .divisor {
-        width: 1px;
-        height: 55px;
-        background: rgba(128, 89, 28, .25);
-        flex-shrink: 0;
+        flex-wrap: wrap;
     }
 
     .header-context {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        gap: 5px;
+        align-items: flex-start;
+
+        padding-top: 10px;
+
+        border-top: 1px solid rgba(255,255,255,.14);
+    }
+
+    .main {
+        padding-top: 45px;
+    }
+
+}
+
+@media (max-width: 650px) {
+
+    .app {
+        padding: 12px 12px 0;
+    }
+
+    .top-header {
+        padding: 14px;
+        border-radius: 10px;
+        gap: 12px;
+    }
+
+    .logos {
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .logos img {
+        height: 42px;
+        max-width: 125px;
+    }
+
+    .logos img:first-child {
+        height: 66px;
+        max-width: 165px;
+    }
+
+    .logos img:nth-of-type(2) {
+        height: 43px;
+        max-width: 125px;
+    }
+
+    .divisor {
+        height: 38px;
     }
 
     .header-context span {
-        color: var(--muted);
-        font-family: var(--mono);
-        font-size: 9px;
-        letter-spacing: .14em;
+        font-size: 8px;
     }
 
     .header-context strong {
-        color: var(--gold-dark);
-        font-family: var(--display);
-        font-size: 11px;
-        font-weight: 800;
-        letter-spacing: .06em;
+        font-size: 10px;
     }
-
-    /* ==================================================
-       CONTEÚDO PRINCIPAL
-       ================================================== */
 
     .main {
-        width: 100%;
-        max-width: 1250px;
-
-        margin: 0 auto;
-        padding: 65px 5%;
-
-        flex: 1;
-    }
-
-    .page-top {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 15px;
-
-        margin-bottom: 17px;
+        padding: 38px 4% 42px;
     }
 
     .page-label {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-
-        color: var(--gold-dark);
-
-        font-family: var(--mono);
-        font-size: 10px;
-        letter-spacing: .15em;
-    }
-
-    .page-label::before {
-        content: "";
-        width: 23px;
-        height: 2px;
-        background: var(--gold);
+        font-size: 9px;
     }
 
     .page-code {
-        color: #a99b83;
-        font-family: var(--mono);
-        font-size: 9px;
-    }
-
-    .heading {
-        max-width: 740px;
+        font-size: 8px;
     }
 
     .heading h1 {
-        color: var(--ink);
-
-        font-family: var(--display);
-        font-size: clamp(35px, 4.5vw, 51px);
-        font-weight: 800;
-
-        letter-spacing: -.06em;
-        line-height: 1.12;
-    }
-
-    .heading h1 span {
-        color: var(--gold-dark);
+        font-size: clamp(34px,9vw,43px);
     }
 
     .heading p {
-        margin-top: 13px;
-
-        color: var(--muted);
-        font-size: 13px;
-        line-height: 1.7;
+        font-size: 12px;
+        margin-top: 10px;
     }
 
-    /* ==================================================
-       CARTÕES DE ACESSO
-       ================================================== */
-
     .access-area {
-        margin-top: 52px;
+        margin-top: 37px;
     }
 
     .access-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-
-        padding-bottom: 15px;
-        margin-bottom: 20px;
-
-        border-bottom: 1px solid var(--border);
+        margin-bottom: 15px;
+        padding-bottom: 12px;
     }
 
     .access-header strong {
-        color: var(--muted);
-        font-family: var(--mono);
-        font-size: 10px;
-        letter-spacing: .15em;
+        font-size: 9px;
+        letter-spacing: .1em;
     }
 
     .access-header span {
-        color: #a99b83;
-        font-family: var(--mono);
-        font-size: 9px;
+        font-size: 8px;
     }
 
     .access-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 20px;
+        grid-template-columns: 1fr;
+        gap: 13px;
     }
 
     .access-card {
-        min-width: 0;
-        min-height: 245px;
-
-        padding: 26px 28px;
-
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-
-        background: var(--surface);
-
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-
-        box-shadow: var(--shadow);
-
-        transition:
-            transform var(--transition),
-            box-shadow var(--transition),
-            border-color var(--transition);
-    }
-
-    .access-card:hover {
-        transform: translateY(-5px);
-        border-color: var(--gold);
-        box-shadow: var(--shadow-hover);
-    }
-
-    /* CARTÃO PRINCIPAL */
-
-    .access-card.primary {
-        color: #fff;
-
-        background: linear-gradient(
-            135deg,
-            #755018,
-            #93691f 55%,
-            #aa7b2d
-        );
-
-        border-color: #80591c;
-
-        box-shadow: 0 9px 25px rgba(91, 65, 25, .17);
-    }
-
-    .access-card.primary:hover {
-        border-color: var(--gold-light);
-        box-shadow: 0 18px 38px rgba(91, 65, 25, .23);
-    }
-
-    .card-top {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 15px;
-    }
-
-    .card-index {
-        color: var(--gold-dark);
-        font-family: var(--mono);
-        font-size: 10px;
-        letter-spacing: .06em;
-    }
-
-    .primary .card-index {
-        color: #ecd19c;
-    }
-
-    .card-symbol {
-        width: 45px;
-        height: 45px;
-
-        display: grid;
-        place-items: center;
-
-        background: var(--gold-soft);
-        border: 1px solid #e2d2b4;
-        border-radius: 9px;
-
-        color: var(--gold-dark);
-        flex-shrink: 0;
-    }
-
-    .primary .card-symbol {
-        background: rgba(255, 255, 255, .10);
-        border-color: rgba(255, 255, 255, .22);
-        color: #f1d39b;
-    }
-
-    .card-symbol i {
-        font-size: 19px;
+        min-height: 218px;
+        padding: 21px;
     }
 
     .card-content {
-        margin-top: 23px;
+        margin-top: 20px;
     }
 
     .card-content h2 {
-        color: var(--ink);
-        font-family: var(--display);
-        font-size: 19px;
-        font-weight: 800;
-    }
-
-    .primary .card-content h2 {
-        color: #fff;
+        font-size: 18px;
     }
 
     .card-content p {
-        margin-top: 8px;
-
-        color: var(--muted);
         font-size: 11px;
-        line-height: 1.7;
     }
-
-    .primary .card-content p {
-        color: #f0e4cf;
-    }
-
-    .card-footer {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-
-        padding-top: 15px;
-        margin-top: 22px;
-
-        border-top: 1px solid var(--border);
-    }
-
-    .primary .card-footer {
-        border-color: rgba(255, 255, 255, .20);
-    }
-
-    .card-footer span {
-        color: var(--gold-dark);
-        font-family: var(--mono);
-        font-size: 9px;
-        letter-spacing: .04em;
-    }
-
-    .primary .card-footer span {
-        color: #f1d39b;
-    }
-
-    .card-arrow {
-        width: 32px;
-        height: 32px;
-
-        display: grid;
-        place-items: center;
-
-        background: var(--gold-soft);
-        border: 1px solid #e2d2b4;
-        border-radius: 8px;
-
-        color: var(--gold-dark);
-        font-size: 17px;
-
-        transition: transform var(--transition);
-    }
-
-    .access-card:hover .card-arrow {
-        transform: translate(3px, -3px);
-    }
-
-    .primary .card-arrow {
-        background: rgba(255, 255, 255, .10);
-        border-color: rgba(255, 255, 255, .25);
-        color: #f1d39b;
-    }
-
-    /* ==================================================
-       RODAPÉ
-       ================================================== */
 
     .footer {
-        min-height: 60px;
+        min-height: auto;
 
-        padding: 15px 24px;
+        padding: 15px;
 
-        display: flex;
+        flex-direction: column;
         align-items: center;
-        justify-content: space-between;
-        gap: 15px;
+        justify-content: center;
 
-        background: #eee6d8;
+        gap: 8px;
 
-        border: 1px solid #ddceb3;
-        border-bottom: 0;
-        border-radius: 12px 12px 0 0;
+        text-align: center;
 
-        color: #88795f;
-        font-family: var(--mono);
-        font-size: 8px;
+        font-size: 7px;
     }
 
     .footer-right {
-        text-align: right;
+        text-align: center;
     }
-
-    .footer-right strong {
-        color: var(--gold-dark);
-    }
-
-    /* ==================================================
-       LOGIN ADMINISTRATIVO
-       ================================================== */
 
     .auth-overlay {
-        position: fixed;
-        inset: 0;
-        z-index: 1000;
-
-        display: flex;
-        align-items: center;
-        justify-content: center;
-
-        padding: 20px;
-        overflow-y: auto;
-
-        background: rgba(47, 35, 17, .82);
-
-        backdrop-filter: blur(9px);
-        -webkit-backdrop-filter: blur(9px);
-
-        transition: opacity .25s ease, visibility .25s ease;
-    }
-
-    .auth-overlay.is-hidden {
-        opacity: 0;
-        visibility: hidden;
-        pointer-events: none;
-    }
-
-    .construction-bg {
-        position: absolute;
-        inset: 0;
-
-        pointer-events: none;
-
-        background:
-            url('/assets/img/construcao-bg.jpg')
-            center / cover no-repeat;
-
-        animation: zoomFundo 18s ease-in-out infinite alternate;
-    }
-
-    .construction-bg::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-
-        background: linear-gradient(
-            135deg,
-            rgba(49, 34, 12, .82),
-            rgba(91, 64, 20, .68),
-            rgba(115, 80, 24, .48)
-        );
+        padding: 12px;
     }
 
     .auth-card {
-        position: relative;
-        z-index: 2;
-
-        width: 100%;
-        max-width: 440px;
-
-        padding: 34px 32px 28px;
-
-        background: rgba(255, 254, 250, .98);
-
-        border: 1px solid #d7c39d;
-        border-radius: 16px;
-
-        box-shadow: 0 25px 80px rgba(0, 0, 0, .30);
-
-        overflow: hidden;
-
-        animation: entrada .5s ease both;
+        padding: 28px 21px 23px;
+        border-radius: 14px;
     }
 
-    .auth-card::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-
-        width: 100%;
-        height: 4px;
-
-        background: linear-gradient(
-            90deg,
-            var(--gold-deep),
-            var(--gold-light),
-            var(--gold-deep)
-        );
-
-        background-size: 200% 100%;
-        animation: brilho 6s linear infinite;
-    }
-
-    .auth-heading {
-        margin-top: 8px;
-        text-align: center;
-    }
-
-    .auth-lock {
-        width: 62px;
-        height: 62px;
-
-        display: grid;
-        place-items: center;
-
-        margin: 0 auto 16px;
-
-        background: linear-gradient(
-            135deg,
-            #8a611d,
-            #b08331
-        );
-
-        color: #fff;
-        font-size: 22px;
-
-        border: 1px solid #c39a50;
-        border-radius: 15px;
-
-        box-shadow: 0 9px 23px rgba(128, 89, 28, .22);
+    .auth-logo img {
+        height: 76px;
+        max-width: 200px;
     }
 
     .auth-heading h2 {
-        color: var(--ink);
-        font-family: var(--display);
-        font-size: 23px;
-        font-weight: 800;
-        letter-spacing: -.04em;
-    }
-
-    .auth-heading span {
-        display: block;
-        margin-top: 7px;
-
-        color: var(--gold-dark);
-        font-family: var(--mono);
-        font-size: 9px;
-        letter-spacing: .13em;
-        text-transform: uppercase;
-    }
-
-    .auth-divider {
-        width: 65px;
-        height: 2px;
-
-        margin: 14px auto;
-
-        background: linear-gradient(
-            90deg,
-            transparent,
-            var(--gold),
-            transparent
-        );
+        font-size: 21px;
     }
 
     .auth-description {
-        margin: 17px 0 24px;
-
-        color: var(--muted);
-        font-size: 12px;
-        line-height: 1.7;
-        text-align: center;
-    }
-
-    .auth-card label {
-        display: block;
-        margin-bottom: 9px;
-
-        color: var(--ink);
         font-size: 11px;
-        font-weight: 800;
+        margin-bottom: 20px;
     }
 
-    .password-field {
-        position: relative;
-        width: 100%;
+}
+
+@media (max-width: 380px) {
+
+    .logos img:first-child {
+        height: 55px;
+        max-width: 135px;
     }
 
-    .auth-card input {
-        width: 100%;
-        height: 49px;
-
-        padding: 0 48px 0 15px;
-
-        background: #faf8f2;
-
-        border: 1px solid #d9cdb7;
-        border-radius: 8px;
-
-        color: var(--ink);
-        font-size: 13px;
-
-        outline: none;
-
-        transition: border-color var(--transition), box-shadow var(--transition);
+    .logos img:nth-of-type(2) {
+        height: 36px;
+        max-width: 105px;
     }
 
-    .auth-card input::placeholder {
-        color: #a99b83;
+    .divisor {
+        height: 32px;
     }
 
-    .auth-card input:focus {
-        background: #fffefa;
-        border-color: var(--gold);
-
-        box-shadow: 0 0 0 3px rgba(168, 121, 39, .13);
+    .auth-card {
+        padding: 25px 19px 22px;
     }
 
-    .toggle-password {
-        position: absolute;
-        top: 0;
-        right: 0;
+}
 
-        width: 47px;
-        height: 49px;
 
-        display: grid;
-        place-items: center;
+/* TELAS COM POUCA ALTURA */
 
-        background: transparent;
-        border: 0;
-        border-radius: 0 8px 8px 0;
+@media (max-height: 650px) {
 
-        color: #88795f;
-        font-size: 15px;
-
-        transition: color var(--transition);
+    .auth-overlay {
+        align-items: flex-start;
     }
 
-    .toggle-password:hover {
-        color: var(--gold-dark);
+    .auth-card {
+        margin-top: 8px;
+        margin-bottom: 8px;
+
+        padding-top: 22px;
+        padding-bottom: 20px;
     }
 
-    .auth-error {
-        display: none;
-
-        margin-bottom: 15px;
-        padding: 11px 12px;
-
-        background: #fbefed;
-        border: 1px solid #ebd0cc;
-        border-radius: 8px;
-
-        color: var(--red);
-        font-size: 11px;
-        line-height: 1.5;
+    .auth-logo {
+        margin-bottom: 10px;
     }
 
-    .auth-error.show {
-        display: block;
+    .auth-logo img {
+        height: 58px;
     }
 
-    /* BOTÃO ENTRAR */
-
-    .btn-primary {
-        position: relative;
-        overflow: hidden;
-
-        width: 100%;
-        height: 51px;
-
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-
-        margin-top: 17px;
-
-        background: linear-gradient(
-            135deg,
-            #8b621e,
-            #a87927,
-            #8b621e
-        );
-
-        border: 1px solid #785316;
-        border-radius: 8px;
-
-        color: #fff;
-
-        font-size: 12px;
-        font-weight: 800;
-        letter-spacing: .04em;
-
-        box-shadow: 0 7px 18px rgba(128, 89, 28, .20);
-
-        transition: var(--transition);
-    }
-
-    .btn-primary::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-
-        background: linear-gradient(
-            110deg,
-            transparent 25%,
-            rgba(255, 255, 255, .25) 48%,
-            transparent 70%
-        );
-
-        transform: translateX(-120%);
-        transition: transform .6s ease;
-    }
-
-    .btn-primary:hover::before {
-        transform: translateX(120%);
-    }
-
-    .btn-primary:hover {
-        background: linear-gradient(135deg, #a87927, #bd913d);
-        border-color: #c69a4a;
-
-        transform: translateY(-2px);
-        box-shadow: 0 10px 24px rgba(128, 89, 28, .25);
-    }
-
-    .btn-primary:active {
-        transform: scale(.98);
-    }
-
-    .btn-primary:disabled {
-        opacity: .7;
-        cursor: wait;
-        transform: none;
+    .auth-description {
+        margin: 12px 0 17px;
     }
 
     .auth-footnote {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 7px;
-
-        margin-top: 21px;
-
-        color: #a99b83;
-        font-family: var(--mono);
-        font-size: 8px;
-        letter-spacing: .06em;
-        text-align: center;
+        margin-top: 14px;
     }
 
-    .auth-footnote i {
-        color: var(--gold-dark);
+}
+
+
+/* ACESSIBILIDADE */
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+
+    outline: 2px solid var(--gold);
+
+    outline-offset: 3px;
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+
+        scroll-behavior: auto !important;
+
+        animation-duration: .01ms !important;
+
+        transition-duration: .01ms !important;
+
     }
 
-    /* ==================================================
-       RESPONSIVIDADE
-       ================================================== */
+}
 
-    @media (max-width: 900px) {
-        .top-header {
-            flex-direction: column;
-            align-items: stretch;
-        }
-
-        .header-context {
-            align-items: flex-start;
-            padding-top: 10px;
-            border-top: 1px solid var(--border);
-        }
-
-        .main {
-            padding-top: 48px;
-        }
-    }
-
-    @media (max-width: 650px) {
-        .app {
-            padding: 12px 12px 0;
-        }
-
-        .top-header {
-            padding: 14px;
-            gap: 12px;
-        }
-
-        .logos {
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .logos img {
-            height: 42px;
-            max-width: 125px;
-        }
-
-        .logos img:first-child {
-            height: 66px;
-            max-width: 165px;
-        }
-
-        .logos img:nth-of-type(2) {
-            height: 43px;
-            max-width: 125px;
-        }
-
-        .divisor {
-            height: 38px;
-        }
-
-        .header-context span {
-            font-size: 8px;
-        }
-
-        .header-context strong {
-            font-size: 10px;
-        }
-
-        .main {
-            padding: 38px 4% 42px;
-        }
-
-        .page-label {
-            font-size: 9px;
-        }
-
-        .page-code {
-            font-size: 8px;
-        }
-
-        .heading h1 {
-            font-size: clamp(34px, 9vw, 43px);
-        }
-
-        .heading p {
-            font-size: 12px;
-        }
-
-        .access-area {
-            margin-top: 37px;
-        }
-
-        .access-header strong {
-            font-size: 9px;
-        }
-
-        .access-grid {
-            grid-template-columns: 1fr;
-            gap: 13px;
-        }
-
-        .access-card {
-            min-height: 215px;
-            padding: 21px;
-        }
-
-        .card-content h2 {
-            font-size: 18px;
-        }
-
-        .footer {
-            flex-direction: column;
-            justify-content: center;
-            gap: 8px;
-
-            padding: 15px;
-            text-align: center;
-            font-size: 7px;
-        }
-
-        .footer-right {
-            text-align: center;
-        }
-
-        .auth-overlay {
-            padding: 12px;
-        }
-
-        .auth-card {
-            padding: 28px 21px 23px;
-        }
-
-        .auth-heading h2 {
-            font-size: 21px;
-        }
-
-        .auth-description {
-            font-size: 11px;
-            margin-bottom: 20px;
-        }
-    }
-
-    @media (max-width: 380px) {
-        .logos img:first-child {
-            height: 55px;
-            max-width: 135px;
-        }
-
-        .logos img:nth-of-type(2) {
-            height: 36px;
-            max-width: 105px;
-        }
-
-        .auth-card {
-            padding: 25px 19px 22px;
-        }
-    }
-
-    @media (max-height: 650px) {
-        .auth-overlay {
-            align-items: flex-start;
-        }
-
-        .auth-card {
-            margin: 8px 0;
-            padding-top: 22px;
-            padding-bottom: 20px;
-        }
-
-        .auth-lock {
-            width: 48px;
-            height: 48px;
-            margin-bottom: 10px;
-        }
-
-        .auth-description {
-            margin: 12px 0 17px;
-        }
-
-        .auth-footnote {
-            margin-top: 14px;
-        }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-        *,
-        *::before,
-        *::after {
-            scroll-behavior: auto !important;
-            animation-duration: .01ms !important;
-            transition-duration: .01ms !important;
-        }
-    }
-
-    </style>
+</style>
 </head>
 
 <body>
 
 <div class="app">
 
-    <!-- CABEÇALHO -->
+
+    <!-- =====================================================
+         CABEÇALHO
+         ===================================================== -->
 
     <header class="top-header">
 
@@ -1175,14 +1677,20 @@
         </div>
 
         <div class="header-context">
+
             <span>TECNOLOGIA E SISTEMAS</span>
+
             <strong>DESENVOLVIMENTO</strong>
+
         </div>
 
     </header>
 
 
-    <!-- CONTEÚDO PRINCIPAL -->
+
+    <!-- =====================================================
+         CONTEÚDO PRINCIPAL
+         ===================================================== -->
 
     <main class="main">
 
@@ -1212,20 +1720,28 @@
         </section>
 
 
-        <!-- AMBIENTES -->
+
+        <!-- =================================================
+             AMBIENTES DISPONÍVEIS
+             ================================================= -->
 
         <section class="access-area">
 
             <div class="access-header">
 
-                <strong>AMBIENTES DISPONÍVEIS</strong>
+                <strong>
+                    AMBIENTES DISPONÍVEIS
+                </strong>
 
-                <span>02 MÓDULOS</span>
+                <span>
+                    02 MÓDULOS
+                </span>
 
             </div>
 
 
             <div class="access-grid">
+
 
                 <!-- PAINEL DO ENGENHEIRO -->
 
@@ -1241,7 +1757,9 @@
                         </span>
 
                         <div class="card-symbol">
+
                             <i class="fa-solid fa-building"></i>
+
                         </div>
 
                     </div>
@@ -1249,7 +1767,9 @@
 
                     <div class="card-content">
 
-                        <h2>Painel do Engenheiro</h2>
+                        <h2>
+                            Painel do Engenheiro
+                        </h2>
 
                         <p>
                             Administração, controle e gestão de obras.
@@ -1260,13 +1780,18 @@
 
                     <div class="card-footer">
 
-                        <span>ACESSAR AMBIENTE</span>
+                        <span>
+                            ACESSAR AMBIENTE
+                        </span>
 
-                        <div class="card-arrow">↗</div>
+                        <div class="card-arrow">
+                            ↗
+                        </div>
 
                     </div>
 
                 </a>
+
 
 
                 <!-- ÁREA DO CLIENTE -->
@@ -1283,7 +1808,9 @@
                         </span>
 
                         <div class="card-symbol">
+
                             <i class="fa-solid fa-house"></i>
+
                         </div>
 
                     </div>
@@ -1291,7 +1818,9 @@
 
                     <div class="card-content">
 
-                        <h2>Área do Cliente</h2>
+                        <h2>
+                            Área do Cliente
+                        </h2>
 
                         <p>
                             Projetos, acompanhamento e informações da obra.
@@ -1302,13 +1831,18 @@
 
                     <div class="card-footer">
 
-                        <span>ACESSAR AMBIENTE</span>
+                        <span>
+                            ACESSAR AMBIENTE
+                        </span>
 
-                        <div class="card-arrow">↗</div>
+                        <div class="card-arrow">
+                            ↗
+                        </div>
 
                     </div>
 
                 </a>
+
 
             </div>
 
@@ -1317,7 +1851,10 @@
     </main>
 
 
-    <!-- RODAPÉ -->
+
+    <!-- =====================================================
+         RODAPÉ
+         ===================================================== -->
 
     <footer class="footer">
 
@@ -1327,7 +1864,9 @@
 
         <div class="footer-right">
 
-            <strong>PLATAFORMA DE GESTÃO</strong>
+            <strong>
+                PLATAFORMA DE GESTÃO
+            </strong>
 
             / AMBIENTE CORPORATIVO
 
@@ -1338,9 +1877,10 @@
 </div>
 
 
-<!-- ==================================================
+
+<!-- =========================================================
      LOGIN ADMINISTRATIVO
-     ================================================== -->
+     ========================================================= -->
 
 <div class="auth-overlay" id="authOverlay">
 
@@ -1353,26 +1893,51 @@
         autocomplete="on"
     >
 
+
+        <!-- IDENTIFICAÇÃO DO LOGIN -->
+
         <div class="auth-heading">
 
-            <div class="auth-lock">
-                <i class="fa-solid fa-lock"></i>
+
+            <!-- LOGO DO ENGENHEIRO NO LUGAR DO CADEADO -->
+
+            <div class="auth-logo">
+
+                <img
+                    src="/assets/img/logo-engenheiro.png"
+                    alt="PH Engenharia"
+                    onerror="this.style.display='none'"
+                >
+
             </div>
 
-            <h2>Gestão de Obras</h2>
+
+            <h2>
+                Gestão de Obras
+            </h2>
+
 
             <div class="auth-divider"></div>
 
-            <span>Acesso administrativo</span>
+
+            <span>
+                Acesso administrativo
+            </span>
 
         </div>
 
 
+
         <p class="auth-description">
+
             Informe sua senha para acessar a central administrativa
             e realizar a gestão de obras, projetos e clientes.
+
         </p>
 
+
+
+        <!-- MENSAGEM DE ERRO -->
 
         <div
             id="authError"
@@ -1381,6 +1946,9 @@
             aria-live="polite"
         ></div>
 
+
+
+        <!-- CAMPO DE SENHA -->
 
         <label for="adminPassword">
             Senha de acesso
@@ -1398,6 +1966,7 @@
                 placeholder="Digite sua senha"
             >
 
+
             <button
                 type="button"
                 class="toggle-password"
@@ -1405,11 +1974,16 @@
                 aria-label="Mostrar senha"
                 title="Mostrar senha"
             >
+
                 <i class="fa-regular fa-eye"></i>
+
             </button>
 
         </div>
 
+
+
+        <!-- BOTÃO DE ENTRADA -->
 
         <button
             type="submit"
@@ -1417,12 +1991,17 @@
             id="btnEntrar"
         >
 
-            <span>Entrar no sistema</span>
+            <span>
+                Entrar no sistema
+            </span>
 
             <i class="fa-solid fa-arrow-right"></i>
 
         </button>
 
+
+
+        <!-- RODAPÉ DO LOGIN -->
 
         <div class="auth-footnote">
 
@@ -1434,57 +2013,88 @@
 
         </div>
 
+
     </form>
 
 </div>
 
 
-<!-- ==================================================
-     JAVASCRIPT — AUTENTICAÇÃO
+
+<!-- =========================================================
+     JAVASCRIPT — AUTENTICAÇÃO PH ENGENHARIA
+
      API: /api/erp/login
-     SESSÃO: /api/erp/session
-     COOKIE: ph_erp_admin (HttpOnly)
-     ================================================== -->
+     Sessão: /api/erp/session
+     Cookie: ph_erp_admin (HttpOnly)
+     ========================================================= -->
 
 <script>
 
+
+/* =========================================================
+   ELEMENTOS
+   ========================================================= */
+
 const authForm = document.getElementById('authForm');
+
 const authOverlay = document.getElementById('authOverlay');
+
 const authError = document.getElementById('authError');
+
 const adminPassword = document.getElementById('adminPassword');
+
 const btnEntrar = document.getElementById('btnEntrar');
+
 const togglePassword = document.getElementById('togglePassword');
 
 const botaoOriginal = btnEntrar.innerHTML;
 
 
-/* MENSAGENS */
+
+/* =========================================================
+   MENSAGENS
+   ========================================================= */
 
 function mostrarErro(mensagem) {
+
     authError.textContent = mensagem;
+
     authError.classList.add('show');
+
 }
+
 
 function limparErro() {
+
     authError.textContent = '';
+
     authError.classList.remove('show');
+
 }
 
 
-/* LIBERAR ACESSO */
+
+/* =========================================================
+   LIBERAR ACESSO
+   ========================================================= */
 
 function liberarAcesso() {
 
     authOverlay.classList.add('is-hidden');
 
     setTimeout(() => {
+
         authOverlay.style.display = 'none';
+
     }, 260);
 
 }
 
 
-/* LOGIN */
+
+/* =========================================================
+   LOGIN ADMINISTRATIVO
+   ========================================================= */
 
 authForm.addEventListener('submit', async function(event) {
 
@@ -1492,24 +2102,39 @@ authForm.addEventListener('submit', async function(event) {
 
     limparErro();
 
+
     const senha = adminPassword.value;
 
+
     if (!senha) {
+
         mostrarErro('Digite sua senha para continuar.');
+
         adminPassword.focus();
+
         return;
+
     }
+
 
     btnEntrar.disabled = true;
 
+
     btnEntrar.innerHTML = `
+
         <span>Validando acesso...</span>
+
         <i class="fa-solid fa-spinner fa-spin"></i>
+
     `;
+
 
     try {
 
-        /* ETAPA 1 — VALIDAR SENHA */
+
+        /* ---------------------------------------------
+           ETAPA 1 — VALIDAR SENHA NO SERVIDOR
+           --------------------------------------------- */
 
         const resposta = await fetch('/api/erp/login', {
 
@@ -1520,12 +2145,17 @@ authForm.addEventListener('submit', async function(event) {
             cache: 'no-store',
 
             headers: {
+
                 'Content-Type': 'application/json',
+
                 'Accept': 'application/json'
+
             },
 
             body: JSON.stringify({
+
                 password: senha
+
             })
 
         });
@@ -1533,21 +2163,31 @@ authForm.addEventListener('submit', async function(event) {
 
         const dados = await resposta.json().catch(() => ({}));
 
+
         if (!resposta.ok || dados.success !== true) {
 
             throw new Error(
+
                 dados.error ||
+
                 dados.message ||
+
                 'Não foi possível validar a senha.'
+
             );
 
         }
 
 
+        /* LIMPAR SENHA APÓS AUTENTICAÇÃO */
+
         adminPassword.value = '';
 
 
-        /* ETAPA 2 — CONFIRMAR SESSÃO */
+
+        /* ---------------------------------------------
+           ETAPA 2 — CONFIRMAR SESSÃO
+           --------------------------------------------- */
 
         const sessao = await fetch('/api/erp/session', {
 
@@ -1558,7 +2198,9 @@ authForm.addEventListener('submit', async function(event) {
             cache: 'no-store',
 
             headers: {
+
                 Accept: 'application/json'
+
             }
 
         });
@@ -1566,38 +2208,57 @@ authForm.addEventListener('submit', async function(event) {
 
         const estado = await sessao.json().catch(() => ({}));
 
+
         if (!sessao.ok || estado.authenticated !== true) {
 
             throw new Error(
+
                 'A senha foi aceita, mas a sessão não foi reconhecida. Verifique as configurações de cookie e domínio.'
+
             );
 
         }
 
 
-        /* ETAPA 3 — LIBERAR AMBIENTE */
+
+        /* ---------------------------------------------
+           ETAPA 3 — LIBERAR AMBIENTE
+           --------------------------------------------- */
 
         liberarAcesso();
 
+
         sessionStorage.setItem(
+
             'loginTimestamp',
+
             Date.now().toString()
+
         );
 
 
     } catch (erro) {
 
+
         mostrarErro(
+
             erro.message ||
+
             'Não foi possível conectar ao servidor. Tente novamente.'
+
         );
 
+
         adminPassword.focus();
+
         adminPassword.select();
+
 
     } finally {
 
+
         btnEntrar.disabled = false;
+
         btnEntrar.innerHTML = botaoOriginal;
 
     }
@@ -1605,45 +2266,75 @@ authForm.addEventListener('submit', async function(event) {
 });
 
 
-/* MOSTRAR / OCULTAR SENHA */
+
+/* =========================================================
+   MOSTRAR / OCULTAR SENHA
+   ========================================================= */
 
 togglePassword.addEventListener('click', function() {
 
+
     const senhaVisivel = adminPassword.type === 'text';
 
-    adminPassword.type = senhaVisivel ? 'password' : 'text';
+
+    adminPassword.type = senhaVisivel
+
+        ? 'password'
+
+        : 'text';
+
 
     togglePassword.innerHTML = senhaVisivel
+
         ? '<i class="fa-regular fa-eye"></i>'
+
         : '<i class="fa-regular fa-eye-slash"></i>';
 
-    togglePassword.setAttribute(
-        'aria-label',
-        senhaVisivel ? 'Mostrar senha' : 'Ocultar senha'
-    );
 
     togglePassword.setAttribute(
-        'title',
+
+        'aria-label',
+
         senhaVisivel ? 'Mostrar senha' : 'Ocultar senha'
+
     );
+
+
+    togglePassword.setAttribute(
+
+        'title',
+
+        senhaVisivel ? 'Mostrar senha' : 'Ocultar senha'
+
+    );
+
 
     adminPassword.focus();
 
 });
 
 
-/* LIMPAR ERRO AO DIGITAR */
+
+/* =========================================================
+   LIMPAR ERRO AO DIGITAR
+   ========================================================= */
 
 adminPassword.addEventListener('input', limparErro);
 
 
-/* INICIALIZAÇÃO */
+
+/* =========================================================
+   INICIALIZAÇÃO
+   ========================================================= */
 
 authOverlay.classList.remove('is-hidden');
+
 authOverlay.style.display = 'flex';
 
 adminPassword.value = '';
+
 adminPassword.focus();
+
 
 </script>
 
