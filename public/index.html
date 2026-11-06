@@ -203,137 +203,155 @@ a {
 }
 
 
-/* =========================================================
-   CABEÇALHO — GOLDEN ARCHITECTURE
-   ========================================================= */
+/* =========================================
+   CABEÇALHO
+   ========================================= */
 
 .top-header {
+  position: relative;
+  top: auto;
+  z-index: 2;
 
-    position: relative;
-    z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 22px;
 
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
+  padding: 16px 24px;
 
-    gap: 22px;
+  background: linear-gradient(
+    135deg,
+    #f9fbfc 0%,
+    #e7eef2 100%
+  );
 
-    padding: 15px 24px;
+  color: var(--dark);
 
-    /* COR ORIGINAL DO CABEÇALHO MINHA OBRA */
+  border: 1px solid #cbd9e0;
+  border-radius: 14px;
 
-    background: rgba(23,26,29,.97);
+  box-shadow:
+    0 12px 30px rgba(25, 49, 63, .075),
+    0 2px 5px rgba(25, 49, 63, .035);
 
-    border: 1px solid rgba(184,148,94,.32);
-    border-radius: 14px;
+  backdrop-filter: none;
 
-    box-shadow:
-        0 12px 35px rgba(28,27,23,.12);
+  animation: entradaSuave .65s ease both;
 
-    backdrop-filter: blur(18px);
-
-    animation: entradaSuave .65s ease both;
-
-    overflow: hidden;
-
+  overflow: hidden;
 }
-
-
-/* LINHA DOURADA INFERIOR */
 
 .top-header::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
 
-    content: "";
+  width: 100%;
+  height: 2px;
 
-    position: absolute;
-    bottom: 0;
-    left: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--accent),
+    var(--gold-light),
+    transparent
+  );
 
-    width: 100%;
-    height: 2px;
+  background-size: 200% 100%;
 
-    background: linear-gradient(
-        90deg,
-        transparent,
-        var(--gold-light),
-        var(--gold),
-        transparent
-    );
+  animation: brilhoDourado 8s linear infinite;
 
-    background-size: 200% 100%;
-
-    animation: brilhoDourado 7s linear infinite;
-
-    opacity: .9;
-
+  opacity: .8;
 }
 
-
-/* LOGOTIPOS */
-
 .logos {
-
-    display: flex;
-    align-items: center;
-
-    gap: 20px;
-
-    min-width: 0;
-
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  min-width: 0;
 }
 
 .logos img {
+  height: 68px;
+  max-width: 230px;
 
-    display: block;
+  padding: 0;
+  object-fit: contain;
 
-    height: 68px;
-    max-width: 230px;
+  background: transparent !important;
 
-    padding: 0;
+  border: 0;
+  border-radius: 0;
 
-    object-fit: contain;
+  box-shadow: none;
 
-    background: transparent;
+  filter: drop-shadow(
+    0 2px 4px rgba(23, 45, 59, .10)
+  );
 
-    border: 0;
-    border-radius: 0;
-
-    box-shadow: none;
-
-    transition: transform var(--transition);
-
+  transition:
+    transform var(--transition),
+    filter var(--transition);
 }
 
 .logos img:first-child {
-
-    height: 105px;
-    max-width: 270px;
-
+  height: 105px;
+  max-width: 270px;
 }
 
 .logos img:nth-of-type(2) {
-
-    height: 62px;
-    max-width: 190px;
-
+  height: 62px;
+  max-width: 190px;
 }
 
 .logos img:hover {
+  transform: translateY(-2px) scale(1.015);
 
-    transform: translateY(-2px);
-
+  filter: drop-shadow(
+    0 5px 8px rgba(23, 45, 59, .16)
+  );
 }
 
+.logos .divisor,
 .divisor {
+  width: 1px;
+  height: 55px;
+  background: rgba(36, 67, 82, .20);
+}
 
-    width: 1px;
-    height: 55px;
+.obra-id-display {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
 
-    background: rgba(255,255,255,.20);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: .04em;
 
-    flex-shrink: 0;
+  color: #657984;
 
+  border-left: 1px solid rgba(36, 67, 82, .20);
+  padding-left: 14px;
+}
+
+.obra-id-display strong {
+  color: var(--accent-dark);
+  font-weight: 500;
+}
+
+#tagTipo {
+  display: inline-flex;
+  margin-left: 5px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 
