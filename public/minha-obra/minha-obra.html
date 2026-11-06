@@ -225,7 +225,24 @@ const viewLabels = {
  'calculadoras':'Calculadoras','fluxo':'Fluxo de caixa','documentos':'Documentos','relatorios':'Relatórios','cronograma':'Cronograma físico',
  'diario':'Diário de obra','compras':'Compras e cotações','contas':'Contas a pagar/receber','historico':'Histórico','qualidade':'Qualidade e pendências','equipe':'Equipe de obras'
 };
-const appState = {records:[],portalClients:[],current:null,data:null,editId:null,saveTimer:null,historyTimer:null,pendingAuditLabel:null,saving:false,dirty:false,revision:0,files:[],updates:[],calcItems:[],professionalCatalog:[]};
+const appState = {
+  records: [],
+  portalClients: [],
+  current: null,
+  data: null,
+  editId: null,
+  saveTimer: null,
+  historyTimer: null,
+  pendingAuditLabel: null,
+  saving: false,
+  savePromise: null,
+  dirty: false,
+  revision: 0,
+  files: [],
+  updates: [],
+  calcItems: [],
+  professionalCatalog: []
+};
 
 const professionalRoles=['Pedreiro','Ajudante de pedreiro','Servente','Mestre de obras','Eletricista','Encanador','Pintor','Carpinteiro','Gesseiro','Azulejista','Serralheiro','Outros'];
 async function loadProfessionalCatalog(){const records=appState.records||[];const details=await Promise.all(records.map(async r=>{try{return await api('/api/erp/obras/'+encodeURIComponent(r.id));}catch(e){return null;}}));const map=new Map();details.filter(Boolean).forEach(r=>(Array.isArray(r.dados?.profissionais)?r.dados.profissionais:[]).forEach(p=>{if(p?.id&&p.nome)map.set(String(p.id),{...p,id:String(p.id)});}));appState.professionalCatalog=Array.from(map.values()).sort((a,b)=>String(a.nome).localeCompare(String(b.nome),'pt-BR'));}
@@ -311,57 +328,622 @@ function recordMeta(){return appState.current||{};}
 function selectedWorkCode(cpf){return `PH-${new Date().getFullYear()}-${onlyDigits(cpf).slice(-4)}-${Math.floor(1000+Math.random()*9000)}`;}
 
 async function loadInitialData() {
- try {
-  setConnection(true,'Conectando ao banco');
-  const [records,clients]=await Promise.all([api('/api/erp/obras'),api('/api/erp/clientes').catch(()=>[])]);
-  appState.records=Array.isArray(records)?records:[];appState.portalClients=Array.isArray(clients)?clients:[];
-  await loadProfessionalCatalog();
-  renderPortalClientOptions();renderRecordOptions();setConnection(true,'Banco conectado');
-  if(appState.records.length) await openRecord(appState.records[0].id,{skipDirty:true}); else renderNoRecord();
- } catch(e){setConnection(false,'Falha no banco');toast(e.message,'error');renderNoRecord();}
+  try {
+    setConnection(true, 'Conectando ao banco');
+
+    const [records, clients] = await Promise.all([
+      api('/api/erp/obras'),
+      api('/api/erp/clientes').catch(() => [])
+    ]);
+
+    appState.records = Array.isArray(records) ? records : [];
+    appState.portalClients = Array.isArray(clients) ? clients : [];
+
+    renderPortalClientOptions();
+    renderRecordOptions();
+
+    setConnection(true, 'Banco conectado');
+
+    if (appState.records.length) {
+      await openRecord(
+        appState.records[0].id,
+        { skipDirty: true }
+      );
+    } else {
+      renderNoRecord();
+    }
+
+    // O catálogo complementar não deve bloquear a abertura da obra.
+    loadProfessionalCatalog()
+      .then(() => {
+        renderProfessionalDirectory();
+
+        if (
+          $('#modalObra').classList.contains('active') &&
+          appState.editId
+        ) {
+          const checked = $$(
+            '[data-team-select]:checked',
+            '#obraTeamSelection'
+          ).map(el => String(el.value));
+
+          const linked = (appState.data?.equipe || [])
+            .map(person => String(person.id));
+
+          renderWorkTeamSelection(
+            Array.from(new Set([...checked, ...linked]))
+          );
+        }
+      })
+      .catch(error => {
+        console.warn(
+          '[Minha Obra] Falha ao carregar catálogo de profissionais:',
+          error
+        );
+      });
+
+  } catch (e) {
+    setConnection(false, 'Falha no banco');
+    toast(e.message, 'error');
+    renderNoRecord();
+  }
 }
-function renderRecordOptions(){const s=$('#obraSelecionada'),sel=appState.current?.id||'';s.innerHTML='<option value="">Selecione uma obra</option>'+appState.records.map(r=>`<option value="${esc(r.id)}" ${String(r.id)===String(sel)?'selected':''}>${esc(r.id_obra)} · ${esc(r.cliente_nome)}</option>`).join('');}
-function renderPortalClientOptions(selected=''){const s=$('#clienteVinculado');s.innerHTML='<option value="">Sem vínculo com portal</option>'+appState.portalClients.map(c=>`<option value="${esc(c.id)}" ${String(selected)===String(c.id)?'selected':''}>${esc(c.nome)} — ${esc(c.email||'sem e-mail')}</option>`).join('');}
-function renderNoRecord(){
- clearTimeout(appState.historyTimer);clearTimeout(appState.saveTimer);appState.pendingAuditLabel=null;appState.current=null;appState.data=null;appState.dirty=false;appState.revision++;
- $('#cadastroOverview').hidden=true;$('#cadastroOverviewContent').innerHTML='';$('#displayObraId').textContent='NENHUMA';$('#displayCPF').textContent='—';$('#obraStatus').textContent='Aguardando seleção';$('#obraSelecionada').value='';$('#kpiIdObra').textContent='Nenhuma obra selecionada';
- ['tbodyComparativo','tbodyFornecedores','tbodyEstoque','tbodyFluxo','tbodyCronogramaFisico','tbodyCompras','tbodyCotacoes','tbodyContas','tbodyQualidade'].forEach(id=>$('#'+id).innerHTML='<tr><td colspan="10" class="empty-row">Selecione ou cadastre uma obra.</td></tr>');
- ['tbodyCronograma','checklistCaixa'].forEach(id=>$('#'+id).innerHTML='');
- $('#listaDocumentos').innerHTML='<div class="record-empty"><i class="fa-regular fa-folder-open"></i><strong>Selecione uma obra</strong><span>Os documentos serão listados aqui.</span></div>';
- ['listaDiario','listaArquivos','listaAtualizacoes','listaHistorico'].forEach(id=>$('#'+id).innerHTML='');$('#historicoCount').textContent='0 eventos';
- ['kpiContrato','kpiGasto','kpiSaldo','kpiLucro','kpiOrcado','kpiDesvio','kpiFluxo','kpiProjecao','kpiContasAbertas','resumoContrato','resumoOrcado','resumoGasto','resumoTaxas','resumoSaldo','resumoLucro','caixaJaLiberado','caixaAReceber','totalEntradas','totalSaidas','saldoFluxo','comprasPlanejado','comprasComprado','contasPagar','contasReceber'].forEach(id=>{const e=$('#'+id);if(e)e.textContent='R$ 0,00';});
- ['resumoFornecedores','resumoMateriais','resumoMovimentos','resumoEtapas','resumoDiario','resumoCompras','comprasPendentes','contasVencidas'].forEach(id=>{const e=$('#'+id);if(e)e.textContent='0';});
- $('#progressGasto').style.width='0%';$('#progressFisico').style.width='0%';$('#kpiAvanco').textContent='0%';$('#kpiPctGasto').textContent='0% do contrato consumido';$('#kpiPctRestante').textContent='0% disponível';$('#kpiMargem').textContent='Margem planejada 0%';$('#kpiDesvioNota').textContent='Sem lançamentos';$('#dashboardAlertCount').textContent='0 alertas';$('#dashboardAlertsList').innerHTML='<div class="dashboard-alert-item"><i class="fa-solid fa-circle-info"></i><span>Selecione uma obra para visualizar os alertas.</span></div>';
- $('#resumoIdObra').textContent='—';$('#cronogramaResumo').textContent='0% concluído';$('#comprasResumo').textContent='0 itens';$('#cotacoesResumo').textContent='0 cotações';$('#cotCompra').innerHTML='<option value="">Cadastre um item de compra primeiro</option>';$('#diarioCount').textContent='0 registros';$('#qualidadeResumo').textContent='0 pendências';$('#qualidadeAbertas').textContent='0';$('#qualidadeCorrecao').textContent='0';$('#qualidadeResolvidas').textContent='0';$('#qualidadeVencidas').textContent='0';$('#forecastCost').textContent='Sem base';$('#forecastDate').textContent='Sem base';$('#forecastRisk').textContent='Sem análise';$('#listaEquipeObra').innerHTML='<div class="record-empty">Selecione uma obra.</div>';$('#equipeObraResumo').textContent='0 envolvidos';renderProfessionalDirectory();$('#alertaEstouro').style.display='none';setRecordButtons(false);setSaveState('','Nenhuma alteração pendente');updateCaixaVisibility();
-}
-async function openRecord(id,opts={}){
- if(!id)return renderNoRecord();
- if(appState.dirty&&!opts.skipDirty){const save=confirm('Há alterações pendentes nesta obra. Deseja salvar antes de trocar?\n\nOK = salvar e trocar. Cancelar = permanecer nesta obra.');if(!save)return;await saveCurrent(false);if(appState.dirty)return toast('Não foi possível sincronizar as alterações. A troca foi cancelada.','error');}
- try{setSaveState('pending','Carregando obra...');const r=await api('/api/erp/obras/'+encodeURIComponent(id));appState.current=r;appState.data=mergeData(r.dados||{},{});appState.dirty=false;appState.revision++;renderRecordOptions();hydrateMeta();renderAll();await loadLinkedPortalData();setRecordButtons(true);setSaveState('','Dados sincronizados');}
- catch(e){toast(e.message,'error');setSaveState('error','Falha ao carregar');}
+  
+async function openRecord(id, opts = {}) {
+  if (!id) return renderNoRecord();
+
+  if (appState.dirty && !opts.skipDirty) {
+    const save = confirm(
+      'Há alterações pendentes nesta obra. Deseja salvar antes de trocar?\n\n' +
+      'OK = salvar e trocar. Cancelar = permanecer nesta obra.'
+    );
+
+    if (!save) return;
+
+    const saved = await saveCurrent(false);
+
+    if (!saved || appState.dirty) {
+      return toast(
+        'Não foi possível sincronizar as alterações. A troca foi cancelada.',
+        'error'
+      );
+    }
+  }
+
+  try {
+    setSaveState('pending', 'Carregando obra...');
+
+    const r = await api(
+      '/api/erp/obras/' + encodeURIComponent(id)
+    );
+
+    appState.current = r;
+    appState.data = mergeData(r.dados || {}, {});
+    appState.dirty = false;
+    appState.revision++;
+
+    renderRecordOptions();
+    hydrateMeta();
+    renderAll();
+
+    // Libera os comandos antes do carregamento complementar do portal.
+    setRecordButtons(true);
+
+    setSaveState('', 'Dados sincronizados');
+
+    loadLinkedPortalData().catch(error => {
+      console.warn(
+        '[Minha Obra] Falha ao carregar dados do portal:',
+        error
+      );
+
+      appState.files = [];
+      appState.updates = [];
+
+      renderLinkedFiles();
+      renderLinkedUpdates();
+    });
+
+  } catch (e) {
+    toast(e.message, 'error');
+    setSaveState('error', 'Falha ao carregar');
+
+    if (appState.current) {
+      setRecordButtons(true);
+    }
+  }
 }
 function hydrateMeta(){const r=recordMeta();$('#displayObraId').textContent=r.id_obra||'—';$('#displayCPF').textContent=formatCPF(r.cpf||'');$('#obraStatus').textContent=r.status||'Em andamento';$('#resumoIdObra').textContent=r.id_obra||'—';$('#kpiIdObra').textContent=r.id_obra||'—';$('#obraSelecionada').value=r.id||'';}
-function openNewModal(record=null){appState.editId=record?.id||null;$('#obraForm').reset();$('#obraFormError').classList.remove('show');$('#obraFormError').textContent='';$('#modalObraTitulo').textContent=record?'Editar cadastro da obra':'Cadastrar nova obra';$('#btnCriarObra').innerHTML=record?'<i class="fa-solid fa-floppy-disk"></i> Salvar cadastro':'<i class="fa-solid fa-check"></i> Criar obra';renderPortalClientOptions(record?.cliente_id||'');renderWorkTeamSelection(record?(appState.current&&String(record.id)===String(appState.current.id)?(appState.data?.equipe||[]):(record.dados?.equipe||[])):[]);
- if(record){const meta=(appState.current&&String(record.id)===String(appState.current.id)&&appState.data?.meta)||record.dados?.meta||{};$('#nomeCliente').value=record.cliente_nome||'';$('#cpfCliente').value=formatCPF(record.cpf||'');$('#telCliente').value=record.telefone||'';$('#enderecoObra').value=record.endereco||'';$('#clienteVinculado').value=record.cliente_id||'';$('#tipoObraCadastro').value=record.tipo||'particular';$('#statusObra').value=record.status||'Em andamento';$('#idObraPreview').value=record.id_obra||'—';$('#metragemTerreno').value=meta.metragem_terreno||'';$('#metragemConstrucao').value=meta.metragem_construcao||'';$('#dataInicio').value=record.data_inicio||'';$('#valorContrato').value=record.valor_contrato||0;$('#margemLucro').value=meta.margem_lucro??20;$('#prazoObra').value=meta.prazo_meses||'';$('#caixaContrato').value=meta.caixa_contrato||'';$('#caixaValor').value=meta.caixa_valor||'';$('#caixaEng').value=meta.caixa_engenheiro||'';}
- else{$('#tipoObraCadastro').value='particular';$('#statusObra').value='Em andamento';$('#idObraPreview').value='Gerado automaticamente';$('#margemLucro').value=20;$('#dataInicio').value=todayISO();}
- updateCaixaFormVisibility();$('#cadastroOverview').hidden=!record;if(record)renderCadastroOverview();$('#modalObra').classList.add('active');$('#modalObra').setAttribute('aria-hidden','false');}
+function openNewModal(record = null) {
+  appState.editId = record?.id || null;
+
+  $('#obraForm').reset();
+
+  $('#obraFormError').classList.remove('show');
+  $('#obraFormError').textContent = '';
+
+  $('#modalObraTitulo').textContent = record
+    ? 'Editar cadastro da obra'
+    : 'Cadastrar nova obra';
+
+  $('#btnCriarObra').innerHTML = record
+    ? '<i class="fa-solid fa-floppy-disk"></i> Salvar cadastro'
+    : '<i class="fa-solid fa-check"></i> Criar obra';
+
+  // O modal aparece antes dos processamentos auxiliares.
+  $('#cadastroOverview').hidden = !record;
+
+  $('#modalObra').classList.add('active');
+  $('#modalObra').setAttribute('aria-hidden', 'false');
+
+  try {
+    renderPortalClientOptions(record?.cliente_id || '');
+
+    const selectedTeam = record
+      ? (
+          appState.current &&
+          String(record.id) === String(appState.current.id)
+            ? (appState.data?.equipe || [])
+            : (record.dados?.equipe || [])
+        )
+      : [];
+
+    renderWorkTeamSelection(selectedTeam);
+
+    if (record) {
+      const meta = (
+        appState.current &&
+        String(record.id) === String(appState.current.id) &&
+        appState.data?.meta
+      ) || record.dados?.meta || {};
+
+      $('#nomeCliente').value = record.cliente_nome || '';
+      $('#cpfCliente').value = formatCPF(record.cpf || '');
+      $('#telCliente').value = record.telefone || '';
+      $('#enderecoObra').value = record.endereco || '';
+
+      $('#clienteVinculado').value = record.cliente_id || '';
+
+      $('#tipoObraCadastro').value =
+        record.tipo || 'particular';
+
+      $('#statusObra').value =
+        record.status || 'Em andamento';
+
+      $('#idObraPreview').value = record.id_obra || '—';
+
+      $('#metragemTerreno').value =
+        meta.metragem_terreno ?? '';
+
+      $('#metragemConstrucao').value =
+        meta.metragem_construcao ?? '';
+
+      $('#dataInicio').value = record.data_inicio || '';
+
+      $('#valorContrato').value =
+        record.valor_contrato ?? 0;
+
+      $('#margemLucro').value =
+        meta.margem_lucro ?? 20;
+
+      $('#prazoObra').value =
+        meta.prazo_meses ?? '';
+
+      $('#caixaContrato').value =
+        meta.caixa_contrato || '';
+
+      $('#caixaValor').value =
+        meta.caixa_valor ?? '';
+
+      $('#caixaEng').value =
+        meta.caixa_engenheiro || '';
+
+    } else {
+      $('#tipoObraCadastro').value = 'particular';
+      $('#statusObra').value = 'Em andamento';
+      $('#idObraPreview').value = 'Gerado automaticamente';
+
+      $('#margemLucro').value = 20;
+      $('#dataInicio').value = todayISO();
+    }
+
+    updateCaixaFormVisibility();
+
+    // Foco inicial para facilitar a edição.
+    $('#nomeCliente').focus();
+
+    // A visão consolidada é complementar.
+    // Se apresentar erro, não fecha nem bloqueia o formulário.
+    if (record) {
+      try {
+        renderCadastroOverview();
+      } catch (error) {
+        console.error(
+          '[Minha Obra] Erro na visão consolidada:',
+          error
+        );
+      }
+    }
+
+  } catch (error) {
+    console.error(
+      '[Minha Obra] Falha ao preparar o formulário:',
+      error
+    );
+
+    toast(
+      'O formulário foi aberto, mas alguns dados auxiliares não puderam ser carregados.',
+      'error'
+    );
+  }
+}
 function closeModal(){$('#modalObra').classList.remove('active');$('#modalObra').setAttribute('aria-hidden','true');appState.editId=null;}
 function updateCaixaFormVisibility(){$('#boxCaixaCadastro').style.display=['caixa','mcmv'].includes($('#tipoObraCadastro').value)?'block':'none';}
 function hasCaixaFinancing(r=appState.current){return ['caixa','mcmv'].includes(String(r?.tipo||'').toLowerCase());}
 function updateCaixaVisibility(){const enabled=hasCaixaFinancing();const b=$('#erpNavigation [data-view="caixa"]'),s=$('#caixa');b.hidden=!enabled;s.hidden=!enabled;if(!enabled&&getViewFromUrl()==='caixa')navigateToView('visao-geral',{scroll:false});$('#painelCaixa').querySelectorAll('input,button').forEach(el=>{if(el.id!=='btnResetCronograma')el.disabled=!enabled;});}
-async function submitWorkForm(ev){ev.preventDefault();const box=$('#obraFormError');box.classList.remove('show');const cpf=onlyDigits($('#cpfCliente').value),name=$('#nomeCliente').value.trim();if(!validCPF(cpf)){box.textContent='CPF inválido. Confira os 11 dígitos informados.';box.classList.add('show');return;}if(!name){box.textContent='Informe o nome do cliente.';box.classList.add('show');return;}
- const btn=$('#btnCriarObra');btn.disabled=true;const prev=appState.editId?appState.current:null;const d=prev?mergeData(appState.data,{}):emptyData();d.meta={...d.meta,margem_lucro:n($('#margemLucro').value),prazo_meses:n($('#prazoObra').value),metragem_terreno:n($('#metragemTerreno').value),metragem_construcao:n($('#metragemConstrucao').value),caixa_contrato:$('#caixaContrato').value.trim(),caixa_valor:n($('#caixaValor').value),caixa_engenheiro:$('#caixaEng').value.trim()};
- const catalog=new Map(getProfessionalCatalog().map(p=>[String(p.id),p]));const selected=$$('[data-team-select]:checked','#obraTeamSelection').map(e=>String(e.value));d.equipe=selected.map(id=>catalog.get(id)).filter(p=>p&&p.ativo!==false).map(p=>({...p,vinculadoEm:todayISO()}));d.profissionais=Array.isArray(d.profissionais)?d.profissionais:[];d.equipe.forEach(p=>{const i=d.profissionais.findIndex(x=>String(x.id)===String(p.id));if(i<0)d.profissionais.push({...p});else d.profissionais[i]={...d.profissionais[i],...p};});
- const payload={id_obra:prev?.id_obra||selectedWorkCode(cpf),cpf,cliente_nome:name,telefone:$('#telCliente').value.trim(),endereco:$('#enderecoObra').value.trim(),tipo:$('#tipoObraCadastro').value,data_inicio:$('#dataInicio').value||null,valor_contrato:n($('#valorContrato').value),cliente_id:$('#clienteVinculado').value||null,status:$('#statusObra').value||'Em andamento',dados:d};
- try{const result=prev?await api('/api/erp/obras/'+encodeURIComponent(prev.id),{method:'PUT',body:JSON.stringify(payload)}):await api('/api/erp/obras',{method:'POST',body:JSON.stringify(payload)});closeModal();await loadInitialData();if(result?.id)await openRecord(result.id,{skipDirty:true});toast(prev?'Cadastro atualizado.':'Obra cadastrada com sucesso.','success');}
- catch(e){box.textContent=e.message;box.classList.add('show');}finally{btn.disabled=false;btn.innerHTML=prev?'<i class="fa-solid fa-floppy-disk"></i> Salvar cadastro':'<i class="fa-solid fa-check"></i> Criar obra';}}
+async function submitWorkForm(ev) {
+  ev.preventDefault();
+
+  const box = $('#obraFormError');
+
+  box.classList.remove('show');
+
+  const cpf = onlyDigits($('#cpfCliente').value);
+  const name = $('#nomeCliente').value.trim();
+
+  if (!validCPF(cpf)) {
+    box.textContent =
+      'CPF inválido. Confira os 11 dígitos informados.';
+
+    box.classList.add('show');
+    return;
+  }
+
+  if (!name) {
+    box.textContent = 'Informe o nome do cliente.';
+    box.classList.add('show');
+    return;
+  }
+
+  const btn = $('#btnCriarObra');
+  const editingId = appState.editId;
+  const originalLabel = btn.innerHTML;
+
+  btn.disabled = true;
+
+  try {
+    // Impede que o autosave e a atualização do cadastro
+    // gravem simultaneamente a mesma obra.
+    clearTimeout(appState.saveTimer);
+    clearTimeout(appState.historyTimer);
+
+    if (appState.savePromise || appState.dirty) {
+      const synced = await saveCurrent(false);
+
+      if (!synced || appState.dirty) {
+        throw new Error(
+          'Há alterações anteriores que ainda não foram sincronizadas. ' +
+          'Tente salvar novamente antes de editar o cadastro.'
+        );
+      }
+    }
+
+    const prev = editingId
+      ? appState.current
+      : null;
+
+    if (
+      editingId &&
+      (!prev || String(prev.id) !== String(editingId))
+    ) {
+      throw new Error(
+        'A obra selecionada mudou. Feche o cadastro e abra a obra novamente antes de salvar.'
+      );
+    }
+
+    const d = prev
+      ? mergeData(appState.data, {})
+      : emptyData();
+
+    d.meta = {
+      ...d.meta,
+
+      margem_lucro: n($('#margemLucro').value),
+      prazo_meses: n($('#prazoObra').value),
+
+      metragem_terreno: n($('#metragemTerreno').value),
+      metragem_construcao: n($('#metragemConstrucao').value),
+
+      caixa_contrato: $('#caixaContrato').value.trim(),
+      caixa_valor: n($('#caixaValor').value),
+      caixa_engenheiro: $('#caixaEng').value.trim()
+    };
+
+    const catalog = new Map(
+      getProfessionalCatalog().map(p => [
+        String(p.id),
+        p
+      ])
+    );
+
+    const selected = $$(
+      '[data-team-select]:checked',
+      '#obraTeamSelection'
+    ).map(e => String(e.value));
+
+    d.equipe = selected
+      .map(id => catalog.get(id))
+      .filter(p => p && p.ativo !== false)
+      .map(p => ({
+        ...p,
+        vinculadoEm: todayISO()
+      }));
+
+    d.profissionais = Array.isArray(d.profissionais)
+      ? d.profissionais
+      : [];
+
+    d.equipe.forEach(p => {
+      const index = d.profissionais.findIndex(
+        x => String(x.id) === String(p.id)
+      );
+
+      if (index < 0) {
+        d.profissionais.push({ ...p });
+      } else {
+        d.profissionais[index] = {
+          ...d.profissionais[index],
+          ...p
+        };
+      }
+    });
+
+    const payload = {
+      id_obra: prev?.id_obra || selectedWorkCode(cpf),
+
+      cpf,
+      cliente_nome: name,
+
+      telefone: $('#telCliente').value.trim(),
+      endereco: $('#enderecoObra').value.trim(),
+
+      tipo: $('#tipoObraCadastro').value,
+
+      data_inicio: $('#dataInicio').value || null,
+
+      valor_contrato: n($('#valorContrato').value),
+
+      cliente_id: $('#clienteVinculado').value || null,
+
+      status: $('#statusObra').value || 'Em andamento',
+
+      dados: d
+    };
+
+    const result = prev
+      ? await api(
+          '/api/erp/obras/' + encodeURIComponent(prev.id),
+          {
+            method: 'PUT',
+            body: JSON.stringify(payload)
+          }
+        )
+      : await api(
+          '/api/erp/obras',
+          {
+            method: 'POST',
+            body: JSON.stringify(payload)
+          }
+        );
+
+    const recordId = result?.id || prev?.id;
+
+    closeModal();
+
+    if (result?.id) {
+      const index = appState.records.findIndex(
+        x => String(x.id) === String(result.id)
+      );
+
+      if (index >= 0) {
+        appState.records[index] = result;
+      } else {
+        appState.records.unshift(result);
+      }
+    }
+
+    renderRecordOptions();
+
+    // Reabre exatamente a obra que acabou de ser salva.
+    if (recordId) {
+      await openRecord(recordId, {
+        skipDirty: true
+      });
+    }
+
+    toast(
+      prev
+        ? 'Cadastro atualizado.'
+        : 'Obra cadastrada com sucesso.',
+      'success'
+    );
+
+  } catch (error) {
+    box.textContent =
+      error.message || 'Não foi possível salvar o cadastro.';
+
+    box.classList.add('show');
+
+    console.error(
+      '[Minha Obra] Falha ao salvar cadastro:',
+      error
+    );
+
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = originalLabel;
+  }
+}
 function currentPayload(){const r=appState.current;return{id_obra:r.id_obra,cpf:r.cpf,cliente_nome:r.cliente_nome,telefone:r.telefone||'',endereco:r.endereco||'',tipo:r.tipo||'particular',data_inicio:r.data_inicio||null,valor_contrato:n(r.valor_contrato),cliente_id:r.cliente_id||null,status:r.status||'Em andamento',dados:appState.data};}
 function flushHistory(){clearTimeout(appState.historyTimer);appState.historyTimer=null;if(!appState.pendingAuditLabel||!appState.data)return;const label=appState.pendingAuditLabel;appState.pendingAuditLabel=null;appState.data.historico.unshift({id:makeId(),data:new Date().toISOString(),evento:label,origem:'Painel administrativo'});appState.data.historico=appState.data.historico.slice(0,300);appState.revision++;renderHistorico();}
 function markDirty(label='Edição de informações'){if(!appState.current||!appState.data)return;appState.revision++;appState.dirty=true;appState.pendingAuditLabel=label;setSaveState('pending',label);updateKpis();clearTimeout(appState.historyTimer);appState.historyTimer=setTimeout(flushHistory,650);clearTimeout(appState.saveTimer);appState.saveTimer=setTimeout(()=>saveCurrent(false),1250);}
-async function saveCurrent(showMessage=true){if(!appState.current||!appState.data||appState.saving||!appState.dirty)return;flushHistory();appState.saving=true;const id=appState.current.id,rev=appState.revision,payload=currentPayload();setSaveState('pending','Sincronizando com o Supabase...');$('#btnSalvar').disabled=true;let ok=false;
- try{const result=await api('/api/erp/obras/'+encodeURIComponent(id),{method:'PUT',body:JSON.stringify(payload)});ok=true;if(appState.current?.id===id){appState.current=result||appState.current;appState.records=appState.records.map(r=>String(r.id)===String(id)?appState.current:r);renderRecordOptions();if(appState.revision===rev){appState.dirty=false;setSaveState('','Salvo na nuvem · '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}));if(showMessage)toast('Dados da obra salvos no Supabase.','success');}else{appState.dirty=true;setSaveState('pending','Novas alterações · sincronizando...');}}}
- catch(e){setSaveState('error','Falha ao salvar · '+e.message);toast('Não foi possível salvar: '+e.message,'error');}
- finally{appState.saving=false;$('#btnSalvar').disabled=!appState.current;if(ok&&appState.dirty&&appState.current?.id===id){clearTimeout(appState.saveTimer);appState.saveTimer=setTimeout(()=>saveCurrent(false),350);}}
+async function saveCurrent(showMessage = true) {
+  if (!appState.current || !appState.data) {
+    return false;
+  }
+
+  // Se já existe uma gravação, aguarda sua conclusão.
+  if (appState.savePromise) {
+    const pending = appState.savePromise;
+
+    try {
+      await pending;
+    } catch {}
+
+    // Outra gravação pode ter começado enquanto aguardávamos.
+    if (
+      appState.savePromise &&
+      appState.savePromise !== pending
+    ) {
+      return saveCurrent(showMessage);
+    }
+
+    if (!appState.dirty) {
+      return true;
+    }
+  }
+
+  if (!appState.dirty) {
+    if (showMessage) {
+      toast(
+        'Não há alterações pendentes para salvar.',
+        ''
+      );
+    }
+
+    return true;
+  }
+
+  clearTimeout(appState.saveTimer);
+  appState.saveTimer = null;
+
+  flushHistory();
+
+  const id = appState.current.id;
+  const revisionAtStart = appState.revision;
+  const payload = currentPayload();
+
+  setSaveState(
+    'pending',
+    'Sincronizando com o Supabase...'
+  );
+
+  $('#btnSalvar').disabled = true;
+
+  appState.saving = true;
+
+  let succeeded = false;
+
+  const request = (async () => {
+    try {
+      const result = await api(
+        '/api/erp/obras/' + encodeURIComponent(id),
+        {
+          method: 'PUT',
+          body: JSON.stringify(payload)
+        }
+      );
+
+      succeeded = true;
+
+      if (appState.current?.id === id) {
+        appState.current = result || appState.current;
+
+        appState.records = appState.records.map(record =>
+          String(record.id) === String(id)
+            ? appState.current
+            : record
+        );
+
+        renderRecordOptions();
+
+        // Só considera salvo se não houve nova edição
+        // durante a requisição.
+        if (appState.revision === revisionAtStart) {
+          appState.dirty = false;
+
+          setSaveState(
+            '',
+            'Salvo na nuvem · ' +
+            new Date().toLocaleTimeString('pt-BR', {
+              hour: '2-digit',
+              minute: '2-digit'
+            })
+          );
+
+          if (showMessage) {
+            toast(
+              'Dados da obra salvos no Supabase.',
+              'success'
+            );
+          }
+
+        } else {
+          appState.dirty = true;
+
+          setSaveState(
+            'pending',
+            'Novas alterações · sincronizando...'
+          );
+        }
+      }
+
+      return true;
+
+    } catch (error) {
+      setSaveState(
+        'error',
+        'Falha ao salvar · ' + error.message
+      );
+
+      toast(
+        'Não foi possível salvar: ' + error.message,
+        'error'
+      );
+
+      return false;
+    }
+  })();
+
+  appState.savePromise = request;
+
+  try {
+    return await request;
+
+  } finally {
+    if (appState.savePromise === request) {
+      appState.savePromise = null;
+    }
+
+    appState.saving = false;
+
+    $('#btnSalvar').disabled = !appState.current;
+
+    // Se houve novas alterações durante a gravação,
+    // programa outra sincronização sem perder os dados.
+    if (
+      succeeded &&
+      appState.dirty &&
+      appState.current?.id === id
+    ) {
+      clearTimeout(appState.saveTimer);
+
+      appState.saveTimer = setTimeout(
+        () => saveCurrent(false),
+        350
+      );
+    }
+  }
 }
 function collection(path){return path.split('.').reduce((o,k)=>o?.[k],appState.data);}
 function addItem(path,item){const a=collection(path);if(!Array.isArray(a))return toast('Coleção não encontrada.','error');a.push(item);renderAll();markDirty('Novo registro adicionado');}
@@ -597,7 +1179,39 @@ function getViewFromUrl(){let v='';try{v=decodeURIComponent((location.hash||'').
 function wireEvents(){
  document.querySelectorAll('button:not([type])').forEach(b=>b.type='button');
  $('#erpNavigation').addEventListener('click',ev=>{const b=ev.target.closest('[data-view]');if(b){ev.preventDefault();navigateToView(b.dataset.view);}});window.addEventListener('popstate',()=>navigateToView(getViewFromUrl(),{updateHistory:false}));
- $('#btnNovaObra').addEventListener('click',()=>openNewModal());$('#btnEditarObra').addEventListener('click',()=>appState.current&&openNewModal(appState.current));$('#btnExcluirObra').addEventListener('click',deleteCurrentRecord);$('#btnSalvar').addEventListener('click',()=>saveCurrent(true));$('#btnBackup').addEventListener('click',exportBackup);$('#btnCsv').addEventListener('click',exportCsv);$('#btnImportBackup').addEventListener('click',()=>$('#backupFile').click());$('#backupFile').addEventListener('change',importBackup);
+$('#btnEditarObra').addEventListener('click', async () => {
+  if (!appState.current) return;
+
+  const button = $('#btnEditarObra');
+
+  button.disabled = true;
+
+  try {
+    clearTimeout(appState.saveTimer);
+    clearTimeout(appState.historyTimer);
+
+    if (appState.savePromise || appState.dirty) {
+      const synced = await saveCurrent(false);
+
+      if (!synced || appState.dirty) {
+        throw new Error(
+          'Não foi possível sincronizar as alterações pendentes. Tente novamente.'
+        );
+      }
+    }
+
+    openNewModal(appState.current);
+
+  } catch (error) {
+    toast(
+      error.message || 'Não foi possível abrir o cadastro.',
+      'error'
+    );
+
+  } finally {
+    button.disabled = !appState.current;
+  }
+});
  $('#obraSelecionada').addEventListener('change',ev=>openRecord(ev.target.value));$('#btnFecharModal').addEventListener('click',closeModal);$('#btnCancelarObra').addEventListener('click',closeModal);$('#modalObra').addEventListener('click',ev=>{if(ev.target===$('#modalObra'))closeModal();});$('#tipoObraCadastro').addEventListener('change',updateCaixaFormVisibility);$('#obraForm').addEventListener('submit',submitWorkForm);
  $('#clienteVinculado').addEventListener('change',ev=>{const c=appState.portalClients.find(x=>String(x.id)===ev.target.value);if(c){if(!$('#nomeCliente').value.trim())$('#nomeCliente').value=c.nome||'';if(!$('#enderecoObra').value.trim())$('#enderecoObra').value=c.endereco_obra||'';}});
  $('#qaFoto').addEventListener('change',()=>previewSelectedImage('qaFoto','qaFotoPreview'));$('#diFoto').addEventListener('change',()=>previewSelectedImage('diFoto','diFotoPreview'));$('#updateFoto').addEventListener('change',()=>previewSelectedImage('updateFoto','updateFotoPreview'));$('#btnExportCadastroPdf').addEventListener('click',exportCadastroOverviewPdf);$('#obraForm').addEventListener('input',()=>{if(appState.editId)renderCadastroOverview();});$('#obraForm').addEventListener('change',()=>{if(appState.editId)renderCadastroOverview();});
@@ -607,8 +1221,39 @@ function wireEvents(){
  $('#extraForm').addEventListener('submit',ev=>{ev.preventDefault();if(!appState.current)return toast('Selecione uma obra primeiro.','error');const item={descricao:$('#extraDesc').value.trim(),valor:n($('#extraValor').value),status:$('#extraStatus').value,data:todayISO()};if(!item.descricao||item.valor<=0)return toast('Informe descrição e valor do extra.','error');addDocument('extras',item,'Orçamento extra');$('#extraForm').reset();});
  $('#btnPdfCaixa').addEventListener('click',generateCajaPdf);$('#btnResetCronograma').addEventListener('click',()=>{if(!appState.data)return;appState.data.caixa.cronograma=JSON.parse(JSON.stringify(cronogramaBase));renderCaixa();markDirty('Cronograma CAIXA restaurado');});$('#btnRelatorio').addEventListener('click',generateFinalReport);$('#btnWhats').addEventListener('click',shareWhatsApp);$('#btnCompararObras').addEventListener('click',renderWorkComparison);$('#uploadForm').addEventListener('submit',uploadLinkedFile);$('#updateClientForm').addEventListener('submit',publishClientUpdate);
  $('#btnEnviarCalculosCompras').addEventListener('click',sendCalcToPurchases);$('#btnEnviarCalculosCompras2').addEventListener('click',sendCalcToPurchases);$('#filtroCompras').addEventListener('input',renderCompras);$('#filtroStatusCompra').addEventListener('change',renderCompras);$('#filtroHistorico').addEventListener('change',renderHistorico);
- document.addEventListener('input',ev=>{const el=ev.target;if(el.matches('[data-collection],[data-scope]')&&!el.matches('select,[type="checkbox"]'))onFieldEdit(ev);if(el.closest('#calculadoras'))calcAll();});
- document.addEventListener('change',ev=>{const el=ev.target;if(el.matches('[data-collection],[data-scope]'))onFieldEdit(ev);if(el.matches('[data-team-select]')){refreshTeamSelectionCount();if(appState.editId)renderCadastroOverview();}if(el.closest('#calculadoras'))calcAll();});
+ document.addEventListener('input', ev => {
+  const el = ev.target;
+
+  if (
+    el.matches('[data-collection],[data-scope]') &&
+    !el.matches('select,[type="checkbox"],[type="radio"]')
+  ) {
+    onFieldEdit(ev);
+  }
+
+  if (el.closest('#calculadoras')) {
+    calcAll();
+  }
+});
+
+document.addEventListener('change', ev => {
+  const el = ev.target;
+
+  if (
+    el.matches('[data-collection],[data-scope]') &&
+    el.matches('select,[type="checkbox"],[type="radio"]')
+  ) {
+    onFieldEdit(ev);
+  }
+
+  if (el.matches('[data-team-select]')) {
+    refreshTeamSelectionCount();
+  }
+
+  if (el.closest('#calculadoras')) {
+    calcAll();
+  }
+});
  document.addEventListener('click',ev=>{const ep=ev.target.closest('[data-prof-edit]');if(ep){editProfessional(ep.dataset.profEdit);return;}const tp=ev.target.closest('[data-prof-toggle]');if(tp){toggleProfessional(tp.dataset.profToggle);return;}const rt=ev.target.closest('[data-team-remove]');if(rt){removeTeamMember(rt.dataset.teamRemove);return;}const openWork=ev.target.closest('[data-open-work]');if(openWork){openRecord(openWork.dataset.openWork);return;}const useQuote=ev.target.closest('[data-use-quote]');if(useQuote){applyCotacao(useQuote.dataset.useQuote);return;}const rm=ev.target.closest('[data-remove]');if(rm){if(rm.dataset.remove==='contas'){const x=appState.data.contas[Number(rm.dataset.index)];if(x?.fluxoId){if(!confirm('Esta conta já gerou lançamento no fluxo. Excluí-la também removerá esse lançamento. Continuar?'))return;appState.data.fluxo=appState.data.fluxo.filter(f=>String(f.id)!==String(x.fluxoId));}}removeItem(rm.dataset.remove,rm.dataset.index);return;}
  const delFlow=ev.target.closest('[data-flow-delete]');if(delFlow){const flow=appState.data.fluxo.find(x=>String(x.id)===String(delFlow.dataset.flowDelete));if(flow?.accountId){const account=appState.data.contas.find(x=>String(x.id)===String(flow.accountId));if(account){account.status='aberta';account.fluxoId=null;account.dataBaixa=null;}}appState.data.fluxo=appState.data.fluxo.filter(x=>String(x.id)!==String(delFlow.dataset.flowDelete));renderAll();markDirty('Movimentação removida');return;}
  const settle=ev.target.closest('[data-settle-account]');if(settle){settleAccount(settle.dataset.settleAccount);return;}const reopen=ev.target.closest('[data-reopen-account]');if(reopen){reopenAccount(reopen.dataset.reopenAccount);return;}
