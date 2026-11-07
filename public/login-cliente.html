@@ -9,7 +9,6 @@
 <script defer src="/assets/js/api.js"></script>
 <script defer src="/assets/js/login.js"></script>
 <style>
-  /* CORREÇÃO LOGIN CLIENTE - LOGO + FUNDO CLARO */
   .auth-page{ min-height:100vh; display:grid; grid-template-columns:1fr 1fr; background:#fff; }
   .auth-aside{
     background: linear-gradient(145deg,#f9f5ec 0%,#f5f0e6 45%,#e9dfc9 100%) !important;
@@ -38,13 +37,14 @@
   @keyframes piscaAlerta{ 0%,100%{ opacity:1;} 50%{ opacity:.35;} }
   @keyframes progressoObra{ 0%{ width:38%;} 50%{ width:72%;} 100%{ width:38%;} }
 
-  /* LOGOS EMPILHADAS - ENGENHEIRO EM CIMA, DESENVOLVIMENTO EMBAIXO */
-  .brand-lockup{ display:flex; align-items:center; gap:14px; min-width:0; }
-  .brand-logos-stack{ display:flex; flex-direction:column; gap:6px; align-items:flex-start; }
-  .brand-logos-stack .logo-engenheiro{ display:block; height:58px; width:auto; max-width:210px; object-fit:contain; filter:drop-shadow(0 2px 4px rgba(65,45,18,.20)); }
-  .brand-logos-stack .logo-desenvolvimento{ display:block; height:30px; width:auto; max-width:160px; object-fit:contain; opacity:.95; }
+  /* TOPO - SÓ LOGO DO ENGENHEIRO */
+  .brand-lockup{ display:flex; align-items:center; gap:16px; min-width:0; }
+  .brand-lockup .logo-engenheiro{
+    display:block; height:68px; width:auto; max-width:230px; object-fit:contain;
+    filter:drop-shadow(0 2px 4px rgba(65,45,18,.20));
+  }
   .brand-mark{ display:none !important; }
-  .brand-title{ color:#2b2110 !important; font-family:'Manrope',sans-serif; font-size:18px; font-weight:800; line-height:1.1; letter-spacing:-.045em; }
+  .brand-title{ color:#2b2110 !important; font-family:'Manrope',sans-serif; font-size:20px; font-weight:800; line-height:1.1; letter-spacing:-.045em; }
   .brand-subtitle{ color:#5b4527 !important; font-size:9px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; margin-top:4px; }
 
   .auth-aside-content{ position:relative; z-index:1; max-width:500px; margin:auto 0; }
@@ -54,7 +54,7 @@
   .auth-bullets{ display:grid; gap:14px; margin-top:32px; color:#3a2c12 !important; font-size:12px; }
   .auth-bullets span::before{ content:"✓"; display:inline-grid; place-items:center; width:22px; height:22px; border-radius:7px; background:rgba(184,148,94,.22) !important; color:#70552e !important; margin-right:11px; font-weight:800; }
 
-  /* CONSTRUÇÃO CRIATIVA NO MEIO DO ASIDE */
+  /* CONSTRUÇÃO */
   .construction-scene{ display:flex; align-items:flex-end; gap:10px; height:56px; margin-top:28px; }
   .crane-wrap{ position:relative; width:58px; height:56px; }
   .crane-wrap i{ position:absolute; left:0; top:0; font-size:42px; color:#3a2c12; transform-origin:left bottom; animation:guindasteBalanco 4s ease-in-out infinite; }
@@ -68,18 +68,18 @@
   .progress-obra{ width:180px; height:5px; background:rgba(43,33,16,.22); border-radius:999px; overflow:hidden; margin-top:8px; }
   .progress-obra span{ display:block; height:100%; background:linear-gradient(90deg,#70552e,#f5e7c5,#70552e); border-radius:999px; animation:progressoObra 4s ease-in-out infinite; }
 
-  .auth-logos{ position:relative; z-index:1; display:flex; flex-direction:column; gap:8px; align-items:flex-start; margin-top:37px; }
-  .auth-logos img{ opacity:1; filter:drop-shadow(0 2px 5px rgba(112,85,46,.20)); }
-  .auth-logos img:first-child{ width:210px; max-width:70%; }
-  .auth-logos img:last-child{ width:160px; max-width:55%; opacity:.90; }
+  /* RODAPÉ - SÓ DESENVOLVIMENTO BEM PEQUENO */
+  .auth-logos{ position:relative; z-index:1; display:flex; align-items:center; gap:10px; margin-top:37px; opacity:.75; }
+  .auth-logos small{ font-size:8px; letter-spacing:.14em; color:#8a7a5a; font-weight:700; }
+  .auth-logos img{ width:95px; max-width:35%; filter:grayscale(.2); }
 
   .auth-form-side{ display:flex; align-items:center; justify-content:center; padding:35px; background:radial-gradient(circle at 100% 100%, rgba(184,148,94,.07), transparent 35%), #fff; }
   .auth-form{ width:min(410px,100%); }
   .auth-form h2{ font:800 29px 'Manrope',sans-serif; letter-spacing:-.055em; margin:15px 0 9px; color:#202326; }
   .auth-form > p{ font-size:13px; color:#77766f; line-height:1.7; margin:0 0 29px; }
-  .form-logo-top{ display:flex; flex-direction:column; gap:6px; margin-bottom:12px; }
-  .form-logo-top .logo-engenheiro{ height:52px; width:auto; max-width:190px; object-fit:contain; }
-  .form-logo-top .logo-desenvolvimento{ height:26px; width:auto; max-width:140px; object-fit:contain; opacity:.9; }
+  /* FORMULÁRIO - SÓ LOGO ENGENHEIRO */
+  .form-logo-top{ margin-bottom:14px; }
+  .form-logo-top .logo-engenheiro{ height:62px; width:auto; max-width:210px; object-fit:contain; display:block; filter:drop-shadow(0 2px 4px rgba(65,45,18,.15)); }
   .auth-form .btn{ width:100%; padding:15px; margin-top:5px; }
   .auth-footer{ font-size:11px; color:#77766f; margin-top:26px; text-align:center; }
 
@@ -93,8 +93,8 @@
   @media (max-width:640px){
     .auth-aside{ padding:24px; }
     .auth-aside h1{ font-size:35px; }
-    .brand-logos-stack .logo-engenheiro{ height:46px; }
-    .brand-logos-stack .logo-desenvolvimento{ height:24px; }
+    .brand-lockup .logo-engenheiro{ height:56px; }
+    .form-logo-top .logo-engenheiro{ height:52px; }
   }
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -102,14 +102,11 @@
 <body>
 <main class="auth-page">
 
-  <!-- LADO ESQUERDO CLARO -->
+  <!-- LADO ESQUERDO -->
   <section class="auth-aside">
+    <!-- TOPO - SÓ ENGENHEIRO -->
     <div class="brand-lockup">
-      <!-- LOGO ENGENHEIRO EM CIMA, DESENVOLVIMENTO EMBAIXO - SEM O "M" -->
-      <div class="brand-logos-stack">
-        <img class="logo-engenheiro" src="/assets/img/logo-engenheiro.png" alt="PH Engenharia">
-        <img class="logo-desenvolvimento" src="/assets/img/logo-desenvolvimento.png" alt="Desenvolvimento">
-      </div>
+      <img class="logo-engenheiro" src="/assets/img/logo-engenheiro.png" alt="PH Engenharia">
       <div>
         <div class="brand-title">Meu Engenheiro</div>
         <div class="brand-subtitle">Sua obra, acompanhada de perto</div>
@@ -126,7 +123,6 @@
         <span>Informações sempre à mão</span>
       </div>
 
-      <!-- CONSTRUÇÃO CRIATIVA -->
       <div class="construction-scene">
         <div class="crane-wrap"><i class="fa-solid fa-tower-broadcast"></i><div class="crane-hook"></div></div>
         <div class="building-wrap"><div class="building b1"></div><div class="building b2"></div><div class="building b3"></div></div>
@@ -136,20 +132,19 @@
       <div class="progress-obra"><span></span></div>
     </div>
 
-    <!-- RODAPÉ DO ASIDE - TAMBÉM EMPILHADO -->
+    <!-- RODAPÉ - SÓ DESENVOLVIMENTO PEQUENO -->
     <div class="auth-logos">
-      <img src="/assets/img/logo-engenheiro.png" alt="Logo do engenheiro">
-      <img src="/assets/img/logo-desenvolvimento.png" alt="Logo de desenvolvimento">
+      <small>DESENVOLVIDO POR</small>
+      <img src="/assets/img/logo-desenvolvimento.png" alt="Desenvolvimento">
     </div>
   </section>
 
-  <!-- LADO DIREITO - FORMULÁRIO -->
+  <!-- FORMULÁRIO -->
   <section class="auth-form-side">
     <form id="login-form" class="auth-form">
-      <!-- NO LUGAR DA SETA / DO "M" - LOGOS EMPILHADAS -->
+      <!-- SÓ LOGO ENGENHEIRO AQUI TAMBÉM -->
       <div class="form-logo-top">
         <img class="logo-engenheiro" src="/assets/img/logo-engenheiro.png" alt="PH Engenharia">
-        <img class="logo-desenvolvimento" src="/assets/img/logo-desenvolvimento.png" alt="Desenvolvimento">
       </div>
 
       <h2>Bem-vindo de volta</h2>
