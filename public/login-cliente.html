@@ -1,15 +1,178 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#17231e"><title>Acesso do cliente | Meu Engenheiro</title><link rel="stylesheet" href="/assets/css/app.css"><script defer src="/assets/js/api.js"></script><script defer src="/assets/js/login.js"></script></head>
-<body><main class="auth-page">
-  <section class="auth-aside"><div class="brand-lockup"><div class="brand-mark">M</div><div><div class="brand brand-title">Meu Engenheiro</div><div class="brand-subtitle" style="color:#aab9b0">Sua obra, acompanhada de perto</div></div></div>
-    <div class="auth-aside-content"><span class="eyebrow">Acompanhe sua obra</span><h1>Seu projeto em boas mãos.</h1><p>Consulte o andamento da sua obra, acompanhe o progresso e encontre os documentos compartilhados pelo seu engenheiro em um só lugar.</p><div class="auth-bullets"><span>Acompanhamento do progresso</span><span>Fotos e documentos da obra</span><span>Informações sempre à mão</span></div></div>
-    <div class="auth-logos"><img src="/assets/img/logo-engenheiro.png" alt="Espaço reservado para a logo do engenheiro"><img src="/assets/img/logo-desenvolvimento.png" alt="Espaço reservado para a logo de desenvolvimento"></div>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f5f0e6">
+<title>Acesso do cliente | Meu Engenheiro</title>
+<link rel="stylesheet" href="/assets/css/app.css">
+<script defer src="/assets/js/api.js"></script>
+<script defer src="/assets/js/login.js"></script>
+<style>
+  /* CORREÇÃO LOGIN CLIENTE - LOGO + FUNDO CLARO */
+  .auth-page{ min-height:100vh; display:grid; grid-template-columns:1fr 1fr; background:#fff; }
+  .auth-aside{
+    background: linear-gradient(145deg,#f9f5ec 0%,#f5f0e6 45%,#e9dfc9 100%) !important;
+    color:#202326 !important;
+    padding: clamp(30px,5vw,72px);
+    display:flex; flex-direction:column; justify-content:space-between;
+    min-height:100vh; position:relative; overflow:hidden;
+    border-right:1px solid rgba(184,148,94,.45) !important;
+    border-radius:0 !important; box-shadow:none !important;
+  }
+  .auth-aside::before{
+    content:"🏗️"; position:absolute; right:18px; top:18px; font-size:92px; opacity:.18;
+    animation: flutuaConstrucao 5s ease-in-out infinite; pointer-events:none;
+  }
+  .auth-aside::after{
+    content:""; position:absolute; width:490px; height:490px;
+    border:1px solid rgba(184,148,94,.30); border-radius:50%;
+    right:-175px; bottom:8%;
+    box-shadow:0 0 0 50px rgba(184,148,94,.06), 0 0 0 100px rgba(184,148,94,.03);
+    pointer-events:none;
+  }
+  @keyframes flutuaConstrucao{ 0%,100%{ transform:translateY(0) rotate(0deg);} 50%{ transform:translateY(-10px) rotate(2deg);} }
+  @keyframes guindasteBalanco{ 0%,100%{ transform:rotate(0deg);} 50%{ transform:rotate(1.2deg);} }
+  @keyframes ganchoSobeDesce{ 0%,100%{ transform:translateY(0);} 50%{ transform:translateY(6px);} }
+  @keyframes predioCresce{ 0%{ transform:scaleY(.85);} 100%{ transform:scaleY(1);} }
+  @keyframes piscaAlerta{ 0%,100%{ opacity:1;} 50%{ opacity:.35;} }
+  @keyframes progressoObra{ 0%{ width:38%;} 50%{ width:72%;} 100%{ width:38%;} }
+
+  /* LOGOS EMPILHADAS - ENGENHEIRO EM CIMA, DESENVOLVIMENTO EMBAIXO */
+  .brand-lockup{ display:flex; align-items:center; gap:14px; min-width:0; }
+  .brand-logos-stack{ display:flex; flex-direction:column; gap:6px; align-items:flex-start; }
+  .brand-logos-stack .logo-engenheiro{ display:block; height:58px; width:auto; max-width:210px; object-fit:contain; filter:drop-shadow(0 2px 4px rgba(65,45,18,.20)); }
+  .brand-logos-stack .logo-desenvolvimento{ display:block; height:30px; width:auto; max-width:160px; object-fit:contain; opacity:.95; }
+  .brand-mark{ display:none !important; }
+  .brand-title{ color:#2b2110 !important; font-family:'Manrope',sans-serif; font-size:18px; font-weight:800; line-height:1.1; letter-spacing:-.045em; }
+  .brand-subtitle{ color:#5b4527 !important; font-size:9px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; margin-top:4px; }
+
+  .auth-aside-content{ position:relative; z-index:1; max-width:500px; margin:auto 0; }
+  .auth-aside .eyebrow{ color:#92764d !important; font-size:10px; font-weight:800; letter-spacing:.17em; text-transform:uppercase; }
+  .auth-aside h1{ font:800 clamp(35px,4.6vw,55px)/1.07 'Manrope',sans-serif; letter-spacing:-.065em; margin:27px 0 19px; color:#202326 !important; }
+  .auth-aside p{ color:#5b4527 !important; font-size:13px; line-height:1.9; max-width:410px; }
+  .auth-bullets{ display:grid; gap:14px; margin-top:32px; color:#3a2c12 !important; font-size:12px; }
+  .auth-bullets span::before{ content:"✓"; display:inline-grid; place-items:center; width:22px; height:22px; border-radius:7px; background:rgba(184,148,94,.22) !important; color:#70552e !important; margin-right:11px; font-weight:800; }
+
+  /* CONSTRUÇÃO CRIATIVA NO MEIO DO ASIDE */
+  .construction-scene{ display:flex; align-items:flex-end; gap:10px; height:56px; margin-top:28px; }
+  .crane-wrap{ position:relative; width:58px; height:56px; }
+  .crane-wrap i{ position:absolute; left:0; top:0; font-size:42px; color:#3a2c12; transform-origin:left bottom; animation:guindasteBalanco 4s ease-in-out infinite; }
+  .crane-hook{ position:absolute; right:6px; top:24px; width:2px; height:20px; background:#3a2c12; animation:ganchoSobeDesce 3s ease-in-out infinite; }
+  .crane-hook::after{ content:""; position:absolute; bottom:-6px; left:-4px; width:10px; height:10px; background:#70552e; border-radius:2px; }
+  .building-wrap{ display:flex; align-items:flex-end; gap:3px; }
+  .building{ width:22px; background:linear-gradient(180deg,#fff8e6,#e8d9b0); border:1px solid rgba(112,85,46,.6); border-radius:2px 2px 0 0; transform-origin:bottom; animation:predioCresce 3.5s ease-in-out infinite alternate; }
+  .building.b1{ height:38px; } .building.b2{ height:50px; } .building.b3{ height:30px; }
+  .cone{ color:#a63a2e; font-size:16px; animation:piscaAlerta 1.6s infinite; }
+  .center-label{ font-size:8px; font-weight:800; letter-spacing:.18em; color:#5b4527; margin-top:8px; }
+  .progress-obra{ width:180px; height:5px; background:rgba(43,33,16,.22); border-radius:999px; overflow:hidden; margin-top:8px; }
+  .progress-obra span{ display:block; height:100%; background:linear-gradient(90deg,#70552e,#f5e7c5,#70552e); border-radius:999px; animation:progressoObra 4s ease-in-out infinite; }
+
+  .auth-logos{ position:relative; z-index:1; display:flex; flex-direction:column; gap:8px; align-items:flex-start; margin-top:37px; }
+  .auth-logos img{ opacity:1; filter:drop-shadow(0 2px 5px rgba(112,85,46,.20)); }
+  .auth-logos img:first-child{ width:210px; max-width:70%; }
+  .auth-logos img:last-child{ width:160px; max-width:55%; opacity:.90; }
+
+  .auth-form-side{ display:flex; align-items:center; justify-content:center; padding:35px; background:radial-gradient(circle at 100% 100%, rgba(184,148,94,.07), transparent 35%), #fff; }
+  .auth-form{ width:min(410px,100%); }
+  .auth-form h2{ font:800 29px 'Manrope',sans-serif; letter-spacing:-.055em; margin:15px 0 9px; color:#202326; }
+  .auth-form > p{ font-size:13px; color:#77766f; line-height:1.7; margin:0 0 29px; }
+  .form-logo-top{ display:flex; flex-direction:column; gap:6px; margin-bottom:12px; }
+  .form-logo-top .logo-engenheiro{ height:52px; width:auto; max-width:190px; object-fit:contain; }
+  .form-logo-top .logo-desenvolvimento{ height:26px; width:auto; max-width:140px; object-fit:contain; opacity:.9; }
+  .auth-form .btn{ width:100%; padding:15px; margin-top:5px; }
+  .auth-footer{ font-size:11px; color:#77766f; margin-top:26px; text-align:center; }
+
+  @media (max-width:900px){
+    .auth-page{ grid-template-columns:1fr; }
+    .auth-aside{ min-height:auto; padding:30px; }
+    .auth-aside-content{ margin:36px 0; }
+    .auth-aside h1{ font-size:39px; }
+    .auth-form-side{ padding:43px 25px; }
+  }
+  @media (max-width:640px){
+    .auth-aside{ padding:24px; }
+    .auth-aside h1{ font-size:35px; }
+    .brand-logos-stack .logo-engenheiro{ height:46px; }
+    .brand-logos-stack .logo-desenvolvimento{ height:24px; }
+  }
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+<main class="auth-page">
+
+  <!-- LADO ESQUERDO CLARO -->
+  <section class="auth-aside">
+    <div class="brand-lockup">
+      <!-- LOGO ENGENHEIRO EM CIMA, DESENVOLVIMENTO EMBAIXO - SEM O "M" -->
+      <div class="brand-logos-stack">
+        <img class="logo-engenheiro" src="/assets/img/logo-engenheiro.png" alt="PH Engenharia">
+        <img class="logo-desenvolvimento" src="/assets/img/logo-desenvolvimento.png" alt="Desenvolvimento">
+      </div>
+      <div>
+        <div class="brand-title">Meu Engenheiro</div>
+        <div class="brand-subtitle">Sua obra, acompanhada de perto</div>
+      </div>
+    </div>
+
+    <div class="auth-aside-content">
+      <span class="eyebrow">Acompanhe sua obra</span>
+      <h1>Seu projeto em boas mãos.</h1>
+      <p>Consulte o andamento da sua obra, acompanhe o progresso e encontre os documentos compartilhados pelo seu engenheiro em um só lugar.</p>
+      <div class="auth-bullets">
+        <span>Acompanhamento do progresso</span>
+        <span>Fotos e documentos da obra</span>
+        <span>Informações sempre à mão</span>
+      </div>
+
+      <!-- CONSTRUÇÃO CRIATIVA -->
+      <div class="construction-scene">
+        <div class="crane-wrap"><i class="fa-solid fa-tower-broadcast"></i><div class="crane-hook"></div></div>
+        <div class="building-wrap"><div class="building b1"></div><div class="building b2"></div><div class="building b3"></div></div>
+        <i class="fa-solid fa-traffic-cone cone"></i>
+      </div>
+      <div class="center-label">🏗️ OBRA EM ANDAMENTO</div>
+      <div class="progress-obra"><span></span></div>
+    </div>
+
+    <!-- RODAPÉ DO ASIDE - TAMBÉM EMPILHADO -->
+    <div class="auth-logos">
+      <img src="/assets/img/logo-engenheiro.png" alt="Logo do engenheiro">
+      <img src="/assets/img/logo-desenvolvimento.png" alt="Logo de desenvolvimento">
+    </div>
   </section>
-  <section class="auth-form-side"><form id="login-form" class="auth-form"><div class="brand-mark">↗</div><h2>Bem-vindo de volta</h2><p>Entre com os dados de acesso que seu engenheiro compartilhou com você.</p>
-    <div id="login-error" class="notice error hidden" role="alert"></div>
-    <div class="field"><label for="email">E-mail</label><input id="email" name="email" type="email" autocomplete="username" placeholder="voce@email.com" required></div>
-    <div class="field"><label for="senha">Senha de acesso</label><input id="senha" name="senha" type="password" autocomplete="current-password" placeholder="Digite sua senha" required></div>
-    <button id="login-btn" class="btn btn-primary" type="submit">Acessar minha obra <span aria-hidden="true">→</span></button>
-    <div class="auth-footer">Dúvidas com o acesso? Entre em contato com o responsável pela sua obra.</div>
-  </form></section>
-</main></body></html>
+
+  <!-- LADO DIREITO - FORMULÁRIO -->
+  <section class="auth-form-side">
+    <form id="login-form" class="auth-form">
+      <!-- NO LUGAR DA SETA / DO "M" - LOGOS EMPILHADAS -->
+      <div class="form-logo-top">
+        <img class="logo-engenheiro" src="/assets/img/logo-engenheiro.png" alt="PH Engenharia">
+        <img class="logo-desenvolvimento" src="/assets/img/logo-desenvolvimento.png" alt="Desenvolvimento">
+      </div>
+
+      <h2>Bem-vindo de volta</h2>
+      <p>Entre com os dados de acesso que seu engenheiro compartilhou com você.</p>
+
+      <div id="login-error" class="notice error hidden" role="alert"></div>
+
+      <div class="field">
+        <label for="email">E-mail</label>
+        <input id="email" name="email" type="email" autocomplete="username" placeholder="voce@email.com" required>
+      </div>
+
+      <div class="field">
+        <label for="senha">Senha de acesso</label>
+        <input id="senha" name="senha" type="password" autocomplete="current-password" placeholder="Digite sua senha" required>
+      </div>
+
+      <button id="login-btn" class="btn btn-primary" type="submit">Acessar minha obra <span aria-hidden="true">→</span></button>
+
+      <div class="auth-footer">Dúvidas com o acesso? Entre em contato com o responsável pela sua obra.</div>
+    </form>
+  </section>
+
+</main>
+</body>
+</html>
