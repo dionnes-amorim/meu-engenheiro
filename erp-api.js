@@ -1,1247 +1,792 @@
 'use strict';
 
-// ======================================================
-// PH ENGENHARIA — SERVIDOR PRINCIPAL
-// ERP DE GESTÃO DE OBRAS — MINHA OBRA
-//
-// Integração:
-// - Express
-// - erp-api.js
-// - Supabase
-// - Cloudinary
-// - Portal do cliente
-//
-// Autenticação:
-// Cookie HttpOnly: ph_erp_admin
-// Middleware central: erp-api.js
-//
-// Node.js >= 18
-// ======================================================
+/*
+ * PH ENGENHARIA — API do módulo Minha Obra / ERP.
+ *
+ * Integração no server.js:
+ *   const registerErpApi = require('./erp-api');
+ *   app.set('trust proxy', 1); // imediatamente após const app = express();
+ *   ...
+ *   app.use(express.json({ limit: '1mb' }));
+ *   ... rotas já existentes do portal do cliente ...
+ *   registerErpApi(app); // antes de express.static(...)
+ *
+ * Compatível com o frontend minha-obra-corrigido.html:
+ *   GET    /api/erp/session
+ *   POST   /api/erp/login
+ *   POST   /api/erp/logout
+ *   GET    /api/erp/obras
+ *   GET    /api/erp/clientes
+ *   POST   /api/erp/obras
+ *   GET    /api/erp/obras/:id
+ *   PUT    /api/erp/obras/:id
+ *   DELETE /api/erp/obras/:id
+ *
+ * As rotas /api/arquivos, /api/atualizacoes e /api/config continuam
+ * sendo responsabilidade do server.js existente. Não duplicá-las aqui.
+ * Requer Node.js 18+ (fetch nativo) e Express.
+ */
 
-const express = require('express');
-const path = require('node:path');
 const crypto = require('node:crypto');
 
-const app = express();
+module.exports = function registerErpApi(app) {
+  if (!app || typeof app.get !== 'function' || typeof app.use !== 'function') {
+    throw new TypeError('registerErpApi precisa receber uma instância válida do Express.');
+  }
 
-const PORT = Number(process.env.PORT) || 10000;
-const PUBLIC_DIR = path.join(__dirname, 'public');
+  const COOKIE_NAME = 'ph_erp_admin';
+  const SESSION_SECONDS = 60 * 60 * 10; // 10 horas
+  const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+  const LOGIN_MAX_ATTEMPTS = 8;
+  const MAX_MONEY = 999999999999.99; // numeric(14,2)
+  const loginAttempts = new Map();
 
-// ======================================================
-// CONFIGURAÇÃO DO EXPRESS
-// ======================================================
+  // ============================================================
+  // CONFIGURAÇÃO
+  // ============================================================
 
-app.set('trust proxy', 1);
-app.disable('x-powered-by');
+  function config() {
+    return {
+      url: String(process.env.SUPABASE_URL || '').trim().replace(/\/+$/, ''),
+      key: String(process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim()
+    };
+  }
 
-app.use(express.json({
-    limit: '5mb'
-}));
-
-app.use(express.urlencoded({
-    extended: true,
-    limit: '5mb'
-}));
-
-// Nenhuma resposta da API deve ficar armazenada em cache.
-
-app.use('/api', (_req, res, next) => {
-    res.setHeader('Cache-Control', 'no-store');
-    next();
-});
-
-// ======================================================
-// CARREGAMENTO DO ERP-API
-// ======================================================
-
-const erpApiModule = require('./erp-api');
-
-const registerErpApi =
-    typeof erpApiModule === 'function'
-        ? erpApiModule
-        : typeof erpApiModule?.registerErpApi === 'function'
-            ? erpApiModule.registerErpApi
-            : typeof erpApiModule?.default === 'function'
-                ? erpApiModule.default
-                : null;
-
-if (typeof registerErpApi !== 'function') {
-    throw new TypeError(
-        'Não foi possível carregar ./erp-api.js. ' +
-        'O módulo precisa exportar a função registerErpApi(app).'
+  function sessionSecret() {
+    // O fallback mantém compatibilidade com a configuração anterior.
+    return String(
+      process.env.ERP_SESSION_SECRET ||
+      process.env.ERP_ADMIN_PASSWORD ||
+      ''
     );
-}
+  }
 
-console.log(
-    '[ERP] Módulo localizado:',
-    require.resolve('./erp-api')
-);
-
-// ======================================================
-// REGISTRO DAS ROTAS PRINCIPAIS
-// ======================================================
-
-try {
-    registerErpApi(app);
-
-    console.log(
-        '[ERP] Rotas administrativas registradas.'
+  function isConfigured() {
+    const { url, key } = config();
+    return Boolean(
+      process.env.ERP_ADMIN_PASSWORD &&
+      sessionSecret() &&
+      url &&
+      key
     );
+  }
 
-} catch (error) {
-    console.error(
-        '[ERP] Erro ao registrar as rotas:',
-        error.stack || error
-    );
+  // ============================================================
+  // SEGURANÇA / SESSÃO
+  // ============================================================
 
-    throw error;
-}
+  function safeEqual(left, right) {
+    const a = Buffer.from(String(left ?? ''), 'utf8');
+    const b = Buffer.from(String(right ?? ''), 'utf8');
 
-// ======================================================
-// AUTENTICAÇÃO COMPARTILHADA
-// ======================================================
+    // timingSafeEqual exige buffers do mesmo tamanho.
+    if (a.length === 0 || a.length !== b.length) return false;
+    return crypto.timingSafeEqual(a, b);
+  }
 
-// O erp-api.js registra o middleware oficial.
-//
-// Não criamos outra sessão.
-// Não criamos outro cookie.
-// Não duplicamos a validação criptográfica.
-//
-// O mesmo middleware será utilizado nas rotas
-// complementares de arquivos, etapas e atualizações.
+  function signature(expiry) {
+    const secret = sessionSecret();
+    if (!secret) return '';
 
-const requireErpAdmin = app.locals.requireErpAdmin;
+    return crypto
+      .createHmac('sha256', secret)
+      .update(String(expiry), 'utf8')
+      .digest('base64url');
+  }
 
-if (typeof requireErpAdmin !== 'function') {
-    throw new Error(
-        'O erp-api.js não disponibilizou ' +
-        'app.locals.requireErpAdmin.'
-    );
-}
+  function readCookie(req, name) {
+    const header = String(req.headers.cookie || '');
+    const prefix = `${name}=`;
+    const item = header
+      .split(';')
+      .map(part => part.trim())
+      .find(part => part.startsWith(prefix));
 
-// ======================================================
-// PROTEÇÃO CONTRA REQUISIÇÕES DE OUTRA ORIGEM
-// ======================================================
-
-function verifySameOrigin(req, res, next) {
-    const origin = req.get('origin');
-
-    // Requisições sem Origin são permitidas pelo mesmo
-    // comportamento adotado no módulo principal.
-
-    if (!origin) {
-        return next();
-    }
+    if (!item) return '';
 
     try {
-        const parsedOrigin = new URL(origin);
-
-        if (parsedOrigin.host !== req.get('host')) {
-            return res.status(403).json({
-                ok: false,
-                error: 'Origem não autorizada.'
-            });
-        }
-
-        return next();
-
+      return decodeURIComponent(item.slice(prefix.length));
     } catch {
-        return res.status(403).json({
-            ok: false,
-            error: 'Origem inválida.'
-        });
+      return '';
     }
-}
+  }
 
-// Middleware compartilhado para as rotas complementares.
+  function isAuthenticated(req) {
+    if (!sessionSecret()) return false;
 
-function exigirErpAdmin(req, res, next) {
-    return requireErpAdmin(req, res, () => {
-        return verifySameOrigin(req, res, next);
-    });
-}
+    const token = readCookie(req, COOKIE_NAME);
+    const pieces = token.split('.');
+    if (pieces.length !== 2) return false;
 
-// ======================================================
-// MIGRAÇÃO DA AUTENTICAÇÃO ANTIGA
-// ======================================================
+    const expiry = Number(pieces[0]);
+    const now = Math.floor(Date.now() / 1000);
 
-// Impede que a aplicação antiga crie uma segunda sessão.
-//
-// O login atual é realizado pelo erp-api.js:
-//
-// POST /api/erp/login
-// GET  /api/erp/session
-// POST /api/erp/logout
-
-app.all(
-    [
-        '/api/login',
-        '/api/auth/status',
-        '/api/logout'
-    ],
-    (_req, res) => {
-        return res.status(410).json({
-            ok: false,
-            message:
-                'A autenticação foi atualizada. Utilize ' +
-                '/api/erp/login, /api/erp/session e /api/erp/logout.'
-        });
+    if (!Number.isSafeInteger(expiry) || expiry <= now) {
+      return false;
     }
-);
 
-// ======================================================
-// CONFIGURAÇÕES PÚBLICAS
-// ======================================================
+    const expected = signature(expiry);
+    return Boolean(expected) && safeEqual(pieces[1], expected);
+  }
 
-// Utilizada pelo JavaScript para:
-// - Configuração do Supabase.
-// - Upload de arquivos e imagens no Cloudinary.
-//
-// A chave SERVICE_ROLE NUNCA é disponibilizada.
+  function cookieOptions(req) {
+    const forwardedProto = String(
+      req.headers['x-forwarded-proto'] || ''
+    ).split(',')[0].trim().toLowerCase();
 
-app.get('/api/config', (_req, res) => {
-    res.setHeader('Cache-Control', 'no-store');
+    const secure =
+      process.env.NODE_ENV === 'production' ||
+      req.secure === true ||
+      forwardedProto === 'https';
 
-    const publicKey =
-        process.env.SUPABASE_ANON_KEY ||
-        process.env.SUPABASE_KEY ||
-        '';
+    return {
+      httpOnly: true,
+      secure,
+      sameSite: 'strict',
+      path: '/',
+      maxAge: SESSION_SECONDS * 1000
+    };
+  }
 
-    const serviceKey =
-        process.env.SUPABASE_SERVICE_ROLE_KEY ||
-        '';
+  function setSessionCookie(req, res, token) {
+    res.cookie(COOKIE_NAME, token, cookieOptions(req));
+  }
 
-    // Proteção adicional contra exposição acidental
-    // da chave administrativa do Supabase.
+  function clearSessionCookie(req, res) {
+    const options = cookieOptions(req);
+    delete options.maxAge;
+    res.clearCookie(COOKIE_NAME, options);
+  }
 
-    const safePublicKey =
-        publicKey && publicKey !== serviceKey
-            ? publicKey
-            : '';
-
-    return res.json({
-        supabaseUrl:
-            process.env.SUPABASE_URL || '',
-
-        supabaseKey: safePublicKey,
-
-        cloudinaryName:
-            process.env.CLOUDINARY_CLOUD_NAME || '',
-
-        cloudinaryPreset:
-            process.env.CLOUDINARY_PRESET || ''
-    });
-});
-
-// ======================================================
-// HEALTH CHECK
-// ======================================================
-
-app.get('/health', (_req, res) => {
-    return res.status(200).send('OK');
-});
-
-// ======================================================
-// REDIRECIONAMENTO DE COMPATIBILIDADE
-// ======================================================
-
-app.get(
-    '/public/minha-obra/minha-obra.html',
-    (_req, res) => {
-        return res.redirect(
-            302,
-            '/minha-obra/minha-obra.html'
-        );
+  function requireAdmin(req, res, next) {
+    if (!isAuthenticated(req)) {
+      return res.status(401).json({
+        error: 'Sessão administrativa expirada. Entre novamente.'
+      });
     }
-);
+    return next();
+  }
 
-// ======================================================
-// UTILITÁRIOS
-// ======================================================
+  // Disponibiliza o middleware para rotas complementares do server.js.
+  app.locals = app.locals || {};
+  app.locals.requireErpAdmin = requireAdmin;
 
-function validId(value) {
+  function sameOrigin(req, res, next) {
+    const originHeader = req.get('origin');
+    const refererHeader = req.get('referer');
+
+    // Alguns clientes não enviam Origin. O cookie SameSite=Strict continua
+    // sendo uma segunda barreira nesses casos.
+    if (!originHeader && !refererHeader) return next();
+
+    try {
+      const supplied = originHeader
+        ? new URL(originHeader)
+        : new URL(refererHeader);
+
+      const host = req.get('host');
+      const forwardedProto = String(
+        req.headers['x-forwarded-proto'] || ''
+      ).split(',')[0].trim().toLowerCase();
+
+      const protocol = req.secure || forwardedProto === 'https'
+        ? 'https:'
+        : `${req.protocol || 'http'}:`;
+
+      const expectedOrigin = `${protocol}//${host}`;
+
+      if (!host || supplied.origin !== expectedOrigin) {
+        return res.status(403).json({ error: 'Origem não autorizada.' });
+      }
+
+      return next();
+    } catch {
+      return res.status(403).json({ error: 'Origem inválida.' });
+    }
+  }
+
+  function noStore(_req, res, next) {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.set('Pragma', 'no-cache');
+    res.set('X-Content-Type-Options', 'nosniff');
+    return next();
+  }
+
+  // ============================================================
+  // VALIDAÇÕES E NORMALIZAÇÃO
+  // ============================================================
+
+  function validationError(message) {
+    const error = new Error(message);
+    error.status = 400;
+    return error;
+  }
+
+  function cleanText(value, max = 300) {
+    if (typeof value !== 'string') return '';
+    return value
+      .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '')
+      .trim()
+      .slice(0, max);
+  }
+
+  function validUuid(value) {
     return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-        .test(String(value || ''));
-}
+      .test(String(value || ''));
+  }
 
-function cleanText(value, maxLength = 500) {
-    if (typeof value !== 'string') {
-        return '';
+  function validCpf(value) {
+    const cpf = String(value || '').replace(/\D/g, '');
+    if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+
+    let sum = 0;
+    for (let i = 0; i < 9; i++) {
+      sum += Number(cpf[i]) * (10 - i);
     }
 
-    return value.trim().slice(0, maxLength);
-}
+    let digit = (sum * 10) % 11;
+    if (digit === 10) digit = 0;
+    if (digit !== Number(cpf[9])) return false;
 
-function isCloudinaryUrl(value) {
+    sum = 0;
+    for (let i = 0; i < 10; i++) {
+      sum += Number(cpf[i]) * (11 - i);
+    }
+
+    digit = (sum * 10) % 11;
+    if (digit === 10) digit = 0;
+    return digit === Number(cpf[10]);
+  }
+
+  function money(value) {
+    if (value === null || value === undefined || value === '') return 0;
+
+    const number = Number(value);
+    if (
+      !Number.isFinite(number) ||
+      number < 0 ||
+      number > MAX_MONEY
+    ) {
+      throw validationError('O valor do contrato deve ser um número válido e não negativo.');
+    }
+
+    return Math.round((number + Number.EPSILON) * 100) / 100;
+  }
+
+  function validIsoDate(value) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+    const date = new Date(`${value}T00:00:00.000Z`);
+    return Number.isFinite(date.getTime()) &&
+      date.toISOString().slice(0, 10) === value;
+  }
+
+  function normalizeRecord(body) {
+    const b = body && typeof body === 'object' && !Array.isArray(body)
+      ? body
+      : {};
+
+    const idObra = cleanText(b.id_obra, 80);
+    const cpf = cleanText(b.cpf, 20).replace(/\D/g, '');
+    const clienteNome = cleanText(b.cliente_nome, 160);
+    const tipo = cleanText(b.tipo, 40) || 'particular';
+    const dataInicioRaw = cleanText(b.data_inicio, 10);
+
+    const clienteId = b.cliente_id === null ||
+      b.cliente_id === undefined ||
+      b.cliente_id === ''
+      ? null
+      : String(b.cliente_id).trim();
+
+    if (!idObra || !validCpf(cpf) || !clienteNome) {
+      throw validationError('Informe ID da obra, nome do cliente e CPF válido.');
+    }
+
+    if (clienteId && !validUuid(clienteId)) {
+      throw validationError('O vínculo com o cadastro do cliente é inválido.');
+    }
+
+    if (dataInicioRaw && !validIsoDate(dataInicioRaw)) {
+      throw validationError('A data de início informada é inválida.');
+    }
+
+    const dados = b.dados &&
+      typeof b.dados === 'object' &&
+      !Array.isArray(b.dados)
+      ? b.dados
+      : {};
+
+    let dadosJson;
     try {
-        const parsed = new URL(value);
-
-        return (
-            parsed.protocol === 'https:' &&
-            parsed.hostname === 'res.cloudinary.com' &&
-            !parsed.username &&
-            !parsed.password
-        );
-
+      dadosJson = JSON.stringify(dados);
     } catch {
-        return false;
-    }
-}
-
-function handleError(res, error, publicMessage) {
-    console.error(
-        '[API]',
-        error?.stack || error
-    );
-
-    return res.status(500).json({
-        ok: false,
-        error:
-            publicMessage ||
-            'Não foi possível concluir a operação.'
-    });
-}
-
-// ======================================================
-// SUPABASE — ACESSO PELO SERVIDOR
-// ======================================================
-
-// As tabelas utilizadas pelas rotas complementares
-// são controladas por uma lista de permissões.
-//
-// O acesso administrativo utiliza exclusivamente
-// SUPABASE_SERVICE_ROLE_KEY no servidor.
-//
-// O módulo erp-api.js possui sua própria função db()
-// para a tabela erp_obras.
-
-const SUPABASE_TABLES = new Set([
-    'arquivos',
-    'etapas_obra',
-    'atualizacoes_obra'
-]);
-
-async function supabaseRequest(
-    table,
-    method,
-    query = '',
-    body = null
-) {
-    if (!SUPABASE_TABLES.has(table)) {
-        throw new Error(
-            `Tabela não autorizada: ${table}.`
-        );
+      throw validationError('Os dados internos da obra possuem conteúdo inválido.');
     }
 
-    const supabaseUrl = process.env.SUPABASE_URL;
-
-    const serviceKey =
-        process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-    if (!supabaseUrl || !serviceKey) {
-        throw new Error(
-            'Configure SUPABASE_URL e ' +
-            'SUPABASE_SERVICE_ROLE_KEY no Render.'
-        );
+    // A API aceita o objeto completo do frontend sem filtrar os módulos.
+    // O limite do Express (1 MB) continua sendo a proteção principal do body.
+    if (Buffer.byteLength(dadosJson || '{}', 'utf8') > 950 * 1024) {
+      throw validationError('Os dados da obra excedem o limite permitido.');
     }
 
-    const baseUrl = supabaseUrl.replace(/\/+$/, '');
+    return {
+      id_obra: idObra,
+      cpf,
+      cliente_nome: clienteNome,
+      telefone: cleanText(b.telefone, 40) || null,
+      endereco: cleanText(b.endereco, 350) || null,
+      tipo,
+      data_inicio: dataInicioRaw || null,
+      valor_contrato: money(b.valor_contrato),
+      cliente_id: clienteId,
+      status: cleanText(b.status, 40) || 'Em andamento',
+      dados
+    };
+  }
+
+  // ============================================================
+  // SUPABASE REST
+  // ============================================================
+
+  async function db(table, method = 'GET', query = '', body = null) {
+    const { url, key } = config();
+
+    if (!url || !key) {
+      const error = new Error(
+        'Configure SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY no Render.'
+      );
+      error.status = 503;
+      throw error;
+    }
+
+    // As tabelas usadas por este módulo são constantes internas.
+    if (!/^[a-z][a-z0-9_]*$/i.test(table)) {
+      throw new Error('Tabela de banco inválida.');
+    }
 
     const headers = {
-        apikey: serviceKey,
-        Authorization: `Bearer ${serviceKey}`,
-        Accept: 'application/json'
+      apikey: key,
+      Authorization: `Bearer ${key}`,
+      Accept: 'application/json'
     };
 
     if (body !== null) {
-        headers['Content-Type'] = 'application/json';
-        headers.Prefer = 'return=representation';
+      headers['Content-Type'] = 'application/json';
+      headers.Prefer = 'return=representation';
     }
 
-    const response = await fetch(
-        `${baseUrl}/rest/v1/${table}${query}`,
-        {
-            method,
-            headers,
+    // Em DELETE também é necessário pedir representation para que a rota
+    // consiga confirmar se o registro existia antes de responder sucesso.
+    if (method === 'DELETE') {
+      headers.Prefer = 'return=representation';
+    }
 
-            body:
-                body === null
-                    ? undefined
-                    : JSON.stringify(body)
-        }
-    );
+    let response;
 
-    const responseText = await response.text();
+    try {
+      response = await fetch(`${url}/rest/v1/${table}${query}`, {
+        method,
+        headers,
+        body: body === null ? undefined : JSON.stringify(body)
+      });
+    } catch (cause) {
+      const error = new Error(
+        'Não foi possível conectar ao Supabase. Verifique a rede e as variáveis do Render.'
+      );
+      error.status = 502;
+      error.cause = cause;
+      throw error;
+    }
 
+    const raw = await response.text();
     let data = null;
 
-    if (responseText) {
-        try {
-            data = JSON.parse(responseText);
-
-        } catch {
-            data = responseText;
-        }
+    if (raw) {
+      try {
+        data = JSON.parse(raw);
+      } catch {
+        data = raw;
+      }
     }
 
     if (!response.ok) {
-        const message =
-            data && typeof data === 'object'
-                ? (
-                    data.message ||
-                    data.details ||
-                    data.hint
-                )
-                : null;
+      const error = new Error(
+        data && typeof data === 'object'
+          ? (
+              data.message ||
+              data.details ||
+              data.hint ||
+              `Falha no banco (${response.status}).`
+            )
+          : (data || `Falha no banco (${response.status}).`)
+      );
 
-        const error = new Error(
-            message ||
-            `Erro no Supabase: HTTP ${response.status}.`
-        );
+      error.status = response.status;
+      error.code = data && typeof data === 'object' ? data.code : undefined;
+      error.details = data && typeof data === 'object' ? data.details : undefined;
 
-        error.status = response.status;
-
-        throw error;
+      throw error;
     }
 
     return data;
-}
+  }
 
-// ======================================================
-// ARQUIVOS — LISTAGEM
-// ======================================================
+  // ============================================================
+  // TRATAMENTO PADRÃO DE ERROS
+  // ============================================================
 
-// Utilizada pelo Minha Obra e pelo portal do cliente.
-//
-// GET /api/arquivos?cliente_id=UUID
-
-app.get('/api/arquivos', async (req, res) => {
-    try {
-        const clienteId = String(
-            req.query.cliente_id || ''
-        );
-
-        if (!validId(clienteId)) {
-            return res.status(400).json({
-                error: 'ID do cliente inválido.'
-            });
-        }
-
-        const files = await supabaseRequest(
-            'arquivos',
-            'GET',
-
-            `?cliente_id=eq.${encodeURIComponent(clienteId)}` +
-            '&select=id,cliente_id,nome,url,public_id,created_at,categoria,etapa,descricao' +
-            '&order=created_at.desc'
-        );
-
-        return res.json(
-            Array.isArray(files)
-                ? files
-                : []
-        );
-
-    } catch (error) {
-        return handleError(
-            res,
-            error,
-            'Não foi possível listar os arquivos. ' +
-            'Verifique a tabela arquivos e sua configuração.'
-        );
-    }
-});
-
-// ======================================================
-// ARQUIVOS — CADASTRO
-// ======================================================
-
-// POST /api/arquivos
-//
-// Utilizada pelo formulário de envio de documentos
-// e fotos da página Minha Obra.
-
-app.post(
-    '/api/arquivos',
-    exigirErpAdmin,
-    async (req, res) => {
-        try {
-            const body = req.body || {};
-
-            const clienteId = String(
-                body.cliente_id || ''
-            );
-
-            const nome = cleanText(
-                body.nome,
-                200
-            );
-
-            const url =
-                typeof body.url === 'string'
-                    ? body.url.trim()
-                    : '';
-
-            const publicId = cleanText(
-                body.public_id,
-                500
-            );
-
-            const categoria =
-                cleanText(body.categoria, 40) ||
-                'Documento';
-
-            const etapa = cleanText(
-                body.etapa,
-                100
-            );
-
-            const descricao = cleanText(
-                body.descricao,
-                1000
-            );
-
-            if (!validId(clienteId)) {
-                return res.status(400).json({
-                    error: 'ID do cliente inválido.'
-                });
-            }
-
-            if (!nome || !isCloudinaryUrl(url)) {
-                return res.status(400).json({
-                    error:
-                        'Informe um nome válido e uma URL segura do Cloudinary.'
-                });
-            }
-
-            if (
-                !['Documento', 'Foto da obra'].includes(
-                    categoria
-                )
-            ) {
-                return res.status(400).json({
-                    error:
-                        'Categoria inválida. Use Documento ou Foto da obra.'
-                });
-            }
-
-            const rows = await supabaseRequest(
-                'arquivos',
-                'POST',
-
-                '?select=id,cliente_id,nome,url,public_id,created_at,categoria,etapa,descricao',
-
-                {
-                    cliente_id: clienteId,
-                    nome,
-                    url,
-                    public_id: publicId || null,
-                    categoria,
-                    etapa: etapa || null,
-                    descricao: descricao || null
-                }
-            );
-
-            return res.status(201).json(
-                Array.isArray(rows)
-                    ? rows[0]
-                    : rows
-            );
-
-        } catch (error) {
-            return handleError(
-                res,
-                error,
-                'Não foi possível registrar o arquivo. ' +
-                'Confirme a estrutura da tabela arquivos.'
-            );
-        }
-    }
-);
-
-// ======================================================
-// ARQUIVOS — ATUALIZAÇÃO
-// ======================================================
-
-// PATCH /api/arquivos?id=UUID
-//
-// Permite renomear arquivos e alterar seus metadados.
-
-app.patch(
-    '/api/arquivos',
-    exigirErpAdmin,
-    async (req, res) => {
-        try {
-            const id = String(
-                req.query.id || ''
-            );
-
-            const body = req.body || {};
-
-            if (!validId(id)) {
-                return res.status(400).json({
-                    error: 'ID do arquivo inválido.'
-                });
-            }
-
-            const updates = {};
-
-            if (body.nome !== undefined) {
-                const nome = cleanText(
-                    body.nome,
-                    200
-                );
-
-                if (!nome) {
-                    return res.status(400).json({
-                        error:
-                            'O nome do arquivo não pode ficar vazio.'
-                    });
-                }
-
-                updates.nome = nome;
-            }
-
-            if (body.categoria !== undefined) {
-                const categoria = cleanText(
-                    body.categoria,
-                    40
-                );
-
-                if (
-                    !['Documento', 'Foto da obra'].includes(
-                        categoria
-                    )
-                ) {
-                    return res.status(400).json({
-                        error: 'Categoria inválida.'
-                    });
-                }
-
-                updates.categoria = categoria;
-            }
-
-            if (body.etapa !== undefined) {
-                updates.etapa =
-                    cleanText(body.etapa, 100) || null;
-            }
-
-            if (body.descricao !== undefined) {
-                updates.descricao =
-                    cleanText(body.descricao, 1000) || null;
-            }
-
-            if (Object.keys(updates).length === 0) {
-                return res.status(400).json({
-                    error:
-                        'Nenhum campo válido foi enviado para atualização.'
-                });
-            }
-
-            const rows = await supabaseRequest(
-                'arquivos',
-                'PATCH',
-
-                `?id=eq.${encodeURIComponent(id)}` +
-                '&select=id,cliente_id,nome,url,public_id,created_at,categoria,etapa,descricao',
-
-                updates
-            );
-
-            if (
-                !Array.isArray(rows) ||
-                rows.length === 0
-            ) {
-                return res.status(404).json({
-                    error: 'Arquivo não encontrado.'
-                });
-            }
-
-            return res.json(rows[0]);
-
-        } catch (error) {
-            return handleError(
-                res,
-                error,
-                'Não foi possível atualizar os dados do arquivo.'
-            );
-        }
-    }
-);
-
-// ======================================================
-// CLOUDINARY — EXCLUSÃO DE MÍDIA
-// ======================================================
-
-// A assinatura da API é gerada no servidor.
-// API_SECRET nunca é enviado ao navegador.
-
-async function deleteCloudinaryFile(file) {
-    const cloudName =
-        process.env.CLOUDINARY_CLOUD_NAME;
-
-    const apiKey =
-        process.env.CLOUDINARY_API_KEY;
-
-    const apiSecret =
-        process.env.CLOUDINARY_API_SECRET;
-
-    if (!cloudName || !apiKey || !apiSecret) {
-        throw new Error(
-            'Credenciais de exclusão do Cloudinary não configuradas.'
-        );
-    }
-
-    if (!file.public_id) {
-        throw new Error(
-            'O arquivo não possui public_id para exclusão no Cloudinary.'
-        );
-    }
-
-    const timestamp = Math.floor(
-        Date.now() / 1000
-    );
-
-    const signatureBase =
-        `public_id=${file.public_id}&timestamp=${timestamp}`;
-
-    const signature = crypto
-        .createHash('sha1')
-        .update(signatureBase + apiSecret)
-        .digest('hex');
-
-    let resourceType = 'image';
-
-    if (typeof file.url === 'string') {
-        if (file.url.includes('/raw/upload/')) {
-            resourceType = 'raw';
-
-        } else if (
-            file.url.includes('/video/upload/')
-        ) {
-            resourceType = 'video';
-        }
-    }
-
-    const form = new URLSearchParams({
-        public_id: file.public_id,
-        timestamp: String(timestamp),
-        api_key: apiKey,
-        signature
+  function sendRouteError(res, error, context, fallback) {
+    console.error(`[ERP ${context}]`, {
+      message: error?.message,
+      status: error?.status,
+      code: error?.code,
+      details: error?.details
     });
 
-    const response = await fetch(
-        `https://api.cloudinary.com/v1_1/${encodeURIComponent(cloudName)}/${resourceType}/destroy`,
-        {
-            method: 'POST',
-
-            headers: {
-                'Content-Type':
-                    'application/x-www-form-urlencoded'
-            },
-
-            body: form
-        }
-    );
-
-    let result;
-
-    try {
-        result = await response.json();
-
-    } catch {
-        throw new Error(
-            'Resposta inválida recebida do Cloudinary.'
-        );
-    }
-
-    if (!response.ok) {
-        throw new Error(
-            result?.error?.message ||
-            'O Cloudinary não conseguiu excluir o arquivo.'
-        );
-    }
-
-    const cloudinaryStatus = String(
-        result?.result || ''
-    ).toLowerCase();
-
     if (
-        !['ok', 'not found'].includes(
-            cloudinaryStatus
+      error?.code === '23505' ||
+      /duplicate key|unique constraint/i.test(error?.message || '')
+    ) {
+      return res.status(409).json({
+        error: 'Este ID de obra já está cadastrado. Gere outro identificador.'
+      });
+    }
+
+    if (error?.code === '23503') {
+      return res.status(400).json({
+        error: 'O cliente selecionado não existe mais no cadastro do portal. Atualize a lista de clientes e tente novamente.'
+      });
+    }
+
+    const status = Number.isInteger(error?.status) &&
+      error.status >= 400 &&
+      error.status <= 499
+      ? error.status
+      : (
+          error?.status === 502 || error?.status === 503
+            ? error.status
+            : 500
+        );
+
+    // Mensagens de validação são úteis para o formulário. Erros internos
+    // permanecem no log do servidor e recebem texto seguro no navegador.
+    const message = status === 400
+      ? (error.message || fallback)
+      : (
+          status === 401 ||
+          status === 403 ||
+          status === 404 ||
+          status === 409 ||
+          status === 429 ||
+          status === 503
         )
-    ) {
-        throw new Error(
-            'O Cloudinary não confirmou a exclusão do arquivo.'
-        );
-    }
-
-    return result;
-}
-
-// ======================================================
-// ARQUIVOS — EXCLUSÃO
-// ======================================================
-
-// DELETE /api/arquivos?id=UUID
-//
-// Primeiro exclui no Cloudinary.
-// Depois remove o registro do Supabase.
-//
-// Se o Cloudinary falhar, o registro do banco
-// permanece preservado.
-
-app.delete(
-    '/api/arquivos',
-    exigirErpAdmin,
-    async (req, res) => {
-        try {
-            const id = String(
-                req.query.id || ''
-            );
-
-            if (!validId(id)) {
-                return res.status(400).json({
-                    error: 'ID do arquivo inválido.'
-                });
-            }
-
-            const rows = await supabaseRequest(
-                'arquivos',
-                'GET',
-
-                `?id=eq.${encodeURIComponent(id)}` +
-                '&select=id,cliente_id,public_id,url'
-            );
-
-            const file =
-                Array.isArray(rows)
-                    ? rows[0]
-                    : null;
-
-            if (!file) {
-                return res.status(404).json({
-                    error: 'Arquivo não encontrado.'
-                });
-            }
-
-            await deleteCloudinaryFile(file);
-
-            await supabaseRequest(
-                'arquivos',
-                'DELETE',
-
-                `?id=eq.${encodeURIComponent(id)}`
-            );
-
-            return res.json({
-                success: true,
-                message: 'Arquivo removido da obra.'
-            });
-
-        } catch (error) {
-            console.error(
-                '[API arquivos excluir]',
-                error?.stack || error
-            );
-
-            return res.status(500).json({
-                error:
-                    error?.message ||
-                    'Não foi possível excluir o arquivo.'
-            });
-        }
-    }
-);
-
-// ======================================================
-// ETAPAS DA OBRA — LISTAGEM
-// ======================================================
-
-// Mantida para compatibilidade com o portal
-// e com o módulo compartilhado public/assets/js/api.js.
-
-app.get('/api/etapas', async (req, res) => {
-    try {
-        const clienteId = String(
-            req.query.cliente_id || ''
-        );
-
-        if (!validId(clienteId)) {
-            return res.status(400).json({
-                error: 'ID do cliente inválido.'
-            });
-        }
-
-        const rows = await supabaseRequest(
-            'etapas_obra',
-            'GET',
-
-            `?cliente_id=eq.${encodeURIComponent(clienteId)}` +
-            '&select=*&order=ordem.asc'
-        );
-
-        return res.json(
-            Array.isArray(rows)
-                ? rows
-                : []
-        );
-
-    } catch (error) {
-        return handleError(
-            res,
-            error,
-            'Não foi possível carregar as etapas. ' +
-            'Verifique se a tabela etapas_obra existe.'
-        );
-    }
-});
-
-// ======================================================
-// ETAPAS DA OBRA — CADASTRO
-// ======================================================
-
-app.post(
-    '/api/etapas',
-    exigirErpAdmin,
-    async (req, res) => {
-        try {
-            const body = req.body || {};
-
-            const clienteId = String(
-                body.cliente_id || ''
-            );
-
-            const nome = cleanText(
-                body.nome,
-                150
-            );
-
-            const ordem = Number(body.ordem);
-
-            if (
-                !validId(clienteId) ||
-                !nome ||
-                !Number.isInteger(ordem) ||
-                ordem < 0
-            ) {
-                return res.status(400).json({
-                    error:
-                        'Informe cliente, nome da etapa e ordem válida.'
-                });
-            }
-
-            const status =
-                cleanText(body.status, 40) ||
-                'Pendente';
-
-            if (
-                ![
-                    'Pendente',
-                    'Em andamento',
-                    'Concluída'
-                ].includes(status)
-            ) {
-                return res.status(400).json({
-                    error: 'Status da etapa inválido.'
-                });
-            }
-
-            const rows = await supabaseRequest(
-                'etapas_obra',
-                'POST',
-                '?select=*',
-                {
-                    cliente_id: clienteId,
-                    nome,
-                    ordem,
-                    status
-                }
-            );
-
-            return res.status(201).json(
-                Array.isArray(rows)
-                    ? rows[0]
-                    : rows
-            );
-
-        } catch (error) {
-            return handleError(
-                res,
-                error,
-                'Não foi possível cadastrar a etapa da obra.'
-            );
-        }
-    }
-);
-
-// ======================================================
-// ATUALIZAÇÕES — LISTAGEM
-// ======================================================
-
-// Utilizada pelo Minha Obra para mostrar
-// as publicações realizadas ao cliente.
-
-app.get('/api/atualizacoes', async (req, res) => {
-    try {
-        const clienteId = String(
-            req.query.cliente_id || ''
-        );
-
-        if (!validId(clienteId)) {
-            return res.status(400).json({
-                error: 'ID do cliente inválido.'
-            });
-        }
-
-        const rows = await supabaseRequest(
-            'atualizacoes_obra',
-            'GET',
-
-            `?cliente_id=eq.${encodeURIComponent(clienteId)}` +
-            '&select=*&order=created_at.desc'
-        );
-
-        return res.json(
-            Array.isArray(rows)
-                ? rows
-                : []
-        );
-
-    } catch (error) {
-        return handleError(
-            res,
-            error,
-            'Não foi possível carregar o histórico da obra.'
-        );
-    }
-});
-
-// ======================================================
-// ATUALIZAÇÕES — CADASTRO
-// ======================================================
-
-// POST /api/atualizacoes
-//
-// Utilizada pelo formulário Publicar no portal.
-
-app.post(
-    '/api/atualizacoes',
-    exigirErpAdmin,
-    async (req, res) => {
-        try {
-            const body = req.body || {};
-
-            const clienteId = String(
-                body.cliente_id || ''
-            );
-
-            const titulo = cleanText(
-                body.titulo,
-                200
-            );
-
-            const descricao = cleanText(
-                body.descricao,
-                2000
-            );
-
-            if (
-                !validId(clienteId) ||
-                !titulo ||
-                !descricao
-            ) {
-                return res.status(400).json({
-                    error:
-                        'Informe o cliente, o título e a descrição da atualização.'
-                });
-            }
-
-            const rows = await supabaseRequest(
-                'atualizacoes_obra',
-                'POST',
-                '?select=*',
-                {
-                    cliente_id: clienteId,
-                    titulo,
-                    descricao
-                }
-            );
-
-            return res.status(201).json(
-                Array.isArray(rows)
-                    ? rows[0]
-                    : rows
-            );
-
-        } catch (error) {
-            return handleError(
-                res,
-                error,
-                'Não foi possível salvar a atualização da obra.'
-            );
-        }
-    }
-);
-
-// ======================================================
-// ARQUIVOS ESTÁTICOS
-// ======================================================
-
-// Estrutura:
-// public/
-//   index.html
-//   login-cliente.html
-//   painel-cliente.html
-//   assets/
-//   minha-obra/
-//       minha-obra.html
-//       obra-gestao.css
-//
-// O HTML e o JavaScript são enviados sem cache.
-// Isso garante que o navegador carregue a versão atual
-// da Minha Obra, inclusive as funções de renderização
-// publicadas no objeto window pelo JavaScript novo.
-
-app.use(
-    express.static(PUBLIC_DIR, {
-        extensions: ['html'],
-
-        setHeaders(res, filePath) {
-            res.setHeader(
-                'X-Content-Type-Options',
-                'nosniff'
-            );
-
-            res.setHeader(
-                'Referrer-Policy',
-                'strict-origin-when-cross-origin'
-            );
-
-            const extension = path
-                .extname(filePath)
-                .toLowerCase();
-
-            if (
-                ['.html', '.htm', '.js', '.mjs'].includes(
-                    extension
-                )
-            ) {
-                res.setHeader(
-                    'Cache-Control',
-                    'no-store, no-cache, must-revalidate, proxy-revalidate'
-                );
-
-                res.setHeader(
-                    'Pragma',
-                    'no-cache'
-                );
-
-                res.setHeader(
-                    'Expires',
-                    '0'
-                );
-            }
-        }
-    })
-);
-
-// ======================================================
-// TRATAMENTO DE ROTAS INEXISTENTES
-// ======================================================
-
-app.use((req, res) => {
-    if (req.path.startsWith('/api/')) {
-        return res.status(404).json({
-            ok: false,
-            message: 'Rota da API não encontrada.'
-        });
-    }
-
-    return res.status(404).send(
-        'Página não encontrada.'
-    );
-});
-
-// ======================================================
-// TRATAMENTO GLOBAL DE ERROS
-// ======================================================
-
-app.use((error, req, res, next) => {
-    console.error(
-        '[SERVER]',
-        error?.stack || error
-    );
-
-    if (res.headersSent) {
-        return next(error);
-    }
-
-    // JSON inválido enviado pelo navegador.
-
-    if (error?.type === 'entity.parse.failed') {
-        return res.status(400).json({
-            ok: false,
-            message: 'O conteúdo enviado possui JSON inválido.'
-        });
-    }
-
-    // Requisição maior que o limite configurado.
-
-    if (
-        error?.type === 'entity.too.large' ||
-        error?.status === 413
-    ) {
-        return res.status(413).json({
-            ok: false,
-            message:
-                'O conteúdo enviado excedeu o limite permitido.'
-        });
-    }
-
-    return res.status(500).json({
-        ok: false,
-        message:
-            'Ocorreu um erro interno no servidor.'
+        ? (error.message || fallback)
+        : fallback;
+
+    return res.status(status).json({ error: message });
+  }
+
+  function notFoundError(message) {
+    const error = new Error(message);
+    error.status = 404;
+    return error;
+  }
+
+  // ============================================================
+  // SESSÃO ADMINISTRATIVA
+  // Estas rotas ficam antes do middleware de proteção.
+  // ============================================================
+
+  app.get('/api/erp/session', noStore, (req, res) => {
+    return res.json({
+      authenticated: isAuthenticated(req),
+      configured: isConfigured()
     });
-});
+  });
 
-// ======================================================
-// INICIALIZAÇÃO
-// ======================================================
+  // ============================================================
+  // LOGIN COM LIMITAÇÃO DE TENTATIVAS
+  // ============================================================
 
-app.listen(PORT, () => {
-    console.log('==========================================');
-    console.log('PH ENGENHARIA — SERVIDOR INICIADO');
-    console.log('==========================================');
+  app.post('/api/erp/login', noStore, sameOrigin, (req, res) => {
+    const { url, key } = config();
+    const configuredPassword = process.env.ERP_ADMIN_PASSWORD || '';
 
-    console.log(
-        `[SERVER] Porta: ${PORT}`
-    );
+    if (!configuredPassword || !sessionSecret() || !url || !key) {
+      return res.status(503).json({
+        error: 'Configure ERP_ADMIN_PASSWORD, SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY no Render. Recomenda-se também definir ERP_SESSION_SECRET com um segredo longo e aleatório.'
+      });
+    }
 
-    console.log(
-        '[ERP] Autenticação via erp-api.js habilitada.'
-    );
+    const ip = String(
+      req.ip ||
+      req.socket?.remoteAddress ||
+      'unknown'
+    ).slice(0, 120);
 
-    console.log(
-        '[ERP] API de obras e clientes habilitada.'
-    );
+    const now = Date.now();
+    let record = loginAttempts.get(ip);
 
-    console.log(
-        '[API] Arquivos, etapas e atualizações habilitados.'
-    );
+    if (!record || record.resetAt <= now) {
+      record = {
+        count: 0,
+        resetAt: now + LOGIN_WINDOW_MS
+      };
+    }
 
-    console.log(
-        '[SUPABASE] Acesso administrativo pelo servidor.'
-    );
+    if (record.count >= LOGIN_MAX_ATTEMPTS) {
+      const retrySeconds = Math.max(
+        1,
+        Math.ceil((record.resetAt - now) / 1000)
+      );
 
-    console.log(
-        '[CLOUDINARY] Integração de arquivos habilitada.'
-    );
+      res.set('Retry-After', String(retrySeconds));
 
-    console.log(
-        '[STATIC] Minha Obra com cache desabilitado para HTML/JS.'
-    );
+      loginAttempts.set(ip, record);
 
-    console.log('==========================================');
-});
+      return res.status(429).json({
+        error: 'Muitas tentativas. Aguarde 15 minutos e tente novamente.'
+      });
+    }
+
+    const password = String(req.body?.password || '');
+
+    if (!safeEqual(password, configuredPassword)) {
+      record.count += 1;
+      loginAttempts.set(ip, record);
+
+      // Limpa registros antigos para evitar crescimento indefinido do Map.
+      if (loginAttempts.size > 5000) {
+        for (const [key, value] of loginAttempts) {
+          if (!value || value.resetAt <= now) {
+            loginAttempts.delete(key);
+          }
+        }
+      }
+
+      return res.status(401).json({
+        error: 'Senha administrativa incorreta.'
+      });
+    }
+
+    loginAttempts.delete(ip);
+
+    const expiry = Math.floor(Date.now() / 1000) + SESSION_SECONDS;
+    const token = `${expiry}.${signature(expiry)}`;
+
+    setSessionCookie(req, res, token);
+
+    return res.json({
+      success: true,
+      expires_in: SESSION_SECONDS
+    });
+  });
+
+  // ============================================================
+  // LOGOUT
+  // ============================================================
+
+  app.post('/api/erp/logout', noStore, sameOrigin, (req, res) => {
+    clearSessionCookie(req, res);
+
+    return res.json({
+      success: true
+    });
+  });
+
+  // ============================================================
+  // PROTEÇÃO DAS DEMAIS ROTAS ERP
+  // Não protege /api/arquivos nem /api/atualizacoes, que pertencem
+  // ao portal do cliente e continuam no server.js original.
+  // ============================================================
+
+  app.use('/api/erp', noStore, sameOrigin, requireAdmin);
+
+  // ============================================================
+  // LISTAR OBRAS
+  // O HTML usa esses campos para montar o seletor e o comparativo.
+  // ============================================================
+
+  app.get('/api/erp/obras', async (_req, res) => {
+    try {
+      const rows = await db(
+        'erp_obras',
+        'GET',
+        '?select=id,id_obra,cliente_nome,cpf,cliente_id,tipo,valor_contrato,status,updated_at&order=updated_at.desc&limit=1000'
+      );
+
+      return res.json(Array.isArray(rows) ? rows : []);
+
+    } catch (error) {
+      return sendRouteError(
+        res,
+        error,
+        'listar obras',
+        'Não foi possível listar as obras.'
+      );
+    }
+  });
+
+  // ============================================================
+  // LISTAR CLIENTES DO PORTAL
+  // O HTML espera id, nome, email e endereco_obra.
+  // ============================================================
+
+  app.get('/api/erp/clientes', async (_req, res) => {
+    try {
+      const rows = await db(
+        'clientes',
+        'GET',
+        '?select=id,nome,email,endereco_obra&order=nome.asc&limit=500'
+      );
+
+      return res.json(Array.isArray(rows) ? rows : []);
+
+    } catch (error) {
+      return sendRouteError(
+        res,
+        error,
+        'listar clientes',
+        'Não foi possível carregar a lista de clientes do portal.'
+      );
+    }
+  });
+
+  // ============================================================
+  // CADASTRAR OBRA
+  // ============================================================
+
+  app.post('/api/erp/obras', async (req, res) => {
+    try {
+      const payload = normalizeRecord(req.body);
+
+      const rows = await db(
+        'erp_obras',
+        'POST',
+        '?select=*',
+        payload
+      );
+
+      const record = Array.isArray(rows) ? rows[0] : rows;
+
+      if (!record || !record.id) {
+        throw new Error('O Supabase não retornou a obra cadastrada.');
+      }
+
+      return res.status(201).json(record);
+
+    } catch (error) {
+      return sendRouteError(
+        res,
+        error,
+        'criar obra',
+        'Não foi possível criar a obra.'
+      );
+    }
+  });
+
+  // ============================================================
+  // CARREGAR UMA OBRA
+  // Retorna a linha completa, inclusive o JSONB "dados" do frontend.
+  // ============================================================
+
+  app.get('/api/erp/obras/:id', async (req, res) => {
+    try {
+      if (!validUuid(req.params.id)) {
+        throw validationError('Identificador da obra inválido.');
+      }
+
+      const rows = await db(
+        'erp_obras',
+        'GET',
+        `?id=eq.${encodeURIComponent(req.params.id)}&select=*&limit=1`
+      );
+
+      if (!Array.isArray(rows) || !rows[0]) {
+        throw notFoundError('Obra não encontrada.');
+      }
+
+      return res.json(rows[0]);
+
+    } catch (error) {
+      return sendRouteError(
+        res,
+        error,
+        'carregar obra',
+        'Não foi possível carregar a obra.'
+      );
+    }
+  });
+
+  // ============================================================
+  // ATUALIZAR OBRA
+  // O frontend envia PUT com o cadastro e o objeto dados completo.
+  // O Supabase recebe PATCH para atualizar apenas a linha identificada.
+  // ============================================================
+
+  app.put('/api/erp/obras/:id', async (req, res) => {
+    try {
+      if (!validUuid(req.params.id)) {
+        throw validationError('Identificador da obra inválido.');
+      }
+
+      const payload = normalizeRecord(req.body);
+
+      const rows = await db(
+        'erp_obras',
+        'PATCH',
+        `?id=eq.${encodeURIComponent(req.params.id)}&select=*`,
+        payload
+      );
+
+      if (!Array.isArray(rows) || !rows[0]) {
+        throw notFoundError('Obra não encontrada para atualização.');
+      }
+
+      return res.json(rows[0]);
+
+    } catch (error) {
+      return sendRouteError(
+        res,
+        error,
+        'atualizar obra',
+        'Não foi possível atualizar a obra.'
+      );
+    }
+  });
+
+  // ============================================================
+  // EXCLUIR OBRA
+  // DELETE com return=representation permite devolver 404 quando não existe.
+  // O cadastro do cliente e os arquivos do portal não são removidos.
+  // ============================================================
+
+  app.delete('/api/erp/obras/:id', async (req, res) => {
+    try {
+      if (!validUuid(req.params.id)) {
+        throw validationError('Identificador da obra inválido.');
+      }
+
+      const rows = await db(
+        'erp_obras',
+        'DELETE',
+        `?id=eq.${encodeURIComponent(req.params.id)}&select=id`
+      );
+
+      if (!Array.isArray(rows) || !rows[0]) {
+        throw notFoundError('Obra não encontrada para exclusão.');
+      }
+
+      return res.json({
+        success: true
+      });
+
+    } catch (error) {
+      return sendRouteError(
+        res,
+        error,
+        'excluir obra',
+        'Não foi possível excluir a obra.'
+      );
+    }
+  });
+};
