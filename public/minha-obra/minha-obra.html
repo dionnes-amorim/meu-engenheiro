@@ -241,8 +241,16 @@ lc-total-row{display:flex;justify-content:space-between;gap:8px;font-size:10px;b
 'use strict';
 // PH ENGENHARIA — Minha Obra | Persistência pela API já existente em /api/erp/*.
 // Os novos módulos são armazenados dentro de dados (JSON) da própria obra.
-const $ = (s, root=document) => root.querySelector(s);
-const $$ = (s, root=document) => Array.from(root.querySelectorAll(s));
+const $ = (s, root=document) => {
+  if(typeof root === 'string') root = document.querySelector(root) || document;
+  if(!root || typeof root.querySelector !== 'function') return null;
+  return root.querySelector(s);
+};
+const $$ = (s, root=document) => {
+  if(typeof root === 'string') root = document.querySelector(root) || document;
+  if(!root || typeof root.querySelectorAll !== 'function') return [];
+  return Array.from(root.querySelectorAll(s));
+};
 const n = v => Number.isFinite(Number(v)) ? Number(v) : 0;
 const money = v => (n(v)).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const esc = v => String(v ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
