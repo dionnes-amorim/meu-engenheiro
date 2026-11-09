@@ -148,22 +148,48 @@ lc-total-row{display:flex;justify-content:space-between;gap:8px;font-size:10px;b
   <div class="content-panel"><div class="table-wrap"><table class="tabela-controle"><thead><tr><th>Material</th><th>Unidade</th><th>Comprado</th><th>Utilizado</th><th>Saldo</th><th>% consumo</th><th>Alerta</th><th>Ação</th></tr></thead><tbody id="tbodyEstoque"></tbody></table></div></div>
 </section>
 <section id="calculadoras" class="erp-section">
-  <div class="section-heading"><div><div class="section-kicker">06 / PLANEJAMENTO TÉCNICO</div><h2>Calculadoras e quantitativos de compra</h2><p>Estime os materiais de maior volume e envie os quantitativos diretamente para Compras e Cotações.</p></div><button type="button" class="btn-primary" id="btnEnviarCalculosCompras"><i class="fa-solid fa-cart-plus"></i> Enviar estimativas para compras</button></div>
-  <div class="calc-grid">
-    <article class="calc-card"><h3><i class="fa-solid fa-cubes"></i> Concreto — cimento, areia e brita</h3><div class="calc-fields"><div><label>Volume (m³)<input type="number" id="cVol" min="0" step="0.01" value="10"></label></div><div><label>Traço de referência<select id="cTraco"><option value="123">1:2:3 — convencional</option><option value="1152">1:1,5:2 — mais rico</option><option value="134">1:3:4 — magro</option></select></label></div><div><label>Perda (%)<input type="number" id="cPerda" min="0" max="50" value="8"></label></div><div><label>Cimento (R$/saco)<input type="number" id="cPrecoCimento" min="0" value="42"></label></div><div><label>Areia (R$/m³)<input type="number" id="cPrecoAreia" min="0" value="180"></label></div><div><label>Brita (R$/m³)<input type="number" id="cPrecoBrita" min="0" value="220"></label></div></div><div class="calc-result"><span id="cOutCimento">Cimento: —</span><span id="cOutAreia">Areia: —</span><span id="cOutBrita">Brita: —</span><strong id="cOutCusto">Custo estimado: R$ 0,00</strong></div><p class="calc-warning">Coeficientes aproximados para estimativa preliminar. O traço e o consumo final dependem do projeto, resistência, materiais e dosagem definidos pelo responsável técnico.</p></article>
-    <article class="calc-card"><h3><i class="fa-solid fa-mountain"></i> Terraplanagem, aterro e cascalho</h3><div class="calc-fields"><div><label>Comprimento (m)<input type="number" id="tComp" min="0" value="20"></label></div><div><label>Largura (m)<input type="number" id="tLarg" min="0" value="10"></label></div><div><label>Altura/camada (m)<input type="number" id="tAlt" min="0" step="0.01" value="0.30"></label></div><div><label>Empolamento (%)<input type="number" id="tEmp" min="0" value="25"></label></div><div><label>Perda adicional (%)<input type="number" id="tPerda" min="0" value="0"></label></div><div><label>Preço terra (R$/m³)<input type="number" id="tPreco" min="0" value="60"></label></div></div><div class="calc-result"><span id="tOutCompactado">Volume compactado: —</span><span id="tOutSolto">Volume solto: —</span><strong id="tOutCusto">Custo estimado: R$ 0,00</strong></div><p class="calc-warning">Empolamento varia conforme solo, umidade, transporte e compactação. Validar o fator com levantamento e fornecedor.</p></article>
-    <article class="calc-card"><h3><i class="fa-solid fa-water"></i> Areia, lastro e contrapiso</h3><div class="calc-fields"><div><label>Área (m²)<input type="number" id="lArea" min="0" step="0.01" value="50"></label></div><div><label>Espessura (cm)<input type="number" id="lEsp" min="0" step="0.1" value="5"></label></div><div><label>Aplicação<select id="lTipo"><option value="areia">Areia pura — lastro</option><option value="lastro">Lastro 1:5 — areia e cimento</option><option value="contrapiso">Contrapiso 1:4 — areia e cimento</option></select></label></div><div><label>Preço da areia (R$/m³)<input type="number" id="lPrecoAreia" min="0" step="0.01" value="180"></label></div><div><label>Preço do cimento (R$/saco)<input type="number" id="lPrecoCimento" min="0" step="0.01" value="42"></label></div></div><div class="calc-result"><span id="lOutVolume">Volume: —</span><span id="lOutAreia">Areia: —</span><span id="lOutCimento">Cimento: —</span><strong id="lOutCusto">Custo estimado: R$ 0,00</strong></div><p class="calc-warning">Coeficientes de estimativa. Ajuste o traço, a espessura e o consumo conforme projeto e especificação do responsável técnico.</p></article>
-    <article class="calc-card"><h3><i class="fa-solid fa-trowel-bricks"></i> Alvenaria — blocos e tijolos</h3><div class="calc-fields"><div><label>Área de parede (m²)<input type="number" id="aArea" min="0" value="200"></label></div><div><label>Tipo<select id="aTipo"><option value="19">Bloco cerâmico — 19 un/m²</option><option value="32">Tijolinho — 32 un/m²</option><option value="12.5">Bloco concreto — 12,5 un/m²</option><option value="25">Bloco vedação — 25 un/m²</option></select></label></div><div><label>Perda (%)<input type="number" id="aPerda" min="0" value="10"></label></div><div><label>Preço do milheiro (R$)<input type="number" id="aPreco" min="0" value="850"></label></div></div><div class="calc-result"><span id="aOutQtd">Quantidade: —</span><span id="aOutArgamassa">Argamassa de assentamento: —</span><strong id="aOutCusto">Custo estimado dos blocos: R$ 0,00</strong></div></article>
-    <article class="calc-card"><h3><i class="fa-solid fa-border-all"></i> Piso, porcelanato, argamassa e rejunte</h3><div class="calc-fields"><div><label>Área (m²)<input type="number" id="pArea" min="0" value="100"></label></div><div><label>Perda de peças (%)<input type="number" id="pPerda" min="0" value="10"></label></div><div><label>Preço do piso (R$/m²)<input type="number" id="pPreco" min="0" value="60"></label></div><div><label>Consumo argamassa (kg/m²)<input type="number" id="pConsumoArg" min="0" step="0.1" value="5"></label></div><div><label>Saco argamassa (kg)<input type="number" id="pSacoArg" min="1" value="20"></label></div><div><label>Rejunte (kg/m²)<input type="number" id="pConsumoRej" min="0" step="0.01" value="0.30"></label></div></div><div class="calc-result"><span id="pOutArea">Área com perda: —</span><span id="pOutArg">Argamassa: —</span><span id="pOutRej">Rejunte: —</span><strong id="pOutCusto">Custo do piso: R$ 0,00</strong></div></article>
-    <article class="calc-card"><h3><i class="fa-solid fa-trowel"></i> Reboco, chapisco e argamassa</h3><div class="calc-fields"><div><label>Área (m²)<input type="number" id="mArea" min="0" value="300"></label></div><div><label>Espessura (cm)<input type="number" id="mEsp" min="0" step="0.1" value="2"></label></div><div><label>Tipo<select id="mTipo"><option value="reboco">Reboco 1:2:8 (cimento:cal:areia)</option><option value="assenta">Assentamento 1:1:6</option><option value="chapisco">Chapisco 1:3</option></select></label></div><div><label>Perda (%)<input type="number" id="mPerda" min="0" value="10"></label></div></div><div class="calc-result"><span id="mOutVolume">Volume de argamassa: —</span><span id="mOutCimento">Cimento: —</span><span id="mOutCal">Cal: —</span><span id="mOutAreia">Areia: —</span></div><p class="calc-warning">Consumo estimado por proporção volumétrica simplificada; espessura, substrato e traço devem ser confirmados em campo.</p></article>
-    <article class="calc-card"><h3><i class="fa-solid fa-grip-lines"></i> Aço CA-50/CA-60 e arame</h3><div class="calc-fields"><div><label>Bitola (mm)<select id="sBitola"><option value="4.2">4,2 mm</option><option value="5">5 mm</option><option value="6.3">6,3 mm</option><option value="8">8 mm</option><option value="10">10 mm</option><option value="12.5" selected>12,5 mm</option><option value="16">16 mm</option><option value="20">20 mm</option><option value="25">25 mm</option></select></label></div><div><label>Quantidade de barras<input type="number" id="sBarras" min="0" value="100"></label></div><div><label>Comprimento por barra (m)<input type="number" id="sComprimento" min="0" step="0.1" value="12"></label></div><div><label>Perda (%)<input type="number" id="sPerda" min="0" value="10"></label></div><div><label>Preço aço (R$/kg)<input type="number" id="sPreco" min="0" value="7.5"></label></div><div><label>Arame por kg de aço (%)<input type="number" id="sAramePct" min="0" step="0.1" value="1.5"></label></div></div><div class="calc-result"><span id="sOutPeso">Peso estimado: —</span><span id="sOutBarras">Barras com perda: —</span><span id="sOutArame">Arame recozido: —</span><strong id="sOutCusto">Custo do aço: R$ 0,00</strong></div><p class="calc-warning">Peso linear aproximado por d²/162. Quantidade e bitolas devem vir do projeto estrutural e do detalhamento de armação.</p></article>
-    <article class="calc-card"><h3><i class="fa-solid fa-paint-roller"></i> Pintura, selador e massa</h3><div class="calc-fields"><div><label>Área de pintura (m²)<input type="number" id="ptArea" min="0" value="250"></label></div><div><label>Número de demãos<input type="number" id="ptDemaos" min="1" value="2"></label></div><div><label>Rendimento tinta (m²/L/demão)<input type="number" id="ptRend" min="0.1" value="10"></label></div><div><label>Perda (%)<input type="number" id="ptPerda" min="0" value="10"></label></div><div><label>Preço tinta (R$/L)<input type="number" id="ptPreco" min="0" value="28"></label></div><div><label>Massa (kg/m²)<input type="number" id="ptMassaCons" min="0" step="0.1" value="1.2"></label></div></div><div class="calc-result"><span id="ptOutTinta">Tinta: —</span><span id="ptOutSelador">Selador: —</span><span id="ptOutMassa">Massa: —</span><strong id="ptOutCusto">Custo da tinta: R$ 0,00</strong></div></article>
-    <article class="calc-card"><h3><i class="fa-solid fa-house"></i> Telhado e cobertura</h3><div class="calc-fields"><div><label>Área de cobertura (m²)<input type="number" id="rArea" min="0" value="120"></label></div><div><label>Tipo de telha<select id="rTipo"><option value="10">Cerâmica — 10 un/m²</option><option value="12">Concreto — 12 un/m²</option><option value="2.2">Fibrocimento — 2,2 m²/chapa</option><option value="2.5">Metálica — 2,5 m²/chapa</option></select></label></div><div><label>Perda (%)<input type="number" id="rPerda" min="0" value="8"></label></div><div><label>Preço por unidade/chapa (R$)<input type="number" id="rPreco" min="0" value="4.5"></label></div></div><div class="calc-result"><span id="rOutQtd">Quantidade: —</span><span id="rOutMadeira">Madeiramento: estimar em projeto</span><strong id="rOutCusto">Custo telhas: R$ 0,00</strong></div><p class="calc-warning">Não inclui estrutura, cumeeiras, rufos, parafusos, manta e peças especiais. Confira recobrimento e inclinação do fabricante.</p></article>
-    <article class="calc-card"><h3><i class="fa-solid fa-bolt"></i> Instalação elétrica — cabos e conduítes</h3><div class="calc-fields"><div><label>Pontos elétricos<input type="number" id="ePontos" min="0" value="50"></label></div><div><label>Metros médios por ponto<input type="number" id="eMetros" min="0" value="8"></label></div><div><label>Fator de circuitos (cabos)<input type="number" id="eCabos" min="1" step="0.1" value="3"></label></div><div><label>Perda (%)<input type="number" id="ePerda" min="0" value="10"></label></div><div><label>Preço cabo (R$/m)<input type="number" id="ePrecoCabo" min="0" value="2.8"></label></div><div><label>Preço conduíte (R$/m)<input type="number" id="ePrecoCond" min="0" value="2.2"></label></div></div><div class="calc-result"><span id="eOutCabo">Cabos: —</span><span id="eOutCond">Conduíte: —</span><strong id="eOutCusto">Custo estimado: R$ 0,00</strong></div><p class="calc-warning">Estimativa inicial por pontos. Seções, circuitos, proteção e dimensionamento devem ser definidos pelo projeto elétrico conforme carga e normas.</p></article>
-    <article class="calc-card"><h3><i class="fa-solid fa-faucet"></i> Hidráulica — tubulações PVC</h3><div class="calc-fields"><div><label>Comprimento água fria (m)<input type="number" id="hAgua" min="0" value="100"></label></div><div><label>Comprimento esgoto (m)<input type="number" id="hEsgoto" min="0" value="70"></label></div><div><label>Perda (%)<input type="number" id="hPerda" min="0" value="10"></label></div><div><label>Preço água fria (R$/m)<input type="number" id="hPrecoAgua" min="0" value="6"></label></div><div><label>Preço esgoto (R$/m)<input type="number" id="hPrecoEsgoto" min="0" value="12"></label></div></div><div class="calc-result"><span id="hOutAgua">Água fria: —</span><span id="hOutEsgoto">Esgoto: —</span><strong id="hOutCusto">Custo tubos: R$ 0,00</strong></div><p class="calc-warning">Não inclui conexões, registros, caixas, válvulas, suportes e diâmetros distintos. Separar quantitativos por bitola conforme projeto hidráulico.</p></article>
-    <article class="calc-card"><h3><i class="fa-solid fa-droplet"></i> Impermeabilização</h3><div class="calc-fields"><div><label>Área a impermeabilizar (m²)<input type="number" id="iArea" min="0" value="80"></label></div><div><label>Consumo (kg ou L/m²)<input type="number" id="iConsumo" min="0" step="0.1" value="1.5"></label></div><div><label>Demãos<input type="number" id="iDemaos" min="1" value="2"></label></div><div><label>Perda (%)<input type="number" id="iPerda" min="0" value="10"></label></div><div><label>Preço por kg/L (R$)<input type="number" id="iPreco" min="0" value="18"></label></div></div><div class="calc-result"><span id="iOutQtd">Produto: —</span><strong id="iOutCusto">Custo estimado: R$ 0,00</strong></div></article>
-    <article class="calc-card result-highlight"><h3><i class="fa-solid fa-list-check"></i> Resumo dos quantitativos calculados</h3><div class="calc-result calc-total-list" id="calcResumoMateriais"><span>Informe as medidas nas calculadoras para montar o resumo.</span></div><div class="calc-result calc-grand-summary" id="calcResumoTotais"><span>Cimento total: 0 sacos</span><span>Areia total: 0 m³</span><span>Brita total: 0 m³</span><span>Terra total: 0 m³</span></div><p class="metric-note" id="calcCustoTotal">Subtotal dos itens com preço informado: R$ 0,00</p><button type="button" class="btn-primary" id="btnEnviarCalculosCompras2" style="width:100%;margin-top:10px"><i class="fa-solid fa-cart-plus"></i> Adicionar ao planejamento de compras</button><p class="calc-warning">Os quantitativos são preliminares. Faça conferência com projetos, memorial, especificações dos fabricantes e condições de execução antes de comprar.</p></article>
+  <div class="section-heading"><div><div class="section-kicker">06 / PLANEJAMENTO TÉCNICO</div><h2>Calculadoras e quantitativos de compra</h2><p>Adicione só o cálculo que você precisa. Marque o que quer mandar para Compras.</p></div></div>
+
+  <div class="content-panel" style="margin-bottom:14px">
+    <div class="form-grid three">
+      <div><label for="calcTipoAdd">Qual cálculo você quer?</label>
+        <select id="calcTipoAdd">
+          <option value="concreto">Concreto — cimento, areia e brita</option>
+          <option value="terra">Terraplanagem, aterro e cascalho</option>
+          <option value="lastro">Areia, lastro e contrapiso</option>
+          <option value="alvenaria">Alvenaria — blocos e tijolos</option>
+          <option value="piso">Piso, porcelanato, argamassa e rejunte</option>
+          <option value="reboco">Reboco, chapisco e argamassa</option>
+          <option value="aco">Aço CA-50/CA-60 e arame</option>
+          <option value="pintura">Pintura, selador e massa</option>
+          <option value="telhado">Telhado e cobertura</option>
+          <option value="eletrica">Instalação elétrica — cabos e conduítes</option>
+          <option value="hidraulica">Hidráulica — tubulações PVC</option>
+          <option value="impermeabilizacao">Impermeabilização</option>
+        </select>
+      </div>
+      <div style="display:flex;align-items:flex-end;gap:8px">
+        <button type="button" class="btn-primary" id="btnAddCalculadora"><i class="fa-solid fa-plus"></i> Adicionar calculadora</button>
+        <button type="button" class="btn-quiet" id="btnLimparCalculadoras">Limpar tudo</button>
+      </div>
+      <div style="display:flex;align-items:flex-end">
+        <button type="button" class="btn-primary" id="btnEnviarCalculosCompras" style="width:100%"><i class="fa-solid fa-cart-plus"></i> Enviar marcados para Compras</button>
+      </div>
+    </div>
+    <p class="field-help">Nenhuma calculadora vem aberta por padrão. Você adiciona só o que vai usar na obra.</p>
   </div>
+
+  <div class="calc-grid" id="calcGrid"></div>
+  <div id="calcVazio" class="content-panel" style="text-align:center;color:#89877e;font-size:12px">Nenhuma calculadora adicionada. Escolha acima e clique em Adicionar calculadora.</div>
+
+  <article class="calc-card result-highlight" style="margin-top:14px">
+    <h3><i class="fa-solid fa-list-check"></i> Resumo dos quantitativos marcados</h3>
+    <div class="calc-result calc-total-list" id="calcResumoMateriais"><span>Marque os cálculos que quer enviar.</span></div>
+    <div class="calc-result calc-grand-summary" id="calcResumoTotais"><span>Cimento total: 0 sacos</span><span>Areia total: 0 m³</span><span>Brita total: 0 m³</span><span>Terra total: 0 m³</span></div>
+    <p class="metric-note" id="calcCustoTotal">Subtotal dos itens marcados: R$ 0,00</p>
+    <button type="button" class="btn-primary" id="btnEnviarCalculosCompras2" style="width:100%;margin-top:10px"><i class="fa-solid fa-cart-plus"></i> Adicionar marcados ao planejamento de compras</button>
+    <p class="calc-warning">Quantitativos preliminares. Confira com projeto e responsável técnico antes de comprar.</p>
+  </article>
 </section>
 <section id="fluxo" class="erp-section">
   <div class="section-heading"><div><div class="section-kicker">07 / TESOURARIA</div><h2>Fluxo de caixa</h2><p>Lance entradas e saídas por data. O saldo acumulado é recalculado automaticamente.</p></div></div>
@@ -622,7 +648,6 @@ function onFieldEdit(ev){const el=ev.target;if(!appState.data)return;const settl
 function val(id){return Math.max(0,n($('#'+id)?.value));}
 function put(id,text){const e=$('#'+id);if(e)e.textContent=text;}
 function updateCalcItem(name,quantity,unit,category='Materiais básicos',unitPrice=0){quantity=Math.max(0,n(quantity));if(quantity>0){const old=appState.calcItems.find(x=>x.material===name&&x.unidade===unit);if(old){old.quantidade=quantity;old.categoria=category;old.preco=n(unitPrice);}else appState.calcItems.push({material:name,quantidade,unidade:unit,categoria:category,preco:n(unitPrice)});}}
-function calcAll(){const items=[];const add=(material,q,unit,cat='Materiais básicos',price=0)=>{if(Number.isFinite(q)&&q>0)items.push({material,quantidade:q,unidade:unit,categoria:cat,preco:n(price)});};
  // Concreto: coeficientes de referência por m³, aplicados com perda informada.
  const cv=val('cVol'),cl=1+val('cPerda')/100,ct=$('#cTraco').value,coef=ct==='1152'?{c:9,s:.48,b:.64}:ct==='134'?{c:5.5,s:.66,b:.88}:{c:7,s:.56,b:.84};
  const cc=Math.ceil(cv*coef.c*cl),cs=cv*coef.s*cl,cb=cv*coef.b*cl,costC=cc*val('cPrecoCimento')+cs*val('cPrecoAreia')+cb*val('cPrecoBrita');
@@ -653,7 +678,84 @@ function calcAll(){const items=[];const add=(material,q,unit,cat='Materiais bás
  const sumBy=(test)=>items.filter(test).reduce((total,x)=>total+n(x.quantidade),0),totalCimento=sumBy(x=>/cimento/i.test(x.material)&&x.unidade==='saco'),totalAreia=sumBy(x=>/areia/i.test(x.material)&&x.unidade==='m³'),totalBrita=sumBy(x=>/brita/i.test(x.material)&&x.unidade==='m³'),totalTerra=sumBy(x=>/terra/i.test(x.material)&&x.unidade==='m³');
  $('#calcResumoTotais').innerHTML=`<span>Cimento total: <strong>${Math.ceil(totalCimento)} sacos</strong></span><span>Areia total: <strong>${totalAreia.toFixed(2)} m³</strong></span><span>Brita total: <strong>${totalBrita.toFixed(2)} m³</strong></span><span>Terra total: <strong>${totalTerra.toFixed(2)} m³</strong></span>`;
 }
-function sendCalcToPurchases(){if(!appState.current)return toast('Selecione uma obra antes de enviar os quantitativos.','error');calcAll();if(!appState.calcItems.length)return toast('Não há quantitativos calculados para enviar.','error');const grouped=new Map();appState.calcItems.forEach(x=>{const k=x.material+'|'+x.unidade;const old=grouped.get(k)||{...x,quantidade:0};old.quantidade+=x.quantidade;grouped.set(k,old);});[...grouped.values()].forEach(x=>appState.data.compras.push({id:makeId(),material:x.material,categoria:x.categoria,unidade:x.unidade,quantidade:Number(x.quantidade.toFixed(3)),preco:n(x.preco),fornecedor:'',data:'',status:'Planejada',observacao:'Estimativa gerada pelas calculadoras. Conferir projeto e cotação.',origem:'calculadora'}));renderCompras();markDirty('Quantitativos enviados para compras');navigateToView('compras');toast(`${grouped.size} item(ns) enviado(s) para Compras e Cotações.`,'success');}
+
+/* ============ CALCULADORAS NOVAS - SÓ O QUE VOCÊ ADICIONAR ============ */
+const CALC_DEFS = {
+  concreto:{titulo:'Concreto — cimento, areia e brita', icone:'fa-cubes', campos:`<label>Volume (m³)<input data-k="vol" type="number" value="10" step="0.01"></label><label>Traço<select data-k="traco"><option value="123">1:2:3 — convencional</option><option value="1152">1:1,5:2 — mais rico</option><option value="134">1:3:4 — magro</option></select></label><label>Perda (%)<input data-k="perda" type="number" value="8"></label><label>Cimento (R$/saco)<input data-k="pCim" type="number" value="42"></label><label>Areia (R$/m³)<input data-k="pAreia" type="number" value="180"></label><label>Brita (R$/m³)<input data-k="pBrita" type="number" value="220"></label>`},
+  terra:{titulo:'Terraplanagem, aterro e cascalho', icone:'fa-mountain', campos:`<label>Comprimento (m)<input data-k="comp" type="number" value="20"></label><label>Largura (m)<input data-k="larg" type="number" value="10"></label><label>Altura (m)<input data-k="alt" type="number" value="0.30" step="0.01"></label><label>Empolamento (%)<input data-k="emp" type="number" value="25"></label><label>Perda (%)<input data-k="perda" type="number" value="0"></label><label>Preço terra (R$/m³)<input data-k="preco" type="number" value="60"></label>`},
+  lastro:{titulo:'Areia, lastro e contrapiso', icone:'fa-water', campos:`<label>Área (m²)<input data-k="area" type="number" value="50"></label><label>Espessura (cm)<input data-k="esp" type="number" value="5"></label><label>Aplicação<select data-k="tipo"><option value="areia">Areia pura</option><option value="lastro">Lastro 1:5</option><option value="contrapiso">Contrapiso 1:4</option></select></label><label>Areia (R$/m³)<input data-k="pAreia" type="number" value="180"></label><label>Cimento (R$/saco)<input data-k="pCim" type="number" value="42"></label>`},
+  alvenaria:{titulo:'Alvenaria — blocos e tijolos', icone:'fa-trowel-bricks', campos:`<label>Área parede (m²)<input data-k="area" type="number" value="200"></label><label>Tipo<select data-k="tipo"><option value="19">Bloco cerâmico 19 un/m²</option><option value="32">Tijolinho 32 un/m²</option><option value="12.5">Bloco concreto 12,5 un/m²</option><option value="25">Bloco vedação 25 un/m²</option></select></label><label>Perda (%)<input data-k="perda" type="number" value="10"></label><label>Preço milheiro (R$)<input data-k="preco" type="number" value="850"></label>`},
+  piso:{titulo:'Piso, porcelanato, argamassa e rejunte', icone:'fa-border-all', campos:`<label>Área (m²)<input data-k="area" type="number" value="100"></label><label>Perda peças (%)<input data-k="perda" type="number" value="10"></label><label>Preço piso (R$/m²)<input data-k="preco" type="number" value="60"></label><label>Argamassa (kg/m²)<input data-k="arg" type="number" value="5"></label><label>Saco argamassa (kg)<input data-k="sacoArg" type="number" value="20"></label><label>Rejunte (kg/m²)<input data-k="rej" type="number" value="0.30"></label>`},
+  reboco:{titulo:'Reboco, chapisco e argamassa', icone:'fa-trowel', campos:`<label>Área (m²)<input data-k="area" type="number" value="300"></label><label>Espessura (cm)<input data-k="esp" type="number" value="2"></label><label>Tipo<select data-k="tipo"><option value="reboco">Reboco 1:2:8</option><option value="assenta">Assentamento 1:1:6</option><option value="chapisco">Chapisco 1:3</option></select></label><label>Perda (%)<input data-k="perda" type="number" value="10"></label>`},
+  aco:{titulo:'Aço CA-50/CA-60 e arame', icone:'fa-grip-lines', campos:`<label>Bitola (mm)<select data-k="bitola"><option>4.2</option><option>5</option><option>6.3</option><option>8</option><option>10</option><option selected>12.5</option><option>16</option><option>20</option><option>25</option></select></label><label>Barras<input data-k="barras" type="number" value="100"></label><label>Comp. por barra (m)<input data-k="comp" type="number" value="12"></label><label>Perda (%)<input data-k="perda" type="number" value="10"></label><label>Preço aço (R$/kg)<input data-k="preco" type="number" value="7.5"></label><label>Arame (% do aço)<input data-k="aramePct" type="number" value="1.5"></label>`},
+  pintura:{titulo:'Pintura, selador e massa', icone:'fa-paint-roller', campos:`<label>Área (m²)<input data-k="area" type="number" value="250"></label><label>Demãos<input data-k="demaos" type="number" value="2"></label><label>Rendimento (m²/L/demão)<input data-k="rend" type="number" value="10"></label><label>Perda (%)<input data-k="perda" type="number" value="10"></label><label>Preço tinta (R$/L)<input data-k="preco" type="number" value="28"></label><label>Massa (kg/m²)<input data-k="massa" type="number" value="1.2"></label>`},
+  telhado:{titulo:'Telhado e cobertura', icone:'fa-house', campos:`<label>Área cobertura (m²)<input data-k="area" type="number" value="120"></label><label>Tipo telha<select data-k="tipo"><option value="10">Cerâmica 10 un/m²</option><option value="12">Concreto 12 un/m²</option><option value="2.2">Fibrocimento 2,2 m²/chapa</option><option value="2.5">Metálica 2,5 m²/chapa</option></select></label><label>Perda (%)<input data-k="perda" type="number" value="8"></label><label>Preço un/chapa (R$)<input data-k="preco" type="number" value="4.5"></label>`},
+  eletrica:{titulo:'Elétrica — cabos e conduítes', icone:'fa-bolt', campos:`<label>Pontos<input data-k="pontos" type="number" value="50"></label><label>Metros por ponto<input data-k="metros" type="number" value="8"></label><label>Fator cabos<input data-k="cabos" type="number" value="3"></label><label>Perda (%)<input data-k="perda" type="number" value="10"></label><label>Cabo (R$/m)<input data-k="pCabo" type="number" value="2.8"></label><label>Conduíte (R$/m)<input data-k="pCond" type="number" value="2.2"></label>`},
+  hidraulica:{titulo:'Hidráulica — PVC', icone:'fa-faucet', campos:`<label>Água fria (m)<input data-k="agua" type="number" value="100"></label><label>Esgoto (m)<input data-k="esgoto" type="number" value="70"></label><label>Perda (%)<input data-k="perda" type="number" value="10"></label><label>Água fria (R$/m)<input data-k="pAgua" type="number" value="6"></label><label>Esgoto (R$/m)<input data-k="pEsgoto" type="number" value="12"></label>`},
+  impermeabilizacao:{titulo:'Impermeabilização', icone:'fa-droplet', campos:`<label>Área (m²)<input data-k="area" type="number" value="80"></label><label>Consumo (kg/m²)<input data-k="consumo" type="number" value="1.5"></label><label>Demãos<input data-k="demaos" type="number" value="2"></label><label>Perda (%)<input data-k="perda" type="number" value="10"></label><label>Preço (R$/kg)<input data-k="preco" type="number" value="18"></label>`},
+};
+
+function calcValores(tipo, v){
+  const f = (k,d=0)=> n(v[k] ?? d);
+  if(tipo==='concreto'){ const vol=f('vol')*(1+f('perda')/100); let cim,areia,brita; if(v.traco==='1152'){cim=vol*9.5;areia=vol*0.55;brita=vol*0.75;} else if(v.traco==='134'){cim=vol*5.5;areia=vol*0.75;brita=vol*0.95;} else {cim=vol*7;areia=vol*0.6;brita=vol*0.85;} return {linhas:[`Cimento: ${cim.toFixed(0)} sacos`,`Areia: ${areia.toFixed(2)} m³`,`Brita: ${brita.toFixed(2)} m³`], custo:cim*f('pCim')+areia*f('pAreia')+brita*f('pBrita'), itens:[{material:'Cimento CP-II 50kg',unidade:'saco',qtd:cim,preco:f('pCim'),categoria:'Materiais básicos'},{material:'Areia',unidade:'m³',qtd:areia,preco:f('pAreia'),categoria:'Materiais básicos'},{material:'Brita',unidade:'m³',qtd:brita,preco:f('pBrita'),categoria:'Materiais básicos'}], totais:{cimento:cim,areia,brita}; }
+  if(tipo==='terra'){ const comp=f('comp')*f('larg')*f('alt'); const solto=comp*(1+f('emp')/100)*(1+f('perda')/100); return {linhas:[`Volume compactado: ${comp.toFixed(2)} m³`,`Volume solto: ${solto.toFixed(2)} m³`], custo:solto*f('preco'), itens:[{material:'Terra / aterro',unidade:'m³',qtd:solto,preco:f('preco'),categoria:'Materiais básicos'}], totais:{terra:solto}}; }
+  if(tipo==='alvenaria'){ const qtd=f('area')*f('tipo')*(1+f('perda')/100); const arg=f('area')*0.02; return {linhas:[`Quantidade: ${qtd.toFixed(0)} un`,`Argamassa: ${arg.toFixed(2)} m³`], custo:qtd/1000*f('preco'), itens:[{material:'Bloco / Tijolo',unidade:'un',qtd,preco:f('preco')/1000,categoria:'Alvenaria'}], totais:{}}; }
+  if(tipo==='aco'){ const pesoPorMetro=(Math.pow(f('bitola'),2)/162); const peso=f('barras')*f('comp')*pesoPorMetro*(1+f('perda')/100); const arame=peso*f('aramePct')/100; return {linhas:[`Peso: ${peso.toFixed(1)} kg`,`Arame: ${arame.toFixed(1)} kg`], custo:peso*f('preco'), itens:[{material:`Aço CA-50 ${f('bitola')}mm`,unidade:'kg',qtd:peso,preco:f('preco'),categoria:'Estrutura'},{material:'Arame recozido',unidade:'kg',qtd:arame,preco:8,categoria:'Estrutura'}], totais:{}}; }
+  if(tipo==='piso'){ const area=f('area')*(1+f('perda')/100); const argKg=f('area')*f('arg'); const rej=f('area')*f('rej'); return {linhas:[`Área com perda: ${area.toFixed(1)} m²`,`Argamassa: ${(argKg/f('sacoArg')).toFixed(1)} sacos`,`Rejunte: ${rej.toFixed(1)} kg`], custo:area*f('preco'), itens:[{material:'Piso / Porcelanato',unidade:'m²',qtd:area,preco:f('preco'),categoria:'Acabamento'},{material:'Argamassa colante',unidade:'saco',qtd:argKg/f('sacoArg'),preco:35,categoria:'Acabamento'},{material:'Rejunte',unidade:'kg',qtd:rej,preco:25,categoria:'Acabamento'}], totais:{}}; }
+  if(tipo==='pintura'){ const tinta=f('area')*f('demaos')/f('rend',10)*(1+f('perda')/100); const massa=f('area')*f('massa'); return {linhas:[`Tinta: ${tinta.toFixed(1)} L`,`Massa: ${massa.toFixed(1)} kg`,`Selador: ${(f('area')/12).toFixed(1)} L`], custo:tinta*f('preco'), itens:[{material:'Tinta',unidade:'L',qtd:tinta,preco:f('preco'),categoria:'Acabamento'},{material:'Massa corrida',unidade:'kg',qtd:massa,preco:4,categoria:'Acabamento'}], totais:{}}; }
+  if(tipo==='telhado'){ const isChapa=(f('tipo')<5); const qtd=isChapa? f('area')/f('tipo')*(1+f('perda')/100) : f('area')*f('tipo')*(1+f('perda')/100); return {linhas:[`Quantidade: ${qtd.toFixed(0)} ${isChapa?'chapas':'un'}`], custo:qtd*f('preco'), itens:[{material:'Telha',unidade:isChapa?'un':'un',qtd,preco:f('preco'),categoria:'Acabamento'}], totais:{}}; }
+  if(tipo==='eletrica'){ const cabo=f('pontos')*f('metros')*f('cabos')*(1+f('perda')/100); const cond=f('pontos')*f('metros')*(1+f('perda')/100); return {linhas:[`Cabos: ${cabo.toFixed(0)} m`,`Conduíte: ${cond.toFixed(0)} m`], custo:cabo*f('pCabo')+cond*f('pCond'), itens:[{material:'Cabo elétrico',unidade:'m',qtd:cabo,preco:f('pCabo'),categoria:'Elétrica'},{material:'Conduíte',unidade:'m',qtd:cond,preco:f('pCond'),categoria:'Elétrica'}], totais:{}}; }
+  if(tipo==='hidraulica'){ const agua=f('agua')*(1+f('perda')/100); const esg=f('esgoto')*(1+f('perda')/100); return {linhas:[`Água fria: ${agua.toFixed(0)} m`,`Esgoto: ${esg.toFixed(0)} m`], custo:agua*f('pAgua')+esg*f('pEsgoto'), itens:[{material:'Tubo PVC água fria',unidade:'m',qtd:agua,preco:f('pAgua'),categoria:'Hidráulica'},{material:'Tubo PVC esgoto',unidade:'m',qtd:esg,preco:f('pEsgoto'),categoria:'Hidráulica'}], totais:{}}; }
+  if(tipo==='impermeabilizacao'){ const qtd=f('area')*f('consumo')*f('demaos')*(1+f('perda')/100); return {linhas:[`Produto: ${qtd.toFixed(1)} kg/L`], custo:qtd*f('preco'), itens:[{material:'Impermeabilizante',unidade:'kg',qtd,preco:f('preco'),categoria:'Impermeabilização'}], totais:{}}; }
+  if(tipo==='lastro'){ const vol=f('area')*f('esp')/100; const cim = v.tipo==='areia'?0 : vol*5; return {linhas:[`Volume: ${vol.toFixed(2)} m³`,`Areia: ${vol.toFixed(2)} m³`,`Cimento: ${cim.toFixed(0)} sacos`], custo:vol*f('pAreia')+cim*f('pCim'), itens:[{material:'Areia',unidade:'m³',qtd:vol,preco:f('pAreia'),categoria:'Materiais básicos'},{material:'Cimento CP-II 50kg',unidade:'saco',qtd:cim,preco:f('pCim'),categoria:'Materiais básicos'}], totais:{cimento:cim,areia:vol}}; }
+  if(tipo==='reboco'){ const vol=f('area')*f('esp')/100*(1+f('perda')/100); const cim=vol*4; const areia=vol*0.9; return {linhas:[`Volume argamassa: ${vol.toFixed(2)} m³`,`Cimento: ${cim.toFixed(0)} sacos`,`Areia: ${areia.toFixed(2)} m³`], custo:cim*42+areia*180, itens:[{material:'Cimento CP-II 50kg',unidade:'saco',qtd:cim,preco:42,categoria:'Materiais básicos'},{material:'Areia',unidade:'m³',qtd:areia,preco:180,categoria:'Materiais básicos'}], totais:{cimento:cim,areia}}; }
+  return {linhas:[],custo:0,itens:[],totais:{}};
+}
+
+function lerCalcCard(card){
+  const v={}; card.querySelectorAll('[data-k]').forEach(el=> v[el.dataset.k]=el.type==='checkbox'?el.checked:el.value);
+  return v;
+}
+function addCalculadora(tipo){
+  const def=CALC_DEFS[tipo]; if(!def) return;
+  const id='calc_'+makeId();
+  const card=document.createElement('article'); card.className='calc-card'; card.dataset.calc=tipo; card.dataset.calcId=id;
+  card.innerHTML=`<h3><i class="fa-solid ${def.icone}"></i> ${def.titulo} <button type="button" class="btn-quiet btn-small" data-remove-calc style="float:right">✕ Remover</button></h3>
+  <div class="calc-fields">${def.campos}</div>
+  <div class="calc-result" data-out></div>
+  <label style="display:flex;gap:8px;align-items:center;margin-top:10px;font-size:11px"><input type="checkbox" data-enviar checked> Enviar este cálculo para Compras</label>`;
+  $('#calcGrid').appendChild(card);
+  card.querySelector('[data-remove-calc]').addEventListener('click',()=>{card.remove(); calcAll();});
+  card.addEventListener('input',calcAll); card.addEventListener('change',calcAll);
+  $('#calcVazio').style.display='none'; calcAll();
+}
+function calcAll(){
+  let totCim=0,totAreia=0,totBrita=0,totTerra=0,totCusto=0; let html='';
+  $$('#calcGrid .calc-card').forEach(card=>{
+    const tipo=card.dataset.calc; const r=calcValores(tipo, lerCalcCard(card));
+    card.querySelector('[data-out]').innerHTML = r.linhas.map(l=>`<span>${esc(l)}</span>`).join('') + `<strong>Custo estimado: ${money(r.custo)}</strong>`;
+    if(card.querySelector('[data-enviar]')?.checked){
+      totCim+=r.totais?.cimento||0; totAreia+=r.totais?.areia||0; totBrita+=r.totais?.brita||0; totTerra+=r.totais?.terra||0; totCusto+=r.custo;
+      html+=`<span>${esc(CALC_DEFS[tipo].titulo)}: ${money(r.custo)}</span>`;
+    }
+  });
+  $('#calcResumoMateriais').innerHTML = html || '<span>Marque os cálculos que quer enviar.</span>';
+  $('#calcResumoTotais').innerHTML = `<span>Cimento total: ${totCim.toFixed(0)} sacos</span><span>Areia total: ${totAreia.toFixed(2)} m³</span><span>Brita total: ${totBrita.toFixed(2)} m³</span><span>Terra total: ${totTerra.toFixed(2)} m³</span>`;
+  $('#calcCustoTotal').textContent = `Subtotal dos itens marcados: ${money(totCusto)}`;
+  if(!$$('#calcGrid .calc-card').length) $('#calcVazio').style.display='';
+}
+function sendCalcToPurchases(){
+  if(!appState.current) return toast('Selecione uma obra primeiro.','error');
+  let adicionados=0;
+  $$('#calcGrid .calc-card').forEach(card=>{
+    if(!card.querySelector('[data-enviar]')?.checked) return;
+    const r=calcValores(card.dataset.calc, lerCalcCard(card));
+    r.itens.forEach(it=>{ if(it.qtd<=0) return; appState.data.compras.push({id:makeId(), material:it.material, categoria:it.categoria||'Materiais básicos', unidade:it.unidade, quantidade:Number(it.qtd.toFixed(3)), preco:Number(it.preco||0), fornecedor:'', data:'', status:'Planejada', observacao:'Via calculadora: '+CALC_DEFS[card.dataset.calc].titulo}); adicionados++; });
+  });
+  if(!adicionados) return toast('Marque pelo menos uma calculadora para enviar.','error');
+  markDirty('Estimativas da calculadora enviadas para Compras'); renderCompras(); syncFinance(); saveCurrent();
+  toast(adicionados+' itens enviados para Compras.');
+}
 
 // Comparativo consolidado entre obras cadastradas (consulta os registros completos pela API existente).
 async function renderWorkComparison(){const body=$('#tbodyComparativoObras');if(!body)return;if(!appState.records.length){body.innerHTML='<tr><td colspan="8" class="empty-row">Nenhuma obra cadastrada.</td></tr>';return;}body.innerHTML='<tr><td colspan="8" class="empty-row">Carregando dados das obras...</td></tr>';const results=await Promise.allSettled(appState.records.map(async row=>{let r;if(appState.current&&String(appState.current.id)===String(row.id))r=appState.current;else if(row.dados)r=row;else r=await api('/api/erp/obras/'+encodeURIComponent(row.id));const d=mergeData(r.dados||{},{}),contract=n(r.valor_contrato),cost=d.financeiro.etapas.reduce((sum,x)=>sum+n(x.realizado),0)+n(d.financeiro.taxas);let progress=0;const tasks=d.cronogramaFisico;if(tasks.length){const weight=tasks.reduce((sum,x)=>sum+n(x.peso),0);progress=weight?tasks.reduce((sum,x)=>sum+n(x.peso)*n(x.avanco)/100,0)/weight*100:tasks.reduce((sum,x)=>sum+n(x.avanco),0)/tasks.length;}return{r,contract,cost,progress};}));body.innerHTML=results.map((result,i)=>{if(result.status!=='fulfilled'){const row=appState.records[i];return `<tr><td>${esc(row.id_obra||'Obra')}</td><td>${esc(row.cliente_nome||'')}</td><td>${esc(row.status||'')}</td><td colspan="4">Não foi possível carregar os indicadores.</td><td>—</td></tr>`;}const {r,contract,cost,progress}=result.value;return `<tr><td>${esc(r.id_obra||'—')}</td><td>${esc(r.cliente_nome||'—')}</td><td>${esc(r.status||'—')}</td><td>${money(contract)}</td><td>${money(cost)}</td><td style="color:${contract-cost<0?'#b66e67':'#718a69'}">${money(contract-cost)}</td><td>${progress.toFixed(1)}%</td><td><button type="button" class="btn-quiet btn-small" data-open-work="${esc(r.id)}">Abrir</button></td></tr>`;}).join('');}
@@ -796,6 +898,66 @@ async function init() {
             `<option value="${esc(x)}">${esc(x)}</option>`
         ).join('');
 
+/* ============ FINANCEIRO ÚNICO - TUDO QUE É CONFIRMADO BATE NA VISÃO GERAL ============ */
+function valorCompra(c){ return n(c.quantidade)*n(c.preco); }
+function syncFinance(){
+  if(!appState.data || !appState.current) return;
+  const d = appState.data;
+
+  // 1. Contas pagas/recebidas -> garante lançamento no fluxo (sem duplicar)
+  (d.contas||[]).forEach(ct=>{
+    const ja = (d.fluxo||[]).some(f=>f.contaId===ct.id);
+    const confirmada = (ct.status==='Paga'||ct.status==='Pago'||ct.status==='Recebida'||ct.status==='Recebido');
+    if(confirmada && !ja){
+      d.fluxo.push({id:makeId(), contaId:ct.id, tipo: ct.tipo==='receber'?'entrada':'saida', data: ct.dataPagamento||ct.vencimento||todayISO(), valor:n(ct.valor), descricao:`${ct.tipo==='receber'?'Recebimento':'Pagamento'}: ${ct.descricao||''}`});
+    }
+    if(!confirmada && ja){ d.fluxo = d.fluxo.filter(f=>f.contaId!==ct.id); }
+  });
+
+  // 2. Compras Comprada/Recebida -> garante saída no fluxo (sem duplicar)
+  (d.compras||[]).forEach(cp=>{
+    const ja = (d.fluxo||[]).some(f=>f.compraId===cp.id);
+    const confirmada = (cp.status==='Comprada'||cp.status==='Recebida');
+    if(confirmada && !ja && valorCompra(cp)>0){
+      d.fluxo.push({id:makeId(), compraId:cp.id, tipo:'saida', data: cp.data||todayISO(), valor:valorCompra(cp), descricao:`Compra: ${cp.material}`});
+    }
+    if(!confirmada && ja){ d.fluxo = d.fluxo.filter(f=>f.compraId!==cp.id); }
+  });
+
+  // 3. Totais
+  const entradas = (d.fluxo||[]).filter(f=>f.tipo==='entrada').reduce((s,f)=>s+n(f.valor),0);
+  const saidas = (d.fluxo||[]).filter(f=>f.tipo==='saida').reduce((s,f)=>s+n(f.valor),0);
+  const saldo = entradas - saidas;
+
+  // Realizado = tudo que saiu de dinheiro (fluxo) - é o que aparece na Visão Geral e no Relatório
+  const contrato = n(appState.current.valor_contrato ?? appState.current.valor ?? 0);
+  const orcado = (d.financeiro?.etapas||[]).reduce((s,e)=>s+n(e.orcado),0) + n(d.financeiro?.taxas||0);
+
+  // Atualiza Visão Geral / Relatório se os elementos existirem
+  const set = (id,txt)=>{ const el=document.getElementById(id); if(el) el.textContent=txt; };
+  set('totalEntradas', money(entradas)); set('totalSaidas', money(saidas)); set('saldoFluxo', money(saldo));
+  set('resumoContrato', money(contrato)); set('resumoOrcado', money(orcado)); set('resumoGasto', money(saidas));
+  set('resumoTaxas', money(n(d.financeiro?.taxas||0))); set('resumoSaldo', money(contrato - saidas));
+  set('resumoLucro', money(contrato - saidas)); set('resumoMargem', contrato>0? ((contrato-saidas)/contrato*100).toFixed(1)+'%' : '0%');
+  set('comprasPlanejado', money((d.compras||[]).filter(c=>c.status!=='Cancelada').reduce((s,c)=>s+valorCompra(c),0)));
+  set('comprasComprado', money((d.compras||[]).filter(c=>c.status==='Comprada'||c.status==='Recebida').reduce((s,c)=>s+valorCompra(c),0)));
+  set('comprasPendentes', String((d.compras||[]).filter(c=>['Planejada','Em cotação','Aprovada'].includes(c.status)).length));
+  set('contasPagar', money((d.contas||[]).filter(c=>c.tipo==='pagar' && !['Paga','Pago'].includes(c.status)).reduce((s,c)=>s+n(c.valor),0)));
+  set('contasReceber', money((d.contas||[]).filter(c=>c.tipo==='receber' && !['Recebida','Recebido'].includes(c.status)).reduce((s,c)=>s+n(c.valor),0)));
+
+  // Se sua Visão Geral tiver cards com id, eles atualizam aqui também
+  set('ovEntradas', money(entradas)); set('ovSaidas', money(saidas)); set('ovSaldo', money(saldo)); set('ovRealizado', money(saidas));
+  if(typeof renderFluxo==='function') renderFluxo();
+  if(typeof renderCompras==='function') renderCompras();
+  if(typeof renderContas==='function') renderContas();
+}
+
+// Chama o sync toda vez que salvar / trocar de obra
+const _saveCurrentOrig = saveCurrent;
+saveCurrent = async function(...args){ syncFinance(); return _saveCurrentOrig(...args); };
+const _openRecordOrig = openRecord;
+openRecord = async function(...args){ const r=await _openRecordOrig(...args); syncFinance(); return r; };
+  
     wireEvents();
 
     navigateToView(
