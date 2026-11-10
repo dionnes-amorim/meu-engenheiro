@@ -395,7 +395,7 @@ function renderNoRecord(){
  ['kpiContrato','kpiGasto','kpiSaldo','kpiLucro','kpiOrcado','kpiDesvio','kpiFluxo','kpiProjecao','kpiContasAbertas','resumoContrato','resumoOrcado','resumoGasto','resumoTaxas','resumoSaldo','resumoLucro','caixaJaLiberado','caixaAReceber','totalEntradas','totalSaidas','saldoFluxo','comprasPlanejado','comprasComprado','contasPagar','contasReceber'].forEach(id=>{const e=$('#'+id);if(e)e.textContent='R$ 0,00';});
  ['resumoFornecedores','resumoMateriais','resumoMovimentos','resumoEtapas','resumoDiario','resumoCompras','comprasPendentes','contasVencidas'].forEach(id=>{const e=$('#'+id);if(e)e.textContent='0';});
  $('#progressGasto').style.width='0%';$('#progressFisico').style.width='0%';$('#kpiAvanco').textContent='0%';$('#kpiPctGasto').textContent='0% do contrato consumido';$('#kpiPctRestante').textContent='0% disponível';$('#kpiMargem').textContent='Margem planejada 0%';$('#kpiDesvioNota').textContent='Sem lançamentos';$('#dashboardAlertCount').textContent='0 alertas';$('#dashboardAlertsList').innerHTML='<div class="dashboard-alert-item"><i class="fa-solid fa-circle-info"></i><span>Selecione uma obra para visualizar os alertas.</span></div>';
- $('#resumoIdObra').textContent='—';$('#cronogramaResumo').textContent='0% concluído';$('#comprasResumo').textContent='0 itens';$('#cotacoesResumo').textContent='0 cotações';$('#cotCompra').innerHTML='<option value="">Cadastre um item de compra primeiro</option>';$('#diarioCount').textContent='0 registros';$('#qualidadeResumo').textContent='0 pendências';$('#qualidadeAbertas').textContent='0';$('#qualidadeCorrecao').textContent='0';$('#qualidadeResolvidas').textContent='0';$('#qualidadeVencidas').textContent='0';$('#forecastCost').textContent='Sem base';$('#forecastDate').textContent='Sem base';$('#forecastRisk').textContent='Sem análise';$('#managementMargin').textContent='—';$('#managementMarginNote').textContent='Selecione uma obra.';$('#managementTimeline').textContent='—';$('#managementTimelineNote').textContent='Informe início, prazo ou cronograma.';$('#managementPerformance').textContent='—';$('#managementPerformanceNote').textContent='Aguardando dados da obra.';$('#managementDataStatus').textContent='Aguardando dados';$('#listaEquipeObra').innerHTML='<div class="record-empty">Selecione uma obra.</div>';$('#equipeObraResumo').textContent='0 envolvidos';renderProfessionalDirectory();$('#alertaEstouro').style.display='none';setRecordButtons(false);setSaveState('','Nenhuma alteração pendente');updateCaixaVisibility();
+ $('#resumoIdObra').textContent='—';$('#cronogramaResumo').textContent='0% concluído';$('#comprasResumo').textContent='0 itens';$('#cotacoesResumo').textContent='0 cotações';$('#cotCompra').innerHTML='<option value="">Cadastre um item de compra primeiro</option>';$('#diarioCount').textContent='0 registros';$('#qualidadeResumo').textContent='0 pendências';$('#qualidadeAbertas').textContent='0';$('#qualidadeCorrecao').textContent='0';$('#qualidadeResolvidas').textContent='0';$('#qualidadeVencidas').textContent='0';$('#forecastCost').textContent='Sem base';$('#forecastDate').textContent='Sem base';$('#forecastRisk').textContent='Sem análise';$('#managementMargin').textContent='—';$('#managementMarginNote').textContent='Selecione uma obra.';$('#managementTimeline').textContent='—';$('#managementTimelineNote').textContent='Informe início, prazo ou cronograma.';$('#managementPerformance').textContent='—';$('#managementPerformanceNote').textContent='Aguardando dados da obra.';$('#managementDataStatus').textContent='Aguardando dados';$('#listaEquipeObra').innerHTML='<div class="record-empty">Selecione uma obra.</div>';$('#equipeObraResumo').textContent='0 envolvidos';if(typeof renderProfessionalDirectory==='function') renderProfessionalDirectory();$('#alertaEstouro').style.display='none';setRecordButtons(false);setSaveState('','Nenhuma alteração pendente');updateCaixaVisibility();
 }
 async function openRecord(id,opts={}){
  if(!id)return window.renderNoRecord();
@@ -410,7 +410,7 @@ function openNewModal(record=null){
  appState.editId=editing?String(record.id):null;$('#obraForm').reset();$('#obraFormError').classList.remove('show');$('#obraFormError').textContent='';
  $('#modalObraTitulo').textContent=editing?'Editar cadastro da obra':'Cadastrar nova obra';
  $('#btnCriarObra').innerHTML=editing?'<i class="fa-solid fa-floppy-disk"></i> Salvar cadastro':'<i class="fa-solid fa-check"></i> Criar obra';
- window.renderPortalClientOptions(record?.cliente_id||'');renderWorkTeamSelection(editing?(recordData.equipe||[]):[]);
+ window.renderPortalClientOptions(record?.cliente_id||''); if(typeof renderWorkTeamSelection==='function') renderWorkTeamSelection(editing?(recordData.equipe||[]):[]);
  if(editing){
   $('#nomeCliente').value=record.cliente_nome||'';$('#cpfCliente').value=formatCPF(record.cpf||'');$('#telCliente').value=record.telefone||'';$('#enderecoObra').value=record.endereco||'';$('#clienteVinculado').value=record.cliente_id||'';
   $('#tipoObraCadastro').value=record.tipo||'particular';$('#statusObra').value=record.status||'Em andamento';$('#idObraPreview').value=record.id_obra||'—';
@@ -871,6 +871,41 @@ async function addQuality(ev){
     toast(file?'Ocorrência registrada e foto enviada ao Cloudinary.':'Ocorrência registrada.','success');
   }catch(e){ toast(e.message,'error'); }
   finally{ if(btn){ btn.disabled=false; btn.innerHTML=original; } }
+}
+
+function renderWorkTeamSelection(selected=[]){
+  const root=document.getElementById('obraTeamSelection');
+  if(!root) return;
+  const chosen=new Set((selected||[]).map(x=>String(typeof x==='object'?x.id:x)));
+  const profiles=(typeof getProfessionalCatalog==='function'?getProfessionalCatalog():[]).filter(p=>p.ativo!==false);
+  const countEl=document.getElementById('obraEquipeSelecionada');
+  if(!profiles.length){
+    root.innerHTML='<div class="record-empty"><strong>Nenhum profissional ativo no diretório</strong><span>Cadastre profissionais no módulo Equipe de obras.</span></div>';
+    if(countEl) countEl.textContent='0 selecionados';
+    return;
+  }
+  const groups=new Map();
+  profiles.forEach(p=>{ const role=p.funcao||'Outros'; if(!groups.has(role)) groups.set(role,[]); groups.get(role).push(p); });
+  root.innerHTML=Array.from(groups.entries()).map(([role,items])=>`<div class="team-selection-group"><strong>${esc(role)}</strong><div class="team-selection-list">${items.map(p=>`<label><input type="checkbox" data-team-select value="${esc(p.id)}" ${chosen.has(String(p.id))?'checked':''}><span>${esc(p.nome)}</span></label>`).join('')}</div></div>`).join('');
+  if(countEl) countEl.textContent=chosen.size+' selecionados';
+}
+
+function renderProfessionalDirectory(){
+  const list=document.getElementById('listaProfissionais');
+  if(!list) return;
+  const all=typeof getProfessionalCatalog==='function'?getProfessionalCatalog():[];
+  const r=document.getElementById('profissionaisResumo'); if(r) r.textContent=all.length+' profissionais cadastrados';
+  const a=document.getElementById('profissionaisAtivos'); if(a) a.textContent=all.filter(p=>p.ativo!==false).length+' ativos';
+  if(!all.length){ list.innerHTML='<div class="record-empty" style="grid-column:1/-1"><strong>Nenhum profissional cadastrado</strong><span>Cadastre o primeiro profissional para começar.</span></div>'; return; }
+  list.innerHTML=all.map(p=>{
+    const tel=String(p.telefone||'').replace(/\D/g,''), wa=String(p.whatsapp||p.telefone||'').replace(/\D/g,'');
+    return `<article class="professional-card"><div class="professional-card-head"><div><strong>${esc(p.nome)}</strong><small>${esc(p.funcao||'Outros')}${p.observacoes?' · '+esc(p.observacoes):''}</small></div><span class="score ${p.ativo===false?'none':'high'}">${p.ativo===false?'Inativo':'Ativo'}</span></div><div class="professional-contact">${tel?`<a href="tel:${esc(tel)}"><i class="fa-solid fa-phone"></i> ${esc(p.telefone)}</a>`:''}${wa?`<a href="https://wa.me/${esc(wa)}" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>`:''}${!tel&&!wa?'<small>Contato não informado</small>':''}</div><div class="professional-actions"><button type="button" class="btn-quiet btn-small" data-prof-edit="${esc(p.id)}"><i class="fa-solid fa-pen"></i> Editar</button><button type="button" class="btn-quiet btn-small" data-prof-toggle="${esc(p.id)}">${p.ativo===false?'Reativar':'Inativar'}</button></div></article>`;
+  }).join('');
+}
+
+function refreshTeamSelectionCount(){
+  const e=document.getElementById('obraEquipeSelecionada');
+  if(e) e.textContent=document.querySelectorAll('[data-team-select]:checked').length+' selecionados';
 }
   
 function wireEvents(){
