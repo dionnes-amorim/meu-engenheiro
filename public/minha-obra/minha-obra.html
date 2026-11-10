@@ -150,37 +150,34 @@ lc-total-row{display:flex;justify-content:space-between;gap:8px;font-size:10px;b
 <section id="calculadoras" class="erp-section">
   <div class="section-heading"><div><div class="section-kicker">06 / PLANEJAMENTO TÉCNICO</div><h2>Calculadoras e quantitativos de compra</h2><p>Adicione só o cálculo que você precisa. Marque o que quer mandar para Compras.</p></div></div>
 
-  <div class="content-panel" style="margin-bottom:14px">
-    <div class="form-grid three">
-      <div><label for="calcTipoAdd">Qual cálculo você quer?</label>
-        <select id="calcTipoAdd">
-          <option value="concreto">Concreto — cimento, areia e brita</option>
-          <option value="terra">Terraplanagem, aterro e cascalho</option>
-          <option value="lastro">Areia, lastro e contrapiso</option>
-          <option value="alvenaria">Alvenaria — blocos e tijolos</option>
-          <option value="piso">Piso, porcelanato, argamassa e rejunte</option>
-          <option value="reboco">Reboco, chapisco e argamassa</option>
-          <option value="aco">Aço CA-50/CA-60 e arame</option>
-          <option value="pintura">Pintura, selador e massa</option>
-          <option value="telhado">Telhado e cobertura</option>
-          <option value="eletrica">Instalação elétrica — cabos e conduítes</option>
-          <option value="hidraulica">Hidráulica — tubulações PVC</option>
-          <option value="impermeabilizacao">Impermeabilização</option>
-        </select>
-      </div>
-      <div style="display:flex;align-items:flex-end;gap:8px">
-        <button type="button" class="btn-primary" id="btnAddCalculadora"><i class="fa-solid fa-plus"></i> Adicionar calculadora</button>
-        <button type="button" class="btn-quiet" id="btnLimparCalculadoras">Limpar tudo</button>
-      </div>
-      <div style="display:flex;align-items:flex-end">
-        <button type="button" class="btn-primary" id="btnEnviarCalculosCompras" style="width:100%"><i class="fa-solid fa-cart-plus"></i> Enviar marcados para Compras</button>
-      </div>
+<div class="content-panel" style="margin-bottom:14px">
+  <div class="form-grid three">
+    <div><label for="calcTipoAdd">Qual cálculo você quer adicionar?</label>
+      <select id="calcTipoAdd">
+        <option value="concreto">Concreto - cimento, areia e brita</option>
+        <option value="terra">Terraplanagem, aterro e cascalho</option>
+        <option value="lastro">Areia, lastro e contrapiso</option>
+        <option value="alvenaria">Alvenaria - blocos e tijolos</option>
+        <option value="piso">Piso, porcelanato, argamassa e rejunte</option>
+        <option value="reboco">Reboco, chapisco e argamassa</option>
+        <option value="aco">Aço CA-50/CA-60 e arame</option>
+        <option value="pintura">Pintura, selador e massa</option>
+        <option value="telhado">Telhado e cobertura</option>
+        <option value="eletrica">Elétrica - cabos e conduítes</option>
+        <option value="hidraulica">Hidráulica - PVC</option>
+        <option value="impermeabilizacao">Impermeabilização</option>
+      </select>
     </div>
-    <p class="field-help">Nenhuma calculadora vem aberta por padrão. Você adiciona só o que vai usar na obra.</p>
+    <div style="display:flex;align-items:flex-end;gap:8px">
+      <button type="button" class="btn-primary" id="btnAddCalc">+ Adicionar calculadora</button>
+      <button type="button" class="btn-quiet" id="btnLimparCalc">Limpar tudo</button>
+    </div>
+    <div style="display:flex;align-items:flex-end">
+      <button type="button" class="btn-primary" id="btnEnviarCalc2" style="width:100%">Enviar marcados para Compras</button>
+    </div>
   </div>
-
-  <div class="calc-grid" id="calcGrid"></div>
-  <div id="calcVazio" class="content-panel" style="text-align:center;color:#89877e;font-size:12px">Nenhuma calculadora adicionada. Escolha acima e clique em Adicionar calculadora.</div>
+  <p class="field-help">Nenhuma calculadora vem aberta. Você adiciona só o que vai usar. Marque o check da calculadora para enviar para Compras.</p>
+</div>
 
   <article class="calc-card result-highlight" style="margin-top:14px">
     <h3><i class="fa-solid fa-list-check"></i> Resumo dos quantitativos marcados</h3>
@@ -267,16 +264,8 @@ lc-total-row{display:flex;justify-content:space-between;gap:8px;font-size:10px;b
 'use strict';
 // PH ENGENHARIA — Minha Obra | Persistência pela API já existente em /api/erp/*.
 // Os novos módulos são armazenados dentro de dados (JSON) da própria obra.
-const $ = (s, root=document) => {
-  if(typeof root === 'string') root = document.querySelector(root) || document;
-  if(!root || typeof root.querySelector !== 'function') return null;
-  return root.querySelector(s);
-};
-const $$ = (s, root=document) => {
-  if(typeof root === 'string') root = document.querySelector(root) || document;
-  if(!root || typeof root.querySelectorAll !== 'function') return [];
-  return Array.from(root.querySelectorAll(s));
-};
+const $ = (s, root=document) => { if(typeof root==='string') root=document.querySelector(root)||document; if(!root||typeof root.querySelector!=='function') return null; return root.querySelector(s); };
+const $$ = (s, root=document) => { if(typeof root==='string') root=document.querySelector(root)||document; if(!root||typeof root.querySelectorAll!=='function') return []; return Array.from(root.querySelectorAll(s)); };
 const n = v => Number.isFinite(Number(v)) ? Number(v) : 0;
 const money = v => (n(v)).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const esc = v => String(v ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -470,7 +459,34 @@ async function saveCurrent(showMessage=true){if(!appState.current||!appState.dat
 function collection(path){return path.split('.').reduce((o,k)=>o?.[k],appState.data);}
 function addItem(path,item){const a=collection(path);if(!Array.isArray(a))return toast('Coleção não encontrada.','error');a.push(item);renderAll();markDirty('Novo registro adicionado');}
 function removeItem(path,index){const a=collection(path);if(!Array.isArray(a))return;if(path==='compras'){const item=a[Number(index)];if(item)appState.data.cotacoes=appState.data.cotacoes.filter(q=>String(q.compraId)!==String(item.id));}if(path==='cronogramaFisico'){const removed=a[Number(index)];if(removed)a.forEach(t=>t.dependencias=(t.dependencias||[]).filter(id=>String(id)!==String(removed.id)));}a.splice(Number(index),1);renderAll();markDirty('Registro removido');}
-function renderAll(){if(!appState.current||!appState.data)return window.renderNoRecord();hydrateMeta();renderComparativo();renderCaixa();renderFornecedores();renderEstoque();renderFluxo();renderDocuments();renderCronograma();renderDiario();renderCompras();renderCotacoes();renderContas();renderHistorico();renderQuality();renderTeam();renderProfessionalDirectory();updateKpis();updateCaixaVisibility();}
+
+/* === FINANCEIRO ÚNICO CORRIGIDO - NÃO reatribui saveCurrent/openRecord === */
+function syncFinance(){
+  if(!appState.data||!appState.current) return;
+  const d=appState.data;
+  // Compras Comprada/Recebida -> cria saída no fluxo, sem duplicar. Trava pelo fluxoId.
+  (d.compras||[]).forEach(cp=>{
+    const isConf = cp.status==='Comprada'||cp.status==='Recebida';
+    const val = n(cp.quantidade)*n(cp.preco);
+    if(isConf && !cp.fluxoId && val>0){
+      const fl={id:makeId(), tipo:'saida', data: cp.data||todayISO(), valor: val, descricao:'Compra: '+(cp.material||''), compraId: cp.id};
+      d.fluxo.push(fl); cp.fluxoId=fl.id;
+    }
+    if(!isConf && cp.fluxoId){ d.fluxo=d.fluxo.filter(x=>String(x.id)!==String(cp.fluxoId)); cp.fluxoId=null; }
+  });
+  // Contas pagas/recebidas -> garante lançamento no fluxo
+  (d.contas||[]).forEach(ct=>{
+    const isConf = ct.status==='paga'||ct.status==='recebida';
+    if(isConf && !ct.fluxoId){
+      const fl={id:makeId(), tipo: ct.tipo==='receber'?'entrada':'saida', data: ct.dataBaixa||ct.vencimento||todayISO(), valor:n(ct.valor), descricao:(ct.tipo==='receber'?'Recebimento':'Pagamento')+' - '+(ct.descricao||''), accountId: ct.id};
+      d.fluxo.push(fl); ct.fluxoId=fl.id;
+    }
+    if(!isConf && ct.fluxoId){ d.fluxo=d.fluxo.filter(x=>String(x.id)!==String(ct.fluxoId)); ct.fluxoId=null; }
+  });
+}
+function fluxoTotais(){ const a=appState.data?.fluxo||[]; const ent=a.filter(x=>x.tipo==='entrada').reduce((s,x)=>s+n(x.valor),0); const sai=a.filter(x=>x.tipo==='saida').reduce((s,x)=>s+n(x.valor),0); return {ent,sai,bal:ent-sai}; }
+  
+function renderAll(){if(!appState.current||!appState.data)return window.renderNoRecord();syncFinance();try{initCalculadoras();}catch(e){}hydrateMeta();
 function renderComparativo(){const rows=appState.data.financeiro.etapas;$('#tbodyComparativo').innerHTML=rows.length?rows.map((r,i)=>{const b=n(r.orcado),a=n(r.realizado),diff=b-a,pct=b>0?Math.min(100,a/b*100):0;return `<tr><td class="col-name"><input data-collection="financeiro.etapas" data-index="${i}" data-key="nome" value="${esc(r.nome)}" aria-label="Etapa"></td><td><input type="number" min="0" step="0.01" data-collection="financeiro.etapas" data-index="${i}" data-key="orcado" value="${b||''}"></td><td><input type="number" min="0" step="0.01" data-collection="financeiro.etapas" data-index="${i}" data-key="realizado" value="${a||''}"></td><td style="font-family:var(--font-mono);color:${diff<0?'#b66e67':'#718a69'}">${money(diff)}</td><td><div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div><small>${b?pct.toFixed(0)+'%':'Sem orçamento'}</small></td><td><button type="button" class="btn-danger btn-small" data-remove="financeiro.etapas" data-index="${i}"><i class="fa-solid fa-trash"></i></button></td></tr>`;}).join(''):'<tr><td colspan="6" class="empty-row">Nenhuma etapa cadastrada.</td></tr>';$('#taxasObra').value=n(appState.data.financeiro.taxas);$('#observacaoFinanceira').value=appState.data.financeiro.observacao||'';updateBudgetAlert();}
 function renderCaixa(){const c=appState.data.caixa;$('#caixaPercentLiberado').value=n(c.percentualLiberado);$('#caixaProximaMedicao').value=c.proximaMedicao||'';$('#checklistCaixa').innerHTML=caixaChecklistItems.map((x,i)=>`<label><input type="checkbox" data-scope="caixa.checklist" data-key="${i}" ${c.checklist[i]?'checked':''}> ${esc(x)}</label>`).join('');$('#tbodyCronograma').innerHTML=c.cronograma.map((x,i)=>`<tr><td>${esc(x.etapa)}</td><td><input type="number" min="0" max="100" step="0.1" data-collection="caixa.cronograma" data-index="${i}" data-key="percentual" value="${n(x.percentual)}"></td><td>${money(n(recordMeta().valor_contrato)*n(x.percentual)/100)}</td><td><input type="date" data-collection="caixa.cronograma" data-index="${i}" data-key="data" value="${esc(x.data||'')}"></td></tr>`).join('');calculateCaixa();}
 function supplierScore(x){const has=x.nota!==''&&x.nota!==null&&x.nota!==undefined&&Number.isFinite(Number(x.nota)),score=has?n(x.nota):null,delay=n(x.atraso);if(!has&&!delay)return{className:'none',label:'Sem avaliação'};if((score!==null&&score<6)||delay>5)return{className:'low',label:'Baixo'};if((score!==null&&score<8)||delay>2)return{className:'mid',label:'Médio'};return{className:'high',label:'Alto'};}
@@ -590,7 +606,7 @@ function renderManagementPanel(){
 
 function updateKpis(){
  if(!appState.current||!appState.data)return;
- const d=appState.data,contract=n(appState.current.valor_contrato),budget=d.financeiro.etapas.reduce((s,x)=>s+n(x.orcado),0),actualStages=d.financeiro.etapas.reduce((s,x)=>s+n(x.realizado),0),fees=n(d.financeiro.taxas),actual=actualStages+fees,balance=contract-actual;
+ const d=appState.data,contract=n(appState.current.valor_contrato),budget=d.financeiro.etapas.reduce((s,x)=>s+n(x.orcado),0),actualStages=d.financeiro.etapas.reduce((s,x)=>s+n(x.realizado),0),fees=n(d.financeiro.taxas),_ft=fluxoTotais(),actual=_ft.sai+fees,balance=contract-actual; syncFinance();
  const pct=contract>0?actual/contract*100:0,plannedMargin=n(d.meta.margem_lucro),deviation=actualStages-budget,physical=weightedProgress(),projection=physical>0&&actual>0?actual/(physical/100):0,projectedProfit=projection>0?contract-projection:balance,currentMargin=contract>0?(contract-actual)/contract*100:null,openAccounts=d.contas.filter(accountIsOpen).reduce((s,x)=>s+n(x.valor),0);
  $('#kpiContrato').textContent=money(contract);$('#kpiGasto').textContent=money(actual);$('#kpiGasto').className=actual>contract&&contract>0?'kpi-negative':'';$('#kpiSaldo').textContent=money(balance);$('#kpiSaldo').className=balance<0?'kpi-negative':'kpi-positive';$('#kpiLucro').textContent=money(projectedProfit);$('#kpiLucro').className=projectedProfit<0?'kpi-negative':'kpi-positive';
  $('#kpiMargem').textContent='Margem atual '+(currentMargin===null?'—':currentMargin.toFixed(1)+'%')+' · planejada '+plannedMargin.toLocaleString('pt-BR')+'%';$('#kpiPctGasto').textContent=pct.toFixed(1)+'% do contrato consumido';$('#kpiPctRestante').textContent=(100-pct).toFixed(1)+'% disponível';$('#progressGasto').style.width=Math.max(0,Math.min(100,pct))+'%';
@@ -729,6 +745,32 @@ function addCalculadora(tipo){
   card.addEventListener('input',calcAll); card.addEventListener('change',calcAll);
   $('#calcVazio').style.display='none'; calcAll();
 }
+
+/* === CALCULADORAS NOVAS: começa vazia, só entra o que você adicionar === */
+const CALC_MAP = {concreto:0, terra:1, lastro:2, alvenaria:3, piso:4, reboco:5, aco:6, pintura:7, telhado:8, eletrica:9, hidraulica:10, impermeabilizacao:11};
+let calcAtivas = new Set();
+function initCalculadoras(){
+  const grid=document.querySelector('#calculadoras .calc-grid'); if(!grid) return;
+  const cards=[...grid.querySelectorAll('.calc-card')];
+  cards.forEach((card,i)=>{
+    if(!card.querySelector('[data-calc-check]')){
+      const bar=document.createElement('div');
+      bar.style.cssText='display:flex;gap:8px;align-items:center;margin-bottom:8px';
+      bar.innerHTML='<label style="display:flex;gap:6px;align-items:center;font-size:11px"><input type="checkbox" data-calc-check checked> Enviar para Compras</label><button type="button" class="btn-quiet btn-small" data-calc-remove style="margin-left:auto">Remover</button>';
+      card.prepend(bar);
+      bar.querySelector('[data-calc-remove]').addEventListener('click',()=>{ calcAtivas.delete(i); card.style.display='none'; calcAll(); });
+      bar.querySelector('[data-calc-check]').addEventListener('change',()=>calcAll());
+    }
+    card.style.display='none';
+  });
+  const addBtn=document.getElementById('btnAddCalc');
+  if(addBtn && !addBtn.dataset.wired){ addBtn.dataset.wired='1'; addBtn.addEventListener('click',()=>{ const tipo=document.getElementById('calcTipoAdd').value; const idx=CALC_MAP[tipo]; if(idx===undefined) return; calcAtivas.add(idx); cards[idx].style.display=''; calcAll(); }); }
+  const lim=document.getElementById('btnLimparCalc');
+  if(lim && !lim.dataset.wired){ lim.dataset.wired='1'; lim.addEventListener('click',()=>{ calcAtivas.clear(); cards.forEach(c=>c.style.display='none'); calcAll(); }); }
+  const env2=document.getElementById('btnEnviarCalc2');
+  if(env2 && !env2.dataset.wired){ env2.dataset.wired='1'; env2.addEventListener('click',()=>sendCalcToPurchases()); }
+}
+  
 function calcAll(){
   let totCim=0,totAreia=0,totBrita=0,totTerra=0,totCusto=0; let html='';
   $$('#calcGrid .calc-card').forEach(card=>{
@@ -745,7 +787,7 @@ function calcAll(){
   if(!$$('#calcGrid .calc-card').length) $('#calcVazio').style.display='';
 }
 function sendCalcToPurchases(){
-  if(!appState.current) return toast('Selecione uma obra primeiro.','error');
+  if(!appState.current)return toast('Selecione uma obra antes de enviar os quantitativos.','error');if(window.calcAtivas && calcAtivas.size===0) return toast('Adicione pelo menos uma calculadora antes de enviar.','error');calcAll();
   let adicionados=0;
   $$('#calcGrid .calc-card').forEach(card=>{
     if(!card.querySelector('[data-enviar]')?.checked) return;
