@@ -859,26 +859,100 @@ async function deleteCurrentRecord(){if(!appState.current)return;const r=appStat
 
 function navigateToView(view,opts={}){if(!Object.hasOwn(viewLabels,view))view='visao-geral';if(view==='caixa'&&!hasCaixaFinancing())view='visao-geral';$$('.erp-section').forEach(s=>{const active=s.id===view;s.classList.toggle('active',active);s.setAttribute('aria-hidden',active?'false':'true');});$$('#erpNavigation [data-view]').forEach(b=>{const active=b.dataset.view===view;b.classList.toggle('active',active);if(active)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});$('#activeViewLabel').textContent=viewLabels[view];if(opts.updateHistory!==false){const hash='#'+view;if(location.hash!==hash)history.pushState({erpView:view},'',location.pathname+location.search+hash);}if(opts.scroll!==false)window.scrollTo({top:0,behavior:'smooth'});}
 function getViewFromUrl(){let v='';try{v=decodeURIComponent((location.hash||'').replace(/^#/,''));}catch{}return Object.hasOwn(viewLabels,v)?v:'visao-geral';}
+function addStage(){ addItem('financeiro.etapas',{id:makeId(),nome:'Nova etapa',orcado:0,realizado:0}); }
 function wireEvents(){
- document.querySelectorAll('button:not([type])').forEach(b=>b.type='button');
- $('#erpNavigation').addEventListener('click',ev=>{const b=ev.target.closest('[data-view]');if(b){ev.preventDefault();navigateToView(b.dataset.view);}});window.addEventListener('popstate',()=>navigateToView(getViewFromUrl(),{updateHistory:false}));
- $('#btnNovaObra').addEventListener('click',()=>openNewModal());$('#btnEditarObra').addEventListener('click',openEditModal);$('#btnExcluirObra').addEventListener('click',deleteCurrentRecord);$('#btnSalvar').addEventListener('click',()=>saveCurrent(true));$('#btnBackup').addEventListener('click',exportBackup);$('#btnCsv').addEventListener('click',exportCsv);$('#btnImportBackup').addEventListener('click',()=>$('#backupFile').click());$('#backupFile').addEventListener('change',importBackup);
- $('#obraSelecionada').addEventListener('change',ev=>openRecord(ev.target.value));$('#btnFecharModal').addEventListener('click',closeModal);$('#btnCancelarObra').addEventListener('click',closeModal);$('#modalObra').addEventListener('click',ev=>{if(ev.target===$('#modalObra'))closeModal();});$('#tipoObraCadastro').addEventListener('change',updateCaixaFormVisibility);$('#obraForm').addEventListener('submit',submitWorkForm);
- $('#clienteVinculado').addEventListener('change',ev=>{const c=appState.portalClients.find(x=>String(x.id)===ev.target.value);if(c){if(!$('#nomeCliente').value.trim())$('#nomeCliente').value=c.nome||'';if(!$('#enderecoObra').value.trim())$('#enderecoObra').value=c.endereco_obra||'';}});
- $('#qaFoto').addEventListener('change',()=>previewSelectedImage('qaFoto','qaFotoPreview'));$('#diFoto').addEventListener('change',()=>previewSelectedImage('diFoto','diFotoPreview'));$('#updateFoto').addEventListener('change',()=>previewSelectedImage('updateFoto','updateFotoPreview'));$('#btnExportCadastroPdf').addEventListener('click',exportCadastroOverviewPdf);$('#obraForm').addEventListener('input',()=>{if(appState.editId)renderCadastroOverview();});$('#obraForm').addEventListener('change',()=>{if(appState.editId)renderCadastroOverview();});
- $('#btnAddEtapa').addEventListener('click',addStage);$('#qualidadeForm').addEventListener('submit',addQuality);$('#profissionalForm').addEventListener('submit',saveProfessional);$('#btnCancelarEdicaoProfissional').addEventListener('click',resetProfessionalForm);$('#btnAddFornecedor').addEventListener('click',addFornecedor);$('#btnAddEstoque').addEventListener('click',addStock);$('#fluxoForm').addEventListener('submit',addCashflow);$('#cotacaoForm').addEventListener('submit',addCotacao);$('#cronogramaForm').addEventListener('submit',addCronograma);$('#diarioForm').addEventListener('submit',addDiario);$('#compraForm').addEventListener('submit',addCompra);$('#contaForm').addEventListener('submit',addConta);
- $('#contratoForm').addEventListener('submit',ev=>{ev.preventDefault();if(!appState.current)return toast('Selecione uma obra primeiro.','error');const item={nome:$('#contratoNome').value.trim(),documento:$('#contratoDoc').value.trim(),titulo:$('#contratoObjeto').value.trim(),valor:n($('#contratoValor').value),prazo:$('#contratoPrazo').value.trim(),data:todayISO()};if(!item.nome||!item.titulo||item.valor<=0)return toast('Preencha nome, objeto e valor.','error');addDocument('contratos',item,'Contrato');$('#contratoForm').reset();});
- $('#reciboForm').addEventListener('submit',ev=>{ev.preventDefault();if(!appState.current)return toast('Selecione uma obra primeiro.','error');const item={nome:$('#reciboNome').value.trim(),documento:$('#reciboDoc').value.trim(),valor:n($('#reciboValor').value),descricao:$('#reciboRef').value.trim(),data:$('#reciboData').value};if(!item.nome||item.valor<=0||!item.descricao||!item.data)return toast('Preencha os campos obrigatórios do recibo.','error');addDocument('recibos',item,'Recibo');$('#reciboForm').reset();$('#reciboData').value=todayISO();});
- $('#extraForm').addEventListener('submit',ev=>{ev.preventDefault();if(!appState.current)return toast('Selecione uma obra primeiro.','error');const item={descricao:$('#extraDesc').value.trim(),valor:n($('#extraValor').value),status:$('#extraStatus').value,data:todayISO()};if(!item.descricao||item.valor<=0)return toast('Informe descrição e valor do extra.','error');addDocument('extras',item,'Orçamento extra');$('#extraForm').reset();});
- $('#btnPdfCaixa').addEventListener('click',generateCajaPdf);$('#btnResetCronograma').addEventListener('click',()=>{if(!appState.data)return;appState.data.caixa.cronograma=JSON.parse(JSON.stringify(cronogramaBase));renderCaixa();markDirty('Cronograma CAIXA restaurado');});$('#btnRelatorio').addEventListener('click',generateFinalReport);$('#btnRelatorioCompletoPdf').addEventListener('click',exportCadastroOverviewPdf);$('#btnRelatorioFinanceiroPdf').addEventListener('click',generateFinancialReportPdf);$('#btnRelatorioFisicoPdf').addEventListener('click',generatePhysicalReportPdf);$('#btnRelatorioMateriaisPdf').addEventListener('click',generateMaterialsReportPdf);$('#btnWhats').addEventListener('click',shareWhatsApp);$('#btnCompararObras').addEventListener('click',renderWorkComparison);$('#uploadForm').addEventListener('submit',uploadLinkedFile);$('#updateClientForm').addEventListener('submit',publishClientUpdate);
- $('#btnEnviarCalculosCompras').addEventListener('click',sendCalcToPurchases);$('#btnEnviarCalculosCompras2').addEventListener('click',sendCalcToPurchases);$('#filtroCompras').addEventListener('input',renderCompras);$('#filtroStatusCompra').addEventListener('change',renderCompras);$('#filtroHistorico').addEventListener('change',renderHistorico);
- document.addEventListener('input',ev=>{const el=ev.target;if(el.matches('[data-collection],[data-scope]')&&!el.matches('select,[type="checkbox"]'))onFieldEdit(ev);if(el.closest('#calculadoras'))calcAll();});
- document.addEventListener('change',ev=>{const el=ev.target;if(el.matches('[data-collection],[data-scope]'))onFieldEdit(ev);if(el.matches('[data-team-select]')){refreshTeamSelectionCount();if(appState.editId)renderCadastroOverview();}if(el.closest('#calculadoras'))calcAll();});
- document.addEventListener('click',ev=>{const ep=ev.target.closest('[data-prof-edit]');if(ep){editProfessional(ep.dataset.profEdit);return;}const tp=ev.target.closest('[data-prof-toggle]');if(tp){toggleProfessional(tp.dataset.profToggle);return;}const rt=ev.target.closest('[data-team-remove]');if(rt){removeTeamMember(rt.dataset.teamRemove);return;}const openWork=ev.target.closest('[data-open-work]');if(openWork){openRecord(openWork.dataset.openWork);return;}const useQuote=ev.target.closest('[data-use-quote]');if(useQuote){applyCotacao(useQuote.dataset.useQuote);return;}const rm=ev.target.closest('[data-remove]');if(rm){if(rm.dataset.remove==='contas'){const x=appState.data.contas[Number(rm.dataset.index)];if(x?.fluxoId){if(!confirm('Esta conta já gerou lançamento no fluxo. Excluí-la também removerá esse lançamento. Continuar?'))return;appState.data.fluxo=appState.data.fluxo.filter(f=>String(f.id)!==String(x.fluxoId));}}removeItem(rm.dataset.remove,rm.dataset.index);return;syncFinance();}
- const delFlow=ev.target.closest('[data-flow-delete]');if(delFlow){const flow=appState.data.fluxo.find(x=>String(x.id)===String(delFlow.dataset.flowDelete));if(flow?.accountId){const account=appState.data.contas.find(x=>String(x.id)===String(flow.accountId));if(account){account.status='aberta';account.fluxoId=null;account.dataBaixa=null;}}appState.data.fluxo=appState.data.fluxo.filter(x=>String(x.id)!==String(delFlow.dataset.flowDelete));renderAll();markDirty('Movimentação removida');return;}
- const settle=ev.target.closest('[data-settle-account]');if(settle){settleAccount(settle.dataset.settleAccount);return;}const reopen=ev.target.closest('[data-reopen-account]');if(reopen){reopenAccount(reopen.dataset.reopenAccount);return;}
- const pdf=ev.target.closest('[data-doc-pdf]');if(pdf&&appState.data){const item=findDoc(pdf.dataset.docPdf,pdf.dataset.docKind);if(item)generateDocumentPdf(pdf.dataset.docKind,item);return;}const file=ev.target.closest('[data-delete-file]');if(file)deleteLinkedFile(file.dataset.deleteFile);
- });
+  document.querySelectorAll('button:not([type])').forEach(b=>b.type='button');
+
+  // Helper seguro: se o elemento não existir, só pula - NUNCA trava o init() / banco
+  const on = (id, ev, fn) => { const el = document.getElementById(id); if(el && typeof fn==='function') el.addEventListener(ev, fn); };
+  const has = (fn) => typeof fn==='function' ? fn : ()=>{};
+
+  const nav = document.getElementById('erpNavigation');
+  if(nav) nav.addEventListener('click',ev=>{const b=ev.target.closest('[data-view]');if(b){ev.preventDefault();navigateToView(b.dataset.view);}});
+  window.addEventListener('popstate',()=>navigateToView(getViewFromUrl(),{updateHistory:false}));
+
+  on('btnNovaObra','click',()=>openNewModal());
+  on('btnEditarObra','click',openEditModal);
+  on('btnExcluirObra','click',deleteCurrentRecord);
+  on('btnSalvar','click',()=>saveCurrent(true));
+  on('btnBackup','click',exportBackup);
+  on('btnCsv','click',exportCsv);
+  on('btnImportBackup','click',()=>{ const f=document.getElementById('backupFile'); if(f) f.click(); });
+  on('backupFile','change',importBackup);
+  on('obraSelecionada','change',ev=>openRecord(ev.target.value));
+  on('btnFecharModal','click',closeModal);
+  on('btnCancelarObra','click',closeModal);
+  on('modalObra','click',ev=>{ if(ev.target===document.getElementById('modalObra')) closeModal(); });
+  on('tipoObraCadastro','change',updateCaixaFormVisibility);
+  on('obraForm','submit',submitWorkForm);
+
+  on('clienteVinculado','change',ev=>{const c=appState.portalClients.find(x=>String(x.id)===ev.target.value);if(c){const nEl=document.getElementById('nomeCliente'); const eEl=document.getElementById('enderecoObra'); if(nEl && !nEl.value.trim()) nEl.value=c.nome||''; if(eEl && !eEl.value.trim()) eEl.value=c.endereco_obra||'';}});
+
+  on('qaFoto','change',()=>previewSelectedImage('qaFoto','qaFotoPreview'));
+  on('diFoto','change',()=>previewSelectedImage('diFoto','diFotoPreview'));
+  on('updateFoto','change',()=>previewSelectedImage('updateFoto','updateFotoPreview'));
+  on('btnExportCadastroPdf','click',exportCadastroOverviewPdf);
+
+  on('obraForm','input',()=>{if(appState.editId)renderCadastroOverview();});
+  // Não duplica o listener de change do obraForm - um só basta, o de baixo já trata
+  // Botão Adicionar Etapa - NÃO depende mais de addStage existir
+  on('btnAddEtapa','click',()=>addItem('financeiro.etapas',{id:makeId(),nome:'Nova etapa',orcado:0,realizado:0}));
+
+  on('qualidadeForm','submit',addQuality);
+  on('profissionalForm','submit',saveProfessional);
+  on('btnCancelarEdicaoProfissional','click',resetProfessionalForm);
+  on('btnAddFornecedor','click',addFornecedor);
+  on('btnAddEstoque','click',addStock);
+  on('fluxoForm','submit',addCashflow);
+  on('cotacaoForm','submit',addCotacao);
+  on('cronogramaForm','submit',addCronograma);
+  on('diarioForm','submit',addDiario);
+  on('compraForm','submit',addCompra);
+  on('contaForm','submit',addConta);
+
+  on('contratoForm','submit',ev=>{ev.preventDefault();if(!appState.current)return toast('Selecione uma obra primeiro.','error');const item={nome:$('#contratoNome').value.trim(),documento:$('#contratoDoc').value.trim(),titulo:$('#contratoObjeto').value.trim(),valor:n($('#contratoValor').value),prazo:$('#contratoPrazo').value.trim(),data:todayISO()};if(!item.nome||!item.titulo||item.valor<=0)return toast('Preencha nome, objeto e valor.','error');addDocument('contratos',item,'Contrato');$('#contratoForm').reset();});
+  on('reciboForm','submit',ev=>{ev.preventDefault();if(!appState.current)return toast('Selecione uma obra primeiro.','error');const item={nome:$('#reciboNome').value.trim(),documento:$('#reciboDoc').value.trim(),valor:n($('#reciboValor').value),descricao:$('#reciboRef').value.trim(),data:$('#reciboData').value};if(!item.nome||item.valor<=0||!item.descricao||!item.data)return toast('Preencha os campos obrigatórios do recibo.','error');addDocument('recibos',item,'Recibo');$('#reciboForm').reset();$('#reciboData').value=todayISO();});
+  on('extraForm','submit',ev=>{ev.preventDefault();if(!appState.current)return toast('Selecione uma obra primeiro.','error');const item={descricao:$('#extraDesc').value.trim(),valor:n($('#extraValor').value),status:$('#extraStatus').value,data:todayISO()};if(!item.descricao||item.valor<=0)return toast('Informe descrição e valor do extra.','error');addDocument('extras',item,'Orçamento extra');$('#extraForm').reset();});
+
+  on('btnPdfCaixa','click',generateCajaPdf);
+  on('btnResetCronograma','click',()=>{if(!appState.data)return;appState.data.caixa.cronograma=JSON.parse(JSON.stringify(cronogramaBase));renderCaixa();markDirty('Cronograma CAIXA restaurado');});
+  on('btnRelatorio','click',generateFinalReport);
+  on('btnRelatorioCompletoPdf','click',exportCadastroOverviewPdf);
+  on('btnRelatorioFinanceiroPdf','click',generateFinancialReportPdf);
+  on('btnRelatorioFisicoPdf','click',generatePhysicalReportPdf);
+  on('btnRelatorioMateriaisPdf','click',generateMaterialsReportPdf);
+  on('btnWhats','click',shareWhatsApp);
+  on('btnCompararObras','click',renderWorkComparison);
+  on('uploadForm','submit',uploadLinkedFile);
+  on('updateClientForm','submit',publishClientUpdate);
+
+  on('btnEnviarCalculosCompras','click',sendCalcToPurchases);
+  on('btnEnviarCalculosCompras2','click',sendCalcToPurchases);
+  on('filtroCompras','input',renderCompras);
+  on('filtroStatusCompra','change',renderCompras);
+  on('filtroHistorico','change',renderHistorico);
+
+  document.addEventListener('input',ev=>{const el=ev.target;if(el.matches('[data-collection],[data-scope]')&&!el.matches('select,[type="checkbox"]'))onFieldEdit(ev);if(el.closest('#calculadoras') && typeof calcAll==='function')calcAll();});
+  document.addEventListener('change',ev=>{const el=ev.target;if(el.matches('[data-collection],[data-scope]'))onFieldEdit(ev);if(el.matches('[data-team-select]')){refreshTeamSelectionCount();if(appState.editId)renderCadastroOverview();}if(el.closest('#calculadoras') && typeof calcAll==='function')calcAll();});
+  document.addEventListener('click',ev=>{
+    const ep=ev.target.closest('[data-prof-edit]');if(ep){editProfessional(ep.dataset.profEdit);return;}
+    const tp=ev.target.closest('[data-prof-toggle]');if(tp){toggleProfessional(tp.dataset.profToggle);return;}
+    const rt=ev.target.closest('[data-team-remove]');if(rt){removeTeamMember(rt.dataset.teamRemove);return;}
+    const openWork=ev.target.closest('[data-open-work]');if(openWork){openRecord(openWork.dataset.openWork);return;}
+    const useQuote=ev.target.closest('[data-use-quote]');if(useQuote){applyCotacao(useQuote.dataset.useQuote);return;}
+    const rm=ev.target.closest('[data-remove]');if(rm){
+      if(rm.dataset.remove==='contas'){
+        const x=appState.data.contas[Number(rm.dataset.index)];
+        if(x?.fluxoId){ if(!confirm('Esta conta já gerou lançamento no fluxo. Excluí-la também removerá esse lançamento. Continuar?'))return; appState.data.fluxo=appState.data.fluxo.filter(f=>String(f.id)!==String(x.fluxoId)); }
+      }
+      removeItem(rm.dataset.remove,rm.dataset.index);return;
+    }
+    const delFlow=ev.target.closest('[data-flow-delete]');if(delFlow){const flow=appState.data.fluxo.find(x=>String(x.id)===String(delFlow.dataset.flowDelete));if(flow?.accountId){const account=appState.data.contas.find(x=>String(x.id)===String(flow.accountId));if(account){account.status='aberta';account.fluxoId=null;account.dataBaixa=null;}}appState.data.fluxo=appState.data.fluxo.filter(x=>String(x.id)!==String(delFlow.dataset.flowDelete));renderAll();markDirty('Movimentação removida');return;}
+    const settle=ev.target.closest('[data-settle-account]');if(settle){settleAccount(settle.dataset.settleAccount);return;}
+    const reopen=ev.target.closest('[data-reopen-account]');if(reopen){reopenAccount(reopen.dataset.reopenAccount);return;}
+    const pdf=ev.target.closest('[data-doc-pdf]');if(pdf&&appState.data){const item=findDoc(pdf.dataset.docPdf,pdf.dataset.docKind);if(item)generateDocumentPdf(pdf.dataset.docKind,item);return;}
+    const file=ev.target.closest('[data-delete-file]');if(file)deleteLinkedFile(file.dataset.deleteFile);
+  });
 }
 
 // Compatibilidade com carregadores que executam o painel em escopo isolado.
