@@ -504,36 +504,29 @@ function renderCotacaoOptions()
  if(active.some(x=>String(x.id)===String(current)))select.value=current;
 }
 function renderCompras(){
- const a=appState.data.compras;
- const q=($('#filtroCompras')?.value||'').toLowerCase();
- const status=$('#filtroStatusCompra')?.value||'';
- const visible=a.filter(x=>(!q||`${x.material} ${x.fornecedor}`.toLowerCase().includes(q))&&(!status||x.status===status));
- $('#tbodyCompras').innerHTML=visible.length?visible.map(x=>{
-  const i=a.indexOf(x),quotes=appState.data.cotacoes.filter(c=>String(c.compraId)===String(x.id));
-  const valid=quotes.filter(c=>n(c.preco)>0).sort((u,v)=>n(u.preco)-n(v.preco));
-  const best=valid[0];
-  const quoteLabel=quotes.length?`${quotes.length} proposta(s)${best?` · menor ${money(best.preco)}`:''}`:'Sem cotações';
-  return `<tr>
-   <td><input data-collection="compras" data-index="${i}" data-key="material" value="${esc(x.material)}"></td>
-   <td><select data-collection="compras" data-index="${i}" data-key="categoria">${['Materiais básicos','Estrutura','Alvenaria','Acabamento','Elétrica','Hidráulica','Impermeabilização','Ferramentas / equipamentos','Serviços','Outros'].map(v=>`<option ${x.categoria===v?'selected':''}>${v}</option>`).join('')}</select></td>
-   <td><input type="number" min="0" step="0.001" data-collection="compras" data-index="${i}" data-key="quantidade" value="${n(x.quantidade)}"></td>
-   <td><input data-collection="compras" data-index="${i}" data-key="unidade" value="${esc(x.unidade||'un')}"></td>
-   <td><input type="number" min="0" step="0.01" data-collection="compras" data-index="${i}" data-key="preco" value="${n(x.preco)}"></td>
-   <td>${money(n(x.quantidade)*n(x.preco))}</td>
-   <td><input data-collection="compras" data-index="${i}" data-key="fornecedor" value="${esc(x.fornecedor||'')}"></td>
-   <td><span class="field-help">${esc(quoteLabel)}</span>${best?`<button type="button" class="btn-quiet btn-small" data-use-quote="${esc(best.id)}">Aplicar menor</button>`:''}</td>
-   <td><input type="date" data-collection="compras" data-index="${i}" data-key="data" value="${esc(x.data||'')}"></td>
-   <td><select data-collection="compras" data-index="${i}" data-key="status">${['Planejada','Em cotação','Aprovada','Comprada','Recebida','Cancelada'].map(v=>`<option ${x.status===v?'selected':''}>${v}</option>`).join('')}</select></td>
-   <td><button type="button" class="btn-danger btn-small" data-remove="compras" data-index="${i}" aria-label="Remover item"><i class="fa-solid fa-trash"></i></button></td>
-  </tr>`;
- }).join(''):'<tr><td colspan="11" class="empty-row">Nenhum item encontrado.</td></tr>';
- const active=a.filter(x=>x.status!=='Cancelada');
- const planned=active.reduce((sum,x)=>sum+n(x.quantidade)*n(x.preco),0);
- const bought=a.filter(x=>['Comprada','Recebida'].includes(x.status)).reduce((sum,x)=>sum+n(x.quantidade)*n(x.preco),0);
- const pending=a.filter(x=>!['Recebida','Cancelada'].includes(x.status)).length;
- $('#comprasPlanejado').textContent=money(planned);$('#comprasComprado').textContent=money(bought);$('#comprasPendentes').textContent=pending;
- $('#comprasResumo').textContent=a.length+' itens';$('#resumoCompras').textContent=a.length;
- renderCotacaoOptions();
+  if(!appState.data) return;
+  const tbody = document.getElementById('tbodyCompras');
+  if(!tbody) return;
+  const a = appState.data.compras || [];
+  const q = (document.getElementById('filtroCompras')?.value || '').toLowerCase();
+  const status = document.getElementById('filtroStatusCompra')?.value || '';
+  const visiveis = a.filter(x => (!q || `${x.material||''} ${x.fornecedor||''}`.toLowerCase().includes(q)) && (!status || x.status === status));
+  tbody.innerHTML = visiveis.length ? visiveis.map(x=>{
+    const i = a.indexOf(x);
+    return `<tr>
+      <td><input data-collection="compras" data-index="${i}" data-key="material" value="${esc(x.material||'')}"></td>
+      <td><select data-collection="compras" data-index="${i}" data-key="categoria">${['Materiais básicos','Estrutura','Alvenaria','Acabamento','Elétrica','Hidráulica','Impermeabilização','Ferramentas / equipamentos','Serviços','Outros'].map(v=>`<option ${x.categoria===v?'selected':''}>${v}</option>`).join('')}</select></td>
+      <td><input type="number" min="0" step="0.001" data-collection="compras" data-index="${i}" data-key="quantidade" value="${n(x.quantidade)}"></td>
+      <td><input data-collection="compras" data-index="${i}" data-key="unidade" value="${esc(x.unidade||'un')}"></td>
+      <td><input type="number" min="0" step="0.01" data-collection="compras" data-index="${i}" data-key="preco" value="${n(x.preco)}"></td>
+      <td>${money(n(x.quantidade)*n(x.preco))}</td>
+      <td><input data-collection="compras" data-index="${i}" data-key="fornecedor" value="${esc(x.fornecedor||'')}"></td>
+      <td><input type="date" data-collection="compras" data-index="${i}" data-key="data" value="${esc(x.data||'')}"></td>
+      <td><select data-collection="compras" data-index="${i}" data-key="status">${['Planejada','Em cotação','Aprovada','Comprada','Recebida','Cancelada'].map(v=>`<option ${x.status===v?'selected':''}>${v}</option>`).join('')}</select></td>
+      <td><button type="button" class="btn-danger btn-small" data-remove="compras" data-index="${i}"><i class="fa-solid fa-trash"></i></button></td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="10" class="empty-row">Nenhum item encontrado.</td></tr>';
+  const el = document.getElementById('comprasResumo'); if(el) el.textContent = a.length + ' itens';
 }
 function renderCotacoes(){
  if(!appState.data)return;
@@ -879,6 +872,7 @@ async function addQuality(ev){
   }catch(e){ toast(e.message,'error'); }
   finally{ if(btn){ btn.disabled=false; btn.innerHTML=original; } }
 }
+  
 function wireEvents(){
   document.querySelectorAll('button:not([type])').forEach(b=>b.type='button');
 
@@ -933,23 +927,22 @@ on('contaForm','submit',ev=>{ if(typeof addConta==='function') addConta(ev); });
   on('reciboForm','submit',ev=>{ev.preventDefault();if(!appState.current)return toast('Selecione uma obra primeiro.','error');const item={nome:$('#reciboNome').value.trim(),documento:$('#reciboDoc').value.trim(),valor:n($('#reciboValor').value),descricao:$('#reciboRef').value.trim(),data:$('#reciboData').value};if(!item.nome||item.valor<=0||!item.descricao||!item.data)return toast('Preencha os campos obrigatórios do recibo.','error');addDocument('recibos',item,'Recibo');$('#reciboForm').reset();$('#reciboData').value=todayISO();});
   on('extraForm','submit',ev=>{ev.preventDefault();if(!appState.current)return toast('Selecione uma obra primeiro.','error');const item={descricao:$('#extraDesc').value.trim(),valor:n($('#extraValor').value),status:$('#extraStatus').value,data:todayISO()};if(!item.descricao||item.valor<=0)return toast('Informe descrição e valor do extra.','error');addDocument('extras',item,'Orçamento extra');$('#extraForm').reset();});
 
-  on('btnPdfCaixa','click',generateCajaPdf);
-  on('btnResetCronograma','click',()=>{if(!appState.data)return;appState.data.caixa.cronograma=JSON.parse(JSON.stringify(cronogramaBase));renderCaixa();markDirty('Cronograma CAIXA restaurado');});
-  on('btnRelatorio','click',generateFinalReport);
-  on('btnRelatorioCompletoPdf','click',exportCadastroOverviewPdf);
-  on('btnRelatorioFinanceiroPdf','click',generateFinancialReportPdf);
-  on('btnRelatorioFisicoPdf','click',generatePhysicalReportPdf);
-  on('btnRelatorioMateriaisPdf','click',generateMaterialsReportPdf);
-  on('btnWhats','click',shareWhatsApp);
-  on('btnCompararObras','click',renderWorkComparison);
-  on('uploadForm','submit',uploadLinkedFile);
-  on('updateClientForm','submit',publishClientUpdate);
+on('btnPdfCaixa','click',()=>{ if(typeof generateCajaPdf==='function') generateCajaPdf(); });
+on('btnRelatorio','click',()=>{ if(typeof generateFinalReport==='function') generateFinalReport(); });
+on('btnRelatorioCompletoPdf','click',()=>{ if(typeof exportCadastroOverviewPdf==='function') exportCadastroOverviewPdf(); });
+on('btnRelatorioFinanceiroPdf','click',()=>{ if(typeof generateFinancialReportPdf==='function') generateFinancialReportPdf(); });
+on('btnRelatorioFisicoPdf','click',()=>{ if(typeof generatePhysicalReportPdf==='function') generatePhysicalReportPdf(); });
+on('btnRelatorioMateriaisPdf','click',()=>{ if(typeof generateMaterialsReportPdf==='function') generateMaterialsReportPdf(); });
+on('btnWhats','click',()=>{ if(typeof shareWhatsApp==='function') shareWhatsApp(); });
+on('btnCompararObras','click',()=>{ if(typeof renderWorkComparison==='function') renderWorkComparison(); });
+on('uploadForm','submit',ev=>{ if(typeof uploadLinkedFile==='function') uploadLinkedFile(ev); });
+on('updateClientForm','submit',ev=>{ if(typeof publishClientUpdate==='function') publishClientUpdate(ev); });
 
-  on('btnEnviarCalculosCompras','click',sendCalcToPurchases);
-  on('btnEnviarCalculosCompras2','click',sendCalcToPurchases);
-  on('filtroCompras','input',renderCompras);
-  on('filtroStatusCompra','change',renderCompras);
-  on('filtroHistorico','change',renderHistorico);
+on('btnEnviarCalculosCompras','click',()=>{ if(typeof sendCalcToPurchases==='function') sendCalcToPurchases(); else toast('Função sendCalcToPurchases não encontrada.','error'); });
+on('btnEnviarCalculosCompras2','click',()=>{ if(typeof sendCalcToPurchases==='function') sendCalcToPurchases(); });
+on('filtroCompras','input',()=>{ if(typeof renderCompras==='function') renderCompras(); });
+on('filtroStatusCompra','change',()=>{ if(typeof renderCompras==='function') renderCompras(); });
+on('filtroHistorico','change',()=>{ if(typeof renderHistorico==='function') renderHistorico(); });
 
   document.addEventListener('input',ev=>{const el=ev.target;if(el.matches('[data-collection],[data-scope]')&&!el.matches('select,[type="checkbox"]'))onFieldEdit(ev);if(el.closest('#calculadoras') && typeof calcAll==='function')calcAll();});
   document.addEventListener('change',ev=>{const el=ev.target;if(el.matches('[data-collection],[data-scope]'))onFieldEdit(ev);if(el.matches('[data-team-select]')){refreshTeamSelectionCount();if(appState.editId)renderCadastroOverview();}if(el.closest('#calculadoras') && typeof calcAll==='function')calcAll();});
