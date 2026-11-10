@@ -381,7 +381,7 @@ async function loadInitialData() {
   await loadProfessionalCatalog();
   window.renderPortalClientOptions();renderRecordOptions();setConnection(true,'Banco conectado');
   if(appState.records.length) await openRecord(appState.records[0].id,{skipDirty:true}); else window.renderNoRecord();
- } catch(e){setConnection(false,'Falha no banco');toast(e.message,'error');window.renderNoRecord();}
+ } catch(e){ console.error('[DB] loadInitialData falhou:', e); setConnection(false,'Falha no banco: '+e.message); toast('Banco: '+e.message,'error'); window.renderNoRecord(); }
 }
 function renderRecordOptions(){const s=$('#obraSelecionada'),sel=appState.current?.id||'';s.innerHTML='<option value="">Selecione uma obra</option>'+appState.records.map(r=>`<option value="${esc(r.id)}" ${String(r.id)===String(sel)?'selected':''}>${esc(r.id_obra)} · ${esc(r.cliente_nome)}</option>`).join('');}
 function renderPortalClientOptions(selected=''){const s=$('#clienteVinculado');s.innerHTML='<option value="">Sem vínculo com portal</option>'+appState.portalClients.map(c=>`<option value="${esc(c.id)}" ${String(selected)===String(c.id)?'selected':''}>${esc(c.nome)} — ${esc(c.email||'sem e-mail')}</option>`).join('');}
@@ -963,62 +963,40 @@ window.renderNoRecord = renderNoRecord;
 window.PH_MINHA_OBRA_BUILD = '2026.11.06-fix-render-functions';
 
 async function init() {
+  const safe = (label, fn) => { try{ const r = fn(); if(r && r.catch) return r.catch(e=>console.warn('init:'+label, e)); }catch(e){ console.warn('init:'+label, e); } };
 
-    $('#profissionalFuncao').innerHTML=professionalRoles.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('');
-    $('#currentDate').textContent =
-        new Date().toLocaleDateString('pt-BR', {
-            day: '2-digit',
-            month: 'long',
-            year: 'numeric'
-        });
+  safe('campos-iniciais', ()=>{
+    const pf = document.getElementById('profissionalFuncao');
+    if(pf) pf.innerHTML = professionalRoles.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('');
+    const cd = document.getElementById('currentDate');
+    if(cd) cd.textContent = new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+    ['fluxoData','reciboData','diData','ctVencimento','coData','cotValidade'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value = todayISO(); });
+    const ae = document.getElementById('arquivoEtapa');
+    if(ae) ae.innerHTML = '<option value="">Sem etapa específica</option>' + stageNames.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('');
+  });
 
-    $('#fluxoData').value = todayISO();
-    $('#reciboData').value = todayISO();
-    $('#diData').value = todayISO();
-    $('#ctVencimento').value = todayISO();
-    $('#coData').value = todayISO();
-    $('#cotValidade').value = todayISO();
+  safe('wireEvents', ()=>wireEvents());
+  safe('navegacao', ()=>navigateToView(getViewFromUrl(),{updateHistory:false,scroll:false}));
+  safe('calculadoras', ()=>{ initCalculadoras(); calcAll(); });
 
-    $('#arquivoEtapa').innerHTML =
-        '<option value="">Sem etapa específica</option>' +
-        stageNames.map(x =>
-            `<option value="${esc(x)}">${esc(x)}</option>`
-        ).join('');
-  
-    wireEvents();
-
-    navigateToView(
-        getViewFromUrl(),
-        {
-            updateHistory: false,
-            scroll: false
-        }
-    );
-
-    try{ initCalculadoras(); calcAll(); }catch(e){ console.warn('calc init:', e); }
-
-    setConnection(
-        true,
-        'Conectando ao banco'
-    );
-
-    try {
-
-        await loadInitialData();
-
-    } catch (e) {
-
-        toast(
-            e.message,
-            'error'
-        );
-
-        setConnection(
-            false,
-            'Falha na conexão'
-        );
-    }
+  // AQUI é o que importa: o banco SEMPRE é tentado, mesmo se algo acima falhar
+  try{
+    setConnection(true,'Conectando ao banco');
+    console.log('[DB] Chamando /api/erp/obras ...');
+    await loadInitialData();
+    console.log('[DB] OK, obras carregadas:', appState.records.length);
+  }catch(e){
+    console.error('[DB] FALHOU:', e.status, e.message);
+    toast('Falha no banco ('+(e.status||'')+'): '+e.message,'error');
+    setConnection(false,'Falha no banco - veja o Console');
+  }
 }
+
+init().catch(e=>{
+  console.error('Falha ao iniciar:', e);
+  toast('Falha ao iniciar: '+e.message,'error');
+  setConnection(false,'Falha na inicialização');
+});
 
 init().catch(e => {
 
