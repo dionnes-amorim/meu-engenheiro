@@ -860,6 +860,25 @@ async function deleteCurrentRecord(){if(!appState.current)return;const r=appStat
 function navigateToView(view,opts={}){if(!Object.hasOwn(viewLabels,view))view='visao-geral';if(view==='caixa'&&!hasCaixaFinancing())view='visao-geral';$$('.erp-section').forEach(s=>{const active=s.id===view;s.classList.toggle('active',active);s.setAttribute('aria-hidden',active?'false':'true');});$$('#erpNavigation [data-view]').forEach(b=>{const active=b.dataset.view===view;b.classList.toggle('active',active);if(active)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});$('#activeViewLabel').textContent=viewLabels[view];if(opts.updateHistory!==false){const hash='#'+view;if(location.hash!==hash)history.pushState({erpView:view},'',location.pathname+location.search+hash);}if(opts.scroll!==false)window.scrollTo({top:0,behavior:'smooth'});}
 function getViewFromUrl(){let v='';try{v=decodeURIComponent((location.hash||'').replace(/^#/,''));}catch{}return Object.hasOwn(viewLabels,v)?v:'visao-geral';}
 function addStage(){ addItem('financeiro.etapas',{id:makeId(),nome:'Nova etapa',orcado:0,realizado:0}); }
+async function addQuality(ev){
+  ev.preventDefault();
+  if(!appState.current) return toast('Selecione uma obra primeiro.','error');
+  const titulo = document.getElementById('qaTitulo')?.value.trim();
+  if(!titulo) return;
+  const file = document.getElementById('qaFoto')?.files?.[0];
+  const btn = document.querySelector('#qualidadeForm button[type="submit"]');
+  if(btn) btn.disabled = true;
+  const original = btn ? btn.innerHTML : '';
+  try{
+    let photo = {url:'', public_id:'', name:''};
+    if(file) photo = await uploadToCloudinary(file);
+    addItem('qualidade',{id:makeId(), titulo, ambiente:document.getElementById('qaAmbiente')?.value.trim()||'', responsavel:document.getElementById('qaResponsavel')?.value.trim()||'', prazo:document.getElementById('qaPrazo')?.value||'', prioridade:document.getElementById('qaPrioridade')?.value||'', descricao:document.getElementById('qaDescricao')?.value.trim()||'', fotoUrl:photo.url, fotoPublicId:photo.public_id, fotoNome:photo.name, status:'Aberta', criadaEm:new Date().toISOString()});
+    document.getElementById('qualidadeForm')?.reset();
+    clearImagePreview('qaFoto','qaFotoPreview');
+    toast(file?'Ocorrência registrada e foto enviada ao Cloudinary.':'Ocorrência registrada.','success');
+  }catch(e){ toast(e.message,'error'); }
+  finally{ if(btn){ btn.disabled=false; btn.innerHTML=original; } }
+}
 function wireEvents(){
   document.querySelectorAll('button:not([type])').forEach(b=>b.type='button');
 
@@ -871,20 +890,20 @@ function wireEvents(){
   if(nav) nav.addEventListener('click',ev=>{const b=ev.target.closest('[data-view]');if(b){ev.preventDefault();navigateToView(b.dataset.view);}});
   window.addEventListener('popstate',()=>navigateToView(getViewFromUrl(),{updateHistory:false}));
 
-  on('btnNovaObra','click',()=>openNewModal());
-  on('btnEditarObra','click',openEditModal);
-  on('btnExcluirObra','click',deleteCurrentRecord);
-  on('btnSalvar','click',()=>saveCurrent(true));
-  on('btnBackup','click',exportBackup);
-  on('btnCsv','click',exportCsv);
-  on('btnImportBackup','click',()=>{ const f=document.getElementById('backupFile'); if(f) f.click(); });
-  on('backupFile','change',importBackup);
-  on('obraSelecionada','change',ev=>openRecord(ev.target.value));
-  on('btnFecharModal','click',closeModal);
-  on('btnCancelarObra','click',closeModal);
-  on('modalObra','click',ev=>{ if(ev.target===document.getElementById('modalObra')) closeModal(); });
-  on('tipoObraCadastro','change',updateCaixaFormVisibility);
-  on('obraForm','submit',submitWorkForm);
+on('btnNovaObra','click',()=>openNewModal());
+on('btnEditarObra','click',()=>{ if(typeof openEditModal==='function') openEditModal(); });
+on('btnExcluirObra','click',()=>{ if(typeof deleteCurrentRecord==='function') deleteCurrentRecord(); });
+on('btnSalvar','click',()=>saveCurrent(true));
+on('btnBackup','click',()=>{ if(typeof exportBackup==='function') exportBackup(); });
+on('btnCsv','click',()=>{ if(typeof exportCsv==='function') exportCsv(); });
+on('btnImportBackup','click',()=>{ const f=document.getElementById('backupFile'); if(f) f.click(); });
+on('backupFile','change',ev=>{ if(typeof importBackup==='function') importBackup(ev); });
+on('obraSelecionada','change',ev=>openRecord(ev.target.value));
+on('btnFecharModal','click',()=>{ if(typeof closeModal==='function') closeModal(); });
+on('btnCancelarObra','click',()=>{ if(typeof closeModal==='function') closeModal(); });
+on('modalObra','click',ev=>{ if(ev.target===document.getElementById('modalObra')) closeModal(); });
+on('tipoObraCadastro','change',()=>{ if(typeof updateCaixaFormVisibility==='function') updateCaixaFormVisibility(); });
+on('obraForm','submit',ev=>{ if(typeof submitWorkForm==='function') submitWorkForm(ev); });
 
   on('clienteVinculado','change',ev=>{const c=appState.portalClients.find(x=>String(x.id)===ev.target.value);if(c){const nEl=document.getElementById('nomeCliente'); const eEl=document.getElementById('enderecoObra'); if(nEl && !nEl.value.trim()) nEl.value=c.nome||''; if(eEl && !eEl.value.trim()) eEl.value=c.endereco_obra||'';}});
 
@@ -898,17 +917,17 @@ function wireEvents(){
   // Botão Adicionar Etapa - NÃO depende mais de addStage existir
   on('btnAddEtapa','click',()=>addItem('financeiro.etapas',{id:makeId(),nome:'Nova etapa',orcado:0,realizado:0}));
 
-  on('qualidadeForm','submit',addQuality);
-  on('profissionalForm','submit',saveProfessional);
-  on('btnCancelarEdicaoProfissional','click',resetProfessionalForm);
-  on('btnAddFornecedor','click',addFornecedor);
-  on('btnAddEstoque','click',addStock);
-  on('fluxoForm','submit',addCashflow);
-  on('cotacaoForm','submit',addCotacao);
-  on('cronogramaForm','submit',addCronograma);
-  on('diarioForm','submit',addDiario);
-  on('compraForm','submit',addCompra);
-  on('contaForm','submit',addConta);
+on('qualidadeForm','submit',ev=>{ if(typeof addQuality==='function') addQuality(ev); else toast('Função addQuality não encontrada no arquivo.','error'); });
+on('profissionalForm','submit',ev=>{ if(typeof saveProfessional==='function') saveProfessional(ev); });
+on('btnCancelarEdicaoProfissional','click',()=>{ if(typeof resetProfessionalForm==='function') resetProfessionalForm(); });
+on('btnAddFornecedor','click',()=>{ if(typeof addFornecedor==='function') addFornecedor(); });
+on('btnAddEstoque','click',()=>{ if(typeof addStock==='function') addStock(); });
+on('fluxoForm','submit',ev=>{ if(typeof addCashflow==='function') addCashflow(ev); });
+on('cotacaoForm','submit',ev=>{ if(typeof addCotacao==='function') addCotacao(ev); });
+on('cronogramaForm','submit',ev=>{ if(typeof addCronograma==='function') addCronograma(ev); });
+on('diarioForm','submit',ev=>{ if(typeof addDiario==='function') addDiario(ev); });
+on('compraForm','submit',ev=>{ if(typeof addCompra==='function') addCompra(ev); });
+on('contaForm','submit',ev=>{ if(typeof addConta==='function') addConta(ev); });
 
   on('contratoForm','submit',ev=>{ev.preventDefault();if(!appState.current)return toast('Selecione uma obra primeiro.','error');const item={nome:$('#contratoNome').value.trim(),documento:$('#contratoDoc').value.trim(),titulo:$('#contratoObjeto').value.trim(),valor:n($('#contratoValor').value),prazo:$('#contratoPrazo').value.trim(),data:todayISO()};if(!item.nome||!item.titulo||item.valor<=0)return toast('Preencha nome, objeto e valor.','error');addDocument('contratos',item,'Contrato');$('#contratoForm').reset();});
   on('reciboForm','submit',ev=>{ev.preventDefault();if(!appState.current)return toast('Selecione uma obra primeiro.','error');const item={nome:$('#reciboNome').value.trim(),documento:$('#reciboDoc').value.trim(),valor:n($('#reciboValor').value),descricao:$('#reciboRef').value.trim(),data:$('#reciboData').value};if(!item.nome||item.valor<=0||!item.descricao||!item.data)return toast('Preencha os campos obrigatórios do recibo.','error');addDocument('recibos',item,'Recibo');$('#reciboForm').reset();$('#reciboData').value=todayISO();});
