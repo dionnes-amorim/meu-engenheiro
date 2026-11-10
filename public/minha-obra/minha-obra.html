@@ -689,57 +689,6 @@ function updateCalcItem(name,quantity,unit,category='Materiais básicos',unitPri
  $('#calcResumoTotais').innerHTML=`<span>Cimento total: <strong>${Math.ceil(totalCimento)} sacos</strong></span><span>Areia total: <strong>${totalAreia.toFixed(2)} m³</strong></span><span>Brita total: <strong>${totalBrita.toFixed(2)} m³</strong></span><span>Terra total: <strong>${totalTerra.toFixed(2)} m³</strong></span>`;
 }
 
-/* ============ CALCULADORAS NOVAS - SÓ O QUE VOCÊ ADICIONAR ============ */
-const CALC_DEFS = {
-  concreto:{titulo:'Concreto — cimento, areia e brita', icone:'fa-cubes', campos:`<label>Volume (m³)<input data-k="vol" type="number" value="10" step="0.01"></label><label>Traço<select data-k="traco"><option value="123">1:2:3 — convencional</option><option value="1152">1:1,5:2 — mais rico</option><option value="134">1:3:4 — magro</option></select></label><label>Perda (%)<input data-k="perda" type="number" value="8"></label><label>Cimento (R$/saco)<input data-k="pCim" type="number" value="42"></label><label>Areia (R$/m³)<input data-k="pAreia" type="number" value="180"></label><label>Brita (R$/m³)<input data-k="pBrita" type="number" value="220"></label>`},
-  terra:{titulo:'Terraplanagem, aterro e cascalho', icone:'fa-mountain', campos:`<label>Comprimento (m)<input data-k="comp" type="number" value="20"></label><label>Largura (m)<input data-k="larg" type="number" value="10"></label><label>Altura (m)<input data-k="alt" type="number" value="0.30" step="0.01"></label><label>Empolamento (%)<input data-k="emp" type="number" value="25"></label><label>Perda (%)<input data-k="perda" type="number" value="0"></label><label>Preço terra (R$/m³)<input data-k="preco" type="number" value="60"></label>`},
-  lastro:{titulo:'Areia, lastro e contrapiso', icone:'fa-water', campos:`<label>Área (m²)<input data-k="area" type="number" value="50"></label><label>Espessura (cm)<input data-k="esp" type="number" value="5"></label><label>Aplicação<select data-k="tipo"><option value="areia">Areia pura</option><option value="lastro">Lastro 1:5</option><option value="contrapiso">Contrapiso 1:4</option></select></label><label>Areia (R$/m³)<input data-k="pAreia" type="number" value="180"></label><label>Cimento (R$/saco)<input data-k="pCim" type="number" value="42"></label>`},
-  alvenaria:{titulo:'Alvenaria — blocos e tijolos', icone:'fa-trowel-bricks', campos:`<label>Área parede (m²)<input data-k="area" type="number" value="200"></label><label>Tipo<select data-k="tipo"><option value="19">Bloco cerâmico 19 un/m²</option><option value="32">Tijolinho 32 un/m²</option><option value="12.5">Bloco concreto 12,5 un/m²</option><option value="25">Bloco vedação 25 un/m²</option></select></label><label>Perda (%)<input data-k="perda" type="number" value="10"></label><label>Preço milheiro (R$)<input data-k="preco" type="number" value="850"></label>`},
-  piso:{titulo:'Piso, porcelanato, argamassa e rejunte', icone:'fa-border-all', campos:`<label>Área (m²)<input data-k="area" type="number" value="100"></label><label>Perda peças (%)<input data-k="perda" type="number" value="10"></label><label>Preço piso (R$/m²)<input data-k="preco" type="number" value="60"></label><label>Argamassa (kg/m²)<input data-k="arg" type="number" value="5"></label><label>Saco argamassa (kg)<input data-k="sacoArg" type="number" value="20"></label><label>Rejunte (kg/m²)<input data-k="rej" type="number" value="0.30"></label>`},
-  reboco:{titulo:'Reboco, chapisco e argamassa', icone:'fa-trowel', campos:`<label>Área (m²)<input data-k="area" type="number" value="300"></label><label>Espessura (cm)<input data-k="esp" type="number" value="2"></label><label>Tipo<select data-k="tipo"><option value="reboco">Reboco 1:2:8</option><option value="assenta">Assentamento 1:1:6</option><option value="chapisco">Chapisco 1:3</option></select></label><label>Perda (%)<input data-k="perda" type="number" value="10"></label>`},
-  aco:{titulo:'Aço CA-50/CA-60 e arame', icone:'fa-grip-lines', campos:`<label>Bitola (mm)<select data-k="bitola"><option>4.2</option><option>5</option><option>6.3</option><option>8</option><option>10</option><option selected>12.5</option><option>16</option><option>20</option><option>25</option></select></label><label>Barras<input data-k="barras" type="number" value="100"></label><label>Comp. por barra (m)<input data-k="comp" type="number" value="12"></label><label>Perda (%)<input data-k="perda" type="number" value="10"></label><label>Preço aço (R$/kg)<input data-k="preco" type="number" value="7.5"></label><label>Arame (% do aço)<input data-k="aramePct" type="number" value="1.5"></label>`},
-  pintura:{titulo:'Pintura, selador e massa', icone:'fa-paint-roller', campos:`<label>Área (m²)<input data-k="area" type="number" value="250"></label><label>Demãos<input data-k="demaos" type="number" value="2"></label><label>Rendimento (m²/L/demão)<input data-k="rend" type="number" value="10"></label><label>Perda (%)<input data-k="perda" type="number" value="10"></label><label>Preço tinta (R$/L)<input data-k="preco" type="number" value="28"></label><label>Massa (kg/m²)<input data-k="massa" type="number" value="1.2"></label>`},
-  telhado:{titulo:'Telhado e cobertura', icone:'fa-house', campos:`<label>Área cobertura (m²)<input data-k="area" type="number" value="120"></label><label>Tipo telha<select data-k="tipo"><option value="10">Cerâmica 10 un/m²</option><option value="12">Concreto 12 un/m²</option><option value="2.2">Fibrocimento 2,2 m²/chapa</option><option value="2.5">Metálica 2,5 m²/chapa</option></select></label><label>Perda (%)<input data-k="perda" type="number" value="8"></label><label>Preço un/chapa (R$)<input data-k="preco" type="number" value="4.5"></label>`},
-  eletrica:{titulo:'Elétrica — cabos e conduítes', icone:'fa-bolt', campos:`<label>Pontos<input data-k="pontos" type="number" value="50"></label><label>Metros por ponto<input data-k="metros" type="number" value="8"></label><label>Fator cabos<input data-k="cabos" type="number" value="3"></label><label>Perda (%)<input data-k="perda" type="number" value="10"></label><label>Cabo (R$/m)<input data-k="pCabo" type="number" value="2.8"></label><label>Conduíte (R$/m)<input data-k="pCond" type="number" value="2.2"></label>`},
-  hidraulica:{titulo:'Hidráulica — PVC', icone:'fa-faucet', campos:`<label>Água fria (m)<input data-k="agua" type="number" value="100"></label><label>Esgoto (m)<input data-k="esgoto" type="number" value="70"></label><label>Perda (%)<input data-k="perda" type="number" value="10"></label><label>Água fria (R$/m)<input data-k="pAgua" type="number" value="6"></label><label>Esgoto (R$/m)<input data-k="pEsgoto" type="number" value="12"></label>`},
-  impermeabilizacao:{titulo:'Impermeabilização', icone:'fa-droplet', campos:`<label>Área (m²)<input data-k="area" type="number" value="80"></label><label>Consumo (kg/m²)<input data-k="consumo" type="number" value="1.5"></label><label>Demãos<input data-k="demaos" type="number" value="2"></label><label>Perda (%)<input data-k="perda" type="number" value="10"></label><label>Preço (R$/kg)<input data-k="preco" type="number" value="18"></label>`},
-};
-
-function calcValores(tipo, v){
-  const f = (k,d=0)=> n(v[k] ?? d);
-  if(tipo==='concreto'){ const vol=f('vol')*(1+f('perda')/100); let cim,areia,brita; if(v.traco==='1152'){cim=vol*9.5;areia=vol*0.55;brita=vol*0.75;} else if(v.traco==='134'){cim=vol*5.5;areia=vol*0.75;brita=vol*0.95;} else {cim=vol*7;areia=vol*0.6;brita=vol*0.85;} return {linhas:[`Cimento: ${cim.toFixed(0)} sacos`,`Areia: ${areia.toFixed(2)} m³`,`Brita: ${brita.toFixed(2)} m³`], custo:cim*f('pCim')+areia*f('pAreia')+brita*f('pBrita'), itens:[{material:'Cimento CP-II 50kg',unidade:'saco',qtd:cim,preco:f('pCim'),categoria:'Materiais básicos'},{material:'Areia',unidade:'m³',qtd:areia,preco:f('pAreia'),categoria:'Materiais básicos'},{material:'Brita',unidade:'m³',qtd:brita,preco:f('pBrita'),categoria:'Materiais básicos'}], totais:{cimento:cim,areia,brita}; }
-  if(tipo==='terra'){ const comp=f('comp')*f('larg')*f('alt'); const solto=comp*(1+f('emp')/100)*(1+f('perda')/100); return {linhas:[`Volume compactado: ${comp.toFixed(2)} m³`,`Volume solto: ${solto.toFixed(2)} m³`], custo:solto*f('preco'), itens:[{material:'Terra / aterro',unidade:'m³',qtd:solto,preco:f('preco'),categoria:'Materiais básicos'}], totais:{terra:solto}}; }
-  if(tipo==='alvenaria'){ const qtd=f('area')*f('tipo')*(1+f('perda')/100); const arg=f('area')*0.02; return {linhas:[`Quantidade: ${qtd.toFixed(0)} un`,`Argamassa: ${arg.toFixed(2)} m³`], custo:qtd/1000*f('preco'), itens:[{material:'Bloco / Tijolo',unidade:'un',qtd,preco:f('preco')/1000,categoria:'Alvenaria'}], totais:{}}; }
-  if(tipo==='aco'){ const pesoPorMetro=(Math.pow(f('bitola'),2)/162); const peso=f('barras')*f('comp')*pesoPorMetro*(1+f('perda')/100); const arame=peso*f('aramePct')/100; return {linhas:[`Peso: ${peso.toFixed(1)} kg`,`Arame: ${arame.toFixed(1)} kg`], custo:peso*f('preco'), itens:[{material:`Aço CA-50 ${f('bitola')}mm`,unidade:'kg',qtd:peso,preco:f('preco'),categoria:'Estrutura'},{material:'Arame recozido',unidade:'kg',qtd:arame,preco:8,categoria:'Estrutura'}], totais:{}}; }
-  if(tipo==='piso'){ const area=f('area')*(1+f('perda')/100); const argKg=f('area')*f('arg'); const rej=f('area')*f('rej'); return {linhas:[`Área com perda: ${area.toFixed(1)} m²`,`Argamassa: ${(argKg/f('sacoArg')).toFixed(1)} sacos`,`Rejunte: ${rej.toFixed(1)} kg`], custo:area*f('preco'), itens:[{material:'Piso / Porcelanato',unidade:'m²',qtd:area,preco:f('preco'),categoria:'Acabamento'},{material:'Argamassa colante',unidade:'saco',qtd:argKg/f('sacoArg'),preco:35,categoria:'Acabamento'},{material:'Rejunte',unidade:'kg',qtd:rej,preco:25,categoria:'Acabamento'}], totais:{}}; }
-  if(tipo==='pintura'){ const tinta=f('area')*f('demaos')/f('rend',10)*(1+f('perda')/100); const massa=f('area')*f('massa'); return {linhas:[`Tinta: ${tinta.toFixed(1)} L`,`Massa: ${massa.toFixed(1)} kg`,`Selador: ${(f('area')/12).toFixed(1)} L`], custo:tinta*f('preco'), itens:[{material:'Tinta',unidade:'L',qtd:tinta,preco:f('preco'),categoria:'Acabamento'},{material:'Massa corrida',unidade:'kg',qtd:massa,preco:4,categoria:'Acabamento'}], totais:{}}; }
-  if(tipo==='telhado'){ const isChapa=(f('tipo')<5); const qtd=isChapa? f('area')/f('tipo')*(1+f('perda')/100) : f('area')*f('tipo')*(1+f('perda')/100); return {linhas:[`Quantidade: ${qtd.toFixed(0)} ${isChapa?'chapas':'un'}`], custo:qtd*f('preco'), itens:[{material:'Telha',unidade:isChapa?'un':'un',qtd,preco:f('preco'),categoria:'Acabamento'}], totais:{}}; }
-  if(tipo==='eletrica'){ const cabo=f('pontos')*f('metros')*f('cabos')*(1+f('perda')/100); const cond=f('pontos')*f('metros')*(1+f('perda')/100); return {linhas:[`Cabos: ${cabo.toFixed(0)} m`,`Conduíte: ${cond.toFixed(0)} m`], custo:cabo*f('pCabo')+cond*f('pCond'), itens:[{material:'Cabo elétrico',unidade:'m',qtd:cabo,preco:f('pCabo'),categoria:'Elétrica'},{material:'Conduíte',unidade:'m',qtd:cond,preco:f('pCond'),categoria:'Elétrica'}], totais:{}}; }
-  if(tipo==='hidraulica'){ const agua=f('agua')*(1+f('perda')/100); const esg=f('esgoto')*(1+f('perda')/100); return {linhas:[`Água fria: ${agua.toFixed(0)} m`,`Esgoto: ${esg.toFixed(0)} m`], custo:agua*f('pAgua')+esg*f('pEsgoto'), itens:[{material:'Tubo PVC água fria',unidade:'m',qtd:agua,preco:f('pAgua'),categoria:'Hidráulica'},{material:'Tubo PVC esgoto',unidade:'m',qtd:esg,preco:f('pEsgoto'),categoria:'Hidráulica'}], totais:{}}; }
-  if(tipo==='impermeabilizacao'){ const qtd=f('area')*f('consumo')*f('demaos')*(1+f('perda')/100); return {linhas:[`Produto: ${qtd.toFixed(1)} kg/L`], custo:qtd*f('preco'), itens:[{material:'Impermeabilizante',unidade:'kg',qtd,preco:f('preco'),categoria:'Impermeabilização'}], totais:{}}; }
-  if(tipo==='lastro'){ const vol=f('area')*f('esp')/100; const cim = v.tipo==='areia'?0 : vol*5; return {linhas:[`Volume: ${vol.toFixed(2)} m³`,`Areia: ${vol.toFixed(2)} m³`,`Cimento: ${cim.toFixed(0)} sacos`], custo:vol*f('pAreia')+cim*f('pCim'), itens:[{material:'Areia',unidade:'m³',qtd:vol,preco:f('pAreia'),categoria:'Materiais básicos'},{material:'Cimento CP-II 50kg',unidade:'saco',qtd:cim,preco:f('pCim'),categoria:'Materiais básicos'}], totais:{cimento:cim,areia:vol}}; }
-  if(tipo==='reboco'){ const vol=f('area')*f('esp')/100*(1+f('perda')/100); const cim=vol*4; const areia=vol*0.9; return {linhas:[`Volume argamassa: ${vol.toFixed(2)} m³`,`Cimento: ${cim.toFixed(0)} sacos`,`Areia: ${areia.toFixed(2)} m³`], custo:cim*42+areia*180, itens:[{material:'Cimento CP-II 50kg',unidade:'saco',qtd:cim,preco:42,categoria:'Materiais básicos'},{material:'Areia',unidade:'m³',qtd:areia,preco:180,categoria:'Materiais básicos'}], totais:{cimento:cim,areia}}; }
-  return {linhas:[],custo:0,itens:[],totais:{}};
-}
-
-function lerCalcCard(card){
-  const v={}; card.querySelectorAll('[data-k]').forEach(el=> v[el.dataset.k]=el.type==='checkbox'?el.checked:el.value);
-  return v;
-}
-function addCalculadora(tipo){
-  const def=CALC_DEFS[tipo]; if(!def) return;
-  const id='calc_'+makeId();
-  const card=document.createElement('article'); card.className='calc-card'; card.dataset.calc=tipo; card.dataset.calcId=id;
-  card.innerHTML=`<h3><i class="fa-solid ${def.icone}"></i> ${def.titulo} <button type="button" class="btn-quiet btn-small" data-remove-calc style="float:right">✕ Remover</button></h3>
-  <div class="calc-fields">${def.campos}</div>
-  <div class="calc-result" data-out></div>
-  <label style="display:flex;gap:8px;align-items:center;margin-top:10px;font-size:11px"><input type="checkbox" data-enviar checked> Enviar este cálculo para Compras</label>`;
-  $('#calcGrid').appendChild(card);
-  card.querySelector('[data-remove-calc]').addEventListener('click',()=>{card.remove(); calcAll();});
-  card.addEventListener('input',calcAll); card.addEventListener('change',calcAll);
-  $('#calcVazio').style.display='none'; calcAll();
-}
-
 /* === CALCULADORAS - COMEÇA VAZIA, SÓ ENTRA O QUE VOCÊ ADICIONAR, NUNCA TRAVA O INIT === */
 const CALC_DEFS = {
   concreto:{titulo:'Concreto — cimento, areia e brita', icone:'fa-cubes', campos:`<label>Volume (m³)<input data-k="vol" type="number" value="10" step="0.01"></label><label>Traço<select data-k="traco"><option value="123">1:2:3 — convencional</option><option value="1152">1:1,5:2 — mais rico</option><option value="134">1:3:4 — magro</option></select></label><label>Perda (%)<input data-k="perda" type="number" value="8"></label><label>Cimento (R$/saco)<input data-k="pCim" type="number" value="42"></label><label>Areia (R$/m³)<input data-k="pAreia" type="number" value="180"></label><label>Brita (R$/m³)<input data-k="pBrita" type="number" value="220"></label>`},
@@ -961,60 +910,6 @@ async function init() {
         stageNames.map(x =>
             `<option value="${esc(x)}">${esc(x)}</option>`
         ).join('');
-
-/* ============ FINANCEIRO ÚNICO - TUDO QUE É CONFIRMADO BATE NA VISÃO GERAL ============ */
-function valorCompra(c){ return n(c.quantidade)*n(c.preco); }
-function syncFinance(){
-  if(!appState.data || !appState.current) return;
-  const d = appState.data;
-
-  // 1. Contas pagas/recebidas -> garante lançamento no fluxo (sem duplicar)
-  (d.contas||[]).forEach(ct=>{
-    const ja = (d.fluxo||[]).some(f=>f.contaId===ct.id);
-    const confirmada = (ct.status==='Paga'||ct.status==='Pago'||ct.status==='Recebida'||ct.status==='Recebido');
-    if(confirmada && !ja){
-      d.fluxo.push({id:makeId(), contaId:ct.id, tipo: ct.tipo==='receber'?'entrada':'saida', data: ct.dataPagamento||ct.vencimento||todayISO(), valor:n(ct.valor), descricao:`${ct.tipo==='receber'?'Recebimento':'Pagamento'}: ${ct.descricao||''}`});
-    }
-    if(!confirmada && ja){ d.fluxo = d.fluxo.filter(f=>f.contaId!==ct.id); }
-  });
-
-  // 2. Compras Comprada/Recebida -> garante saída no fluxo (sem duplicar)
-  (d.compras||[]).forEach(cp=>{
-    const ja = (d.fluxo||[]).some(f=>f.compraId===cp.id);
-    const confirmada = (cp.status==='Comprada'||cp.status==='Recebida');
-    if(confirmada && !ja && valorCompra(cp)>0){
-      d.fluxo.push({id:makeId(), compraId:cp.id, tipo:'saida', data: cp.data||todayISO(), valor:valorCompra(cp), descricao:`Compra: ${cp.material}`});
-    }
-    if(!confirmada && ja){ d.fluxo = d.fluxo.filter(f=>f.compraId!==cp.id); }
-  });
-
-  // 3. Totais
-  const entradas = (d.fluxo||[]).filter(f=>f.tipo==='entrada').reduce((s,f)=>s+n(f.valor),0);
-  const saidas = (d.fluxo||[]).filter(f=>f.tipo==='saida').reduce((s,f)=>s+n(f.valor),0);
-  const saldo = entradas - saidas;
-
-  // Realizado = tudo que saiu de dinheiro (fluxo) - é o que aparece na Visão Geral e no Relatório
-  const contrato = n(appState.current.valor_contrato ?? appState.current.valor ?? 0);
-  const orcado = (d.financeiro?.etapas||[]).reduce((s,e)=>s+n(e.orcado),0) + n(d.financeiro?.taxas||0);
-
-  // Atualiza Visão Geral / Relatório se os elementos existirem
-  const set = (id,txt)=>{ const el=document.getElementById(id); if(el) el.textContent=txt; };
-  set('totalEntradas', money(entradas)); set('totalSaidas', money(saidas)); set('saldoFluxo', money(saldo));
-  set('resumoContrato', money(contrato)); set('resumoOrcado', money(orcado)); set('resumoGasto', money(saidas));
-  set('resumoTaxas', money(n(d.financeiro?.taxas||0))); set('resumoSaldo', money(contrato - saidas));
-  set('resumoLucro', money(contrato - saidas)); set('resumoMargem', contrato>0? ((contrato-saidas)/contrato*100).toFixed(1)+'%' : '0%');
-  set('comprasPlanejado', money((d.compras||[]).filter(c=>c.status!=='Cancelada').reduce((s,c)=>s+valorCompra(c),0)));
-  set('comprasComprado', money((d.compras||[]).filter(c=>c.status==='Comprada'||c.status==='Recebida').reduce((s,c)=>s+valorCompra(c),0)));
-  set('comprasPendentes', String((d.compras||[]).filter(c=>['Planejada','Em cotação','Aprovada'].includes(c.status)).length));
-  set('contasPagar', money((d.contas||[]).filter(c=>c.tipo==='pagar' && !['Paga','Pago'].includes(c.status)).reduce((s,c)=>s+n(c.valor),0)));
-  set('contasReceber', money((d.contas||[]).filter(c=>c.tipo==='receber' && !['Recebida','Recebido'].includes(c.status)).reduce((s,c)=>s+n(c.valor),0)));
-
-  // Se sua Visão Geral tiver cards com id, eles atualizam aqui também
-  set('ovEntradas', money(entradas)); set('ovSaidas', money(saidas)); set('ovSaldo', money(saldo)); set('ovRealizado', money(saidas));
-  if(typeof renderFluxo==='function') renderFluxo();
-  if(typeof renderCompras==='function') renderCompras();
-  if(typeof renderContas==='function') renderContas();
-}
   
     wireEvents();
 
