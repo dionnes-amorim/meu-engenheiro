@@ -1997,222 +1997,294 @@ input:focus-visible {
 }
 
 
-/* =========================================================
-   ANIMAÇÃO DE CONSTRUÇÃO — CABEÇALHO
-   Inspirada no projeto Meu Engenheiro
-   Mantém o restante do layout original
-========================================================= */
 
-/* ANIMAÇÕES */
 
-@keyframes guindasteMovimento {
+
+
+
+
+/* =========================================
+   PH ENGENHARIA — ANIMAÇÃO ORIGINAL
+   CENA DE CONSTRUÇÃO NO CABEÇALHO
+========================================= */
+
+@keyframes guindasteBalanco {
   0%, 100% {
-    transform: rotate(-1deg);
+    transform: rotate(0deg);
   }
   50% {
-    transform: rotate(1.5deg);
+    transform: rotate(1.2deg);
   }
 }
 
-@keyframes ganchoMovimento {
+@keyframes ganchoSobeDesce {
   0%, 100% {
     transform: translateY(0);
   }
   50% {
-    transform: translateY(7px);
+    transform: translateY(6px);
   }
 }
 
-@keyframes predioCrescimento {
-  0%, 100% {
-    transform: scaleY(.88);
+@keyframes predioCresce {
+  0% {
+    transform: scaleY(.85);
   }
-  50% {
+  100% {
     transform: scaleY(1);
   }
 }
 
-@keyframes luzObra {
+@keyframes piscaAlerta {
   0%, 100% {
     opacity: 1;
   }
   50% {
-    opacity: .3;
+    opacity: .35;
   }
 }
 
-@keyframes progressoConstrucao {
+@keyframes progressoObra {
   0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(250%);
-  }
-}
-
-@keyframes reflexoHeader {
-  0% {
-    transform: translateX(-120%);
-  }
-  100% {
-    transform: translateX(120%);
-  }
-}
-
-@keyframes flutuarGuindaste {
-  0%, 100% {
-    transform: translateY(0);
+    width: 38%;
   }
   50% {
-    transform: translateY(-4px);
+    width: 72%;
+  }
+  100% {
+    width: 38%;
   }
 }
 
-/* CABEÇALHO */
+/* ORGANIZAÇÃO DO CABEÇALHO */
 
 .top-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+/* CENTRO */
+
+.header-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-width: 210px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* CENA */
+
+.construction-scene {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  height: 56px;
   position: relative;
-  isolation: isolate;
 }
 
-/* CENA DE CONSTRUÇÃO NO FUNDO */
+/* GUINDASTE */
 
-.top-header::before {
-  content: "🏗️";
+.crane-wrap {
+  position: relative;
+  width: 58px;
+  height: 56px;
+}
+
+.crane-wrap i {
   position: absolute;
-
-  right: 245px;
-  top: 50%;
-  transform: translateY(-50%);
-
-  font-size: 62px;
-
-  opacity: .25;
-  filter: sepia(.5);
-
-  z-index: -1;
-
-  animation:
-    flutuarGuindaste 4s ease-in-out infinite,
-    guindasteMovimento 6s ease-in-out infinite;
-
-  pointer-events: none;
+  left: 0;
+  top: 0;
+  font-size: 42px;
+  color: #3a2c12;
+  transform-origin: left bottom;
+  animation: guindasteBalanco 4s ease-in-out infinite;
 }
 
-/* REFLEXO DOURADO DINÂMICO */
+/* GANCHO */
 
-.top-header::after {
-  height: 3px;
+.crane-hook {
+  position: absolute;
+  right: 6px;
+  top: 24px;
+  width: 2px;
+  height: 20px;
+  background: #3a2c12;
+  animation: ganchoSobeDesce 3s ease-in-out infinite;
+}
+
+.crane-hook::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: -4px;
+  width: 10px;
+  height: 10px;
+  background: #70552e;
+  border-radius: 2px;
+}
+
+/* EDIFÍCIOS */
+
+.building-wrap {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.building {
+  width: 22px;
+  background: linear-gradient(
+    180deg,
+    #fff8e6,
+    #e8d9b0
+  );
+  border: 1px solid rgba(112,85,46,.6);
+  border-radius: 2px 2px 0 0;
+  position: relative;
+  transform-origin: bottom;
+  animation: predioCresce 3.5s ease-in-out infinite alternate;
+}
+
+.building.b1 {
+  height: 38px;
+  animation-delay: .2s;
+}
+
+.building.b2 {
+  height: 50px;
+  animation-delay: .8s;
+}
+
+.building.b3 {
+  height: 30px;
+  animation-delay: 1.3s;
+}
+
+.building::before {
+  content: "";
+  position: absolute;
+  inset: 4px 4px auto 4px;
+  height: 18px;
+
+  background-image:
+    linear-gradient(
+      rgba(112,85,46,.7) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(112,85,46,.7) 1px,
+      transparent 1px
+    );
+
+  background-size: 5px 5px;
+  opacity: .6;
+}
+
+/* CONE */
+
+.cone {
+  color: #a63a2e;
+  font-size: 16px;
+  animation: piscaAlerta 1.6s infinite;
+}
+
+/* IDENTIFICAÇÃO DA OBRA */
+
+.center-label {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: .18em;
+  color: #5b4527;
+
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.center-label i {
+  color: #70552e;
+}
+
+/* PROGRESSO */
+
+.progress-obra {
+  width: 180px;
+  height: 5px;
+  background: rgba(43,33,16,.22);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-obra span {
+  display: block;
+  height: 100%;
 
   background: linear-gradient(
     90deg,
-    transparent,
-    #a77b4c,
-    #fff0c9,
-    #b8945e,
-    #fff8e8,
-    #a77b4c,
-    transparent
+    #70552e,
+    #f5e7c5,
+    #70552e
   );
 
-  background-size: 200% 100%;
-
-  animation:
-    brilhoDourado 5s linear infinite;
-}
-
-/* SIMULAÇÃO DE EDIFICAÇÕES */
-
-.top-header {
-  background-image:
-    linear-gradient(
-      90deg,
-      transparent 48%,
-      rgba(255,255,255,.10) 50%,
-      transparent 52%
-    ),
-    linear-gradient(
-      125deg,
-      #E9D9BA 0%,
-      #DCC49C 48%,
-      #E6D2AD 100%
-    ) !important;
-}
-
-/* BARRA DE ANDAMENTO DA OBRA */
-
-.top-header {
-  background-repeat: no-repeat;
-}
-
-.top-header .obra-id-display {
-  position: relative;
-}
-
-/* MOVIMENTO DOS LOGOTIPOS */
-
-.top-header .logos img {
-  transition:
-    transform .4s ease,
-    filter .4s ease;
-}
-
-.top-header .logos img:hover {
-  transform: translateY(-3px) scale(1.025);
-}
-
-/* BOTÕES COM EFEITO DE ELEVAÇÃO */
-
-.top-header .btn-secondary,
-.top-header .btn-primary {
-  transition: all .3s cubic-bezier(.2,.7,.2,1);
-}
-
-.top-header .btn-secondary:hover,
-.top-header .btn-primary:hover {
-  transform: translateY(-3px);
-  box-shadow:
-    0 7px 18px rgba(112,85,46,.18);
-}
-
-/* DETALHES DE MOVIMENTO */
-
-.top-header .obra-id-display strong {
-  transition: color .3s ease;
-}
-
-.top-header:hover .obra-id-display strong {
-  color: #a16e35;
+  border-radius: 999px;
+  animation: progressoObra 4s ease-in-out infinite;
 }
 
 /* RESPONSIVIDADE */
 
+@media (max-width: 1100px) {
+  .header-center {
+    min-width: 180px;
+  }
+
+  .progress-obra {
+    width: 150px;
+  }
+}
+
 @media (max-width: 900px) {
-  .top-header::before {
-    right: 20px;
-    font-size: 48px;
-    opacity: .16;
+  .top-header {
+    justify-content: center;
+  }
+
+  .header-center {
+    flex-basis: 100%;
+    order: 3;
+    padding: 8px 0 4px;
   }
 }
 
 @media (max-width: 600px) {
-  .top-header::before {
-    right: 12px;
-    top: 22px;
-    font-size: 39px;
-    opacity: .12;
+  .header-center {
+    display: flex;
+    min-width: 100%;
   }
 
-  .top-header::after {
-    height: 2px;
+  .construction-scene {
+    transform: scale(.95);
+  }
+
+  .center-label {
+    font-size: 8px;
   }
 }
 
 /* ACESSIBILIDADE */
 
 @media (prefers-reduced-motion: reduce) {
-  .top-header::before,
-  .top-header::after {
+  .crane-wrap i,
+  .crane-hook,
+  .building,
+  .cone,
+  .progress-obra span {
     animation: none !important;
   }
 }
