@@ -1995,3 +1995,224 @@ input:focus-visible {
   border-color: #A77B4C;
   color: #493B2A;
 }
+
+
+/* =========================================================
+   ANIMAÇÃO DE CONSTRUÇÃO — CABEÇALHO
+   Inspirada no projeto Meu Engenheiro
+   Mantém o restante do layout original
+========================================================= */
+
+/* ANIMAÇÕES */
+
+@keyframes guindasteMovimento {
+  0%, 100% {
+    transform: rotate(-1deg);
+  }
+  50% {
+    transform: rotate(1.5deg);
+  }
+}
+
+@keyframes ganchoMovimento {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(7px);
+  }
+}
+
+@keyframes predioCrescimento {
+  0%, 100% {
+    transform: scaleY(.88);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes luzObra {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .3;
+  }
+}
+
+@keyframes progressoConstrucao {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(250%);
+  }
+}
+
+@keyframes reflexoHeader {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+@keyframes flutuarGuindaste {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+/* CABEÇALHO */
+
+.top-header {
+  position: relative;
+  isolation: isolate;
+}
+
+/* CENA DE CONSTRUÇÃO NO FUNDO */
+
+.top-header::before {
+  content: "🏗️";
+  position: absolute;
+
+  right: 245px;
+  top: 50%;
+  transform: translateY(-50%);
+
+  font-size: 62px;
+
+  opacity: .25;
+  filter: sepia(.5);
+
+  z-index: -1;
+
+  animation:
+    flutuarGuindaste 4s ease-in-out infinite,
+    guindasteMovimento 6s ease-in-out infinite;
+
+  pointer-events: none;
+}
+
+/* REFLEXO DOURADO DINÂMICO */
+
+.top-header::after {
+  height: 3px;
+
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #a77b4c,
+    #fff0c9,
+    #b8945e,
+    #fff8e8,
+    #a77b4c,
+    transparent
+  );
+
+  background-size: 200% 100%;
+
+  animation:
+    brilhoDourado 5s linear infinite;
+}
+
+/* SIMULAÇÃO DE EDIFICAÇÕES */
+
+.top-header {
+  background-image:
+    linear-gradient(
+      90deg,
+      transparent 48%,
+      rgba(255,255,255,.10) 50%,
+      transparent 52%
+    ),
+    linear-gradient(
+      125deg,
+      #E9D9BA 0%,
+      #DCC49C 48%,
+      #E6D2AD 100%
+    ) !important;
+}
+
+/* BARRA DE ANDAMENTO DA OBRA */
+
+.top-header {
+  background-repeat: no-repeat;
+}
+
+.top-header .obra-id-display {
+  position: relative;
+}
+
+/* MOVIMENTO DOS LOGOTIPOS */
+
+.top-header .logos img {
+  transition:
+    transform .4s ease,
+    filter .4s ease;
+}
+
+.top-header .logos img:hover {
+  transform: translateY(-3px) scale(1.025);
+}
+
+/* BOTÕES COM EFEITO DE ELEVAÇÃO */
+
+.top-header .btn-secondary,
+.top-header .btn-primary {
+  transition: all .3s cubic-bezier(.2,.7,.2,1);
+}
+
+.top-header .btn-secondary:hover,
+.top-header .btn-primary:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 7px 18px rgba(112,85,46,.18);
+}
+
+/* DETALHES DE MOVIMENTO */
+
+.top-header .obra-id-display strong {
+  transition: color .3s ease;
+}
+
+.top-header:hover .obra-id-display strong {
+  color: #a16e35;
+}
+
+/* RESPONSIVIDADE */
+
+@media (max-width: 900px) {
+  .top-header::before {
+    right: 20px;
+    font-size: 48px;
+    opacity: .16;
+  }
+}
+
+@media (max-width: 600px) {
+  .top-header::before {
+    right: 12px;
+    top: 22px;
+    font-size: 39px;
+    opacity: .12;
+  }
+
+  .top-header::after {
+    height: 2px;
+  }
+}
+
+/* ACESSIBILIDADE */
+
+@media (prefers-reduced-motion: reduce) {
+  .top-header::before,
+  .top-header::after {
+    animation: none !important;
+  }
+}
